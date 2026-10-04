@@ -63,7 +63,7 @@ import { hero, systemMapNodes } from "../../data/site";
     display: none;
   }
 
-  .hero-grid {
+  :global(.hero-grid) {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-7);
@@ -173,7 +173,7 @@ import { hero, systemMapNodes } from "../../data/site";
       color: var(--color-olive);
     }
 
-    .hero-grid {
+    :global(.hero-grid) {
       grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
       gap: var(--space-8);
     }
