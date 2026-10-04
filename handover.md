@@ -1,32 +1,26 @@
 # Handover — Kemal Portfolio Website
 
-**Last updated:** 2026-10-04 — Phase 1 (Foundation) complete
+**Last updated:** 2026-10-04 — Hero section (with Growth System Map) built and visually verified
 
 **State:**
-- Project rebuilt from scratch as an Astro + TypeScript + Tailwind v4 site, per PRD.md and DESIGN-SYSTEM.md (both committed at repo root — DESIGN-SYSTEM.md is the source of truth for all visual decisions).
-- Phase 1 (PRD §10.1) done:
-  - Astro scaffolded (minimal template, strict TS), Tailwind v4 via @tailwindcss/vite.
-  - src/styles/tokens.css — exact copy of DESIGN-SYSTEM.md §13 tokens.
-  - src/styles/global.css — imports tokens + Tailwind, maps colors/radii into the Tailwind theme via @theme inline, defines named type-scale classes (.text-display, .text-h1, ... .text-caption) and hairline/container/skip-link utilities.
-  - Hanken Grotesk Variable self-hosted via @fontsource-variable/hanken-grotesk (no Google Fonts network request).
-  - Layout: BaseLayout.astro, Nav.astro (scroll hairline, mobile full-screen overlay menu), Footer.astro (oversized clipped wordmark), Container.astro, Section.astro (background prop: paper/paper-2/ink).
-  - UI atoms: Button.astro (primary/primary-ink/text/text-ink variants), Tag.astro, Metric.astro, FilterChips.astro (toggles aria-pressed + dispatches a "filterchange" CustomEvent for Phase 3 to wire up).
-  - src/data/site.ts — nav links, contact (email/WhatsApp/LinkedIn placeholders), footer note. All marked [placeholder] where real values are needed from Kemal.
-  - /styleguide page — dev only (redirects to /404 when `import.meta.env.PROD`), renders every color token, the full type scale, spacing scale, radius scale, and every UI component.
-  - src/pages/index.astro — minimal stub (full 7 home sections are Phase 2, not built yet).
-  - src/pages/404.astro — minimal placeholder (Phase 4 gives it real design).
-- Verified: `npx astro check` (0 errors), `npm run build` (succeeds, confirms /styleguide correctly becomes a redirect stub in prod), dev server smoke-tested in Chrome — colors/type/components all render correctly, filter chip active-state toggle works.
-- Pushed to GitHub: https://github.com/fattahkemal-dotcom/portfolio-website (built in a git worktree, merged back and pushed from main).
+- Project is an Astro + TypeScript + Tailwind v4 site, per PRD.md and DESIGN-SYSTEM.md (both at repo root — DESIGN-SYSTEM.md is the source of truth for all visual decisions).
+- Phase 1 (Foundation) complete — see prior entries in git log for details (tokens, layout shell, UI atoms, /styleguide).
+- Hero section built (first piece of Phase 2 — Home), based on a reference PDF the user supplied (`Documents\project\Portfolio Kemal\website-portfolio-references.pdf`, the "Finox" Webflow template): light large display headline, rotated side label, top stat row, portrait bleeding to the viewport edge, year + scroll cue, all above the Growth System Map as its own row.
+  - **This changed DESIGN-SYSTEM.md**: the hero now has a portrait. The original draft said "no hero photo" so the System Map stayed the one bold element — the user explicitly chose to add a portrait instead when asked. DESIGN-SYSTEM.md §6.1 and §9, and PRD.md §4.1, were updated to document this and keep them in sync with reality.
+  - `src/components/sections/Hero.astro` — the section. Portrait is a flat bone-colored placeholder (no real photo supplied yet) per DESIGN-SYSTEM.md §9 placeholder rule.
+  - `src/components/system/SystemMap.astro` — the signature animated element: CSS `scale()` line-draw + staggered node fade-in, respects `prefers-reduced-motion`, vertical layout under 768px, `static` prop for future case-study reuse.
+  - `src/data/site.ts` — hero copy + system-map node data, all dummy/lorem-ipsum-equivalent placeholder content (explicitly requested by the user for this round, to review layout before real copy).
+  - `src/pages/index.astro` now renders `<Hero />` instead of the old stub.
+- Verified in Chrome (desktop, ~1440px): headline/stats/portrait/CTAs/year/scroll-cue all in place, System Map draws and settles correctly, impact metrics row renders. Not yet re-verified at mobile widths this session (see Next steps).
 
-**Next steps (Phase 2 — Home, per PRD §10.2):**
-1. Build all 7 home sections with placeholder data: Hero (+ Growth System Map — the signature animated component, DESIGN-SYSTEM.md §8), Selected Work, About & Capabilities, Approach, Stack, Experience, Contact.
-2. Build `src/components/system/SystemMap.astro` — the one animated element on the site (line draw + staggered node fill, prefers-reduced-motion respected).
-3. Expand src/data/site.ts with real section copy; add src/data/stack.ts, experience.ts, metrics.ts per PRD §9.
-4. Confirm responsive behavior down to 360px width (this session's browser-resize check for mobile viewport didn't reliably reflect in screenshots — verify manually or with a real device/DevTools next time).
+**Next steps:**
+1. Build the remaining 6 home sections (Selected Work, About & Capabilities, Approach, Stack, Experience, Contact) — still placeholder/dummy data until Kemal supplies real copy, numbers, and a real portrait photo.
+2. Verify the hero's mobile layout (<768px: rotated label hides, portrait stacks below text; <1024px generally) — this session's browser window-resize didn't reliably reflect in screenshots, so use real DevTools device emulation or a physical device next time.
+3. Expand `src/data/site.ts` or add `src/data/stack.ts` / `experience.ts` per PRD §9 as those sections get built.
+4. When real case studies exist (Phase 3), wire `systemMapNodes[].href` to real project slugs — currently undefined (nodes render as non-interactive).
 
 **Decisions / gotchas:**
-- `npm create astro@latest .` ignored the `.` target and scaffolded into a randomly-named subfolder (`ecliptic-eclipse`) despite the dot arg — had to move files up manually. Known quirk with `--yes` flag; worth passing `--template minimal <dirname>` explicitly if this comes up again.
-- Did NOT use Tailwind utility classes for typography (e.g. chaining `text-small font-medium`) because Tailwind v4's cascade-layer ordering between a custom `@layer components` block and Tailwind's own `utilities` layer was ambiguous given how `@theme`/`@import "tailwindcss"` register layers. Used Astro scoped `<style>` blocks with direct `var(--token)` references in components instead (Button, Tag, Metric, FilterChips, Nav, Footer) — more verbose but unambiguous and still 100% token-driven.
-- Tailwind's default spacing scale conflicts with the design system's named, non-multiplier `--space-1..11` scale — didn't remap Tailwind's `--spacing`; spacing is applied via CSS vars directly (either in scoped `<style>` or `style="padding: var(--space-5)"`) rather than Tailwind spacing utilities. Keep doing this in Phase 2 for consistency.
-- `/styleguide` gating uses `Astro.redirect("/404")` guarded by `import.meta.env.PROD`, which runs at build time (static output) — confirmed the built `dist/styleguide/index.html` is a redirect stub, not real content.
-- gh CLI full path is `C:\Program Files\GitHub CLI\gh.exe` — not yet on PATH in already-open shells from before its install.
+- **Astro scoped-CSS cross-component gotcha (important, bit twice already):** a `<style>` block in `ComponentA.astro` can only reach elements `ComponentA` renders directly in its own template. If `ComponentA` wraps a child component (e.g. `<Container class="hero-grid">`) and styles the class ON that child's root element, the scoped selector silently never matches — the child's root carries the *child's* scope attribute, not the parent's. Fix: wrap that one selector in `:global(...)`. Hit this exact bug with `.hero-grid` (the two-column layout silently stayed one column, portrait rendered invisible/pushed below the fold) — cost real debugging time because the symptom (missing portrait) didn't obviously point at this cause. **Audit any future component that passes a styling class into a wrapper component's own tag** (Container, Section) for the same issue before assuming a layout bug is something else.
+- **Local build/dev flakiness specific to `.claude/worktrees/*` paths:** `npm run build` and `npm run dev` intermittently fail inside a worktree directory with `Tsconfig not found astro/tsconfigs/strict` plus a native `UV_HANDLE_CLOSING` assertion crash, from Vite 8's rolldown-based resolver failing on that bare-specifier tsconfig `extends`. Confirmed via a from-scratch Astro project copy: byte-identical source built fine from `%CLAUDE_JOB_DIR%\tmp\...` but failed from the worktree path — so it's environment/path-specific, not a real config or code problem. **Workaround already applied:** `tsconfig.json` now inlines the `strict` preset's compiler options instead of extending `astro/tsconfigs/strict` by bare specifier (harmless either way, avoids the resolver path entirely). Build/dev both work reliably from the main checkout (`C:\Users\fatta\Projects\portfolio-website`, not under `.claude\worktrees`). **If this resurfaces:** verify from the main checkout before assuming it's a real regression, and don't waste time re-debugging the root cause — it's been isolated once already (see git log message on the Hero commit for the full investigation).
+- Tailwind v4 cascade-layer / spacing-scale notes from Phase 1 still apply — see the git history, or `DESIGN-SYSTEM.md` section 5/7 for the practical conventions in use (direct `var(--token)` references in scoped `<style>`, not chained Tailwind utilities, for anything typography/spacing related).
+- gh CLI full path: `C:\Program Files\GitHub CLI\gh.exe` (may not be on PATH in shells opened before its install).
