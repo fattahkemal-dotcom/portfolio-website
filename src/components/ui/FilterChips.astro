@@ -1,0 +1,78 @@
+---
+// DESIGN-SYSTEM.md §7.3. Presentational + active-state toggling only;
+// Phase 3 wires this to the actual work-list filtering and ?filter= URL.
+interface Chip {
+  label: string;
+  value: string;
+}
+
+interface Props {
+  chips: Chip[];
+  active?: string;
+}
+
+const { chips, active = chips[0]?.value } = Astro.props;
+---
+
+<div class="filter-chips" role="group" aria-label="Filter by capability">
+  {
+    chips.map((chip) => (
+      <button
+        type="button"
+        class="chip"
+        data-value={chip.value}
+        aria-pressed={chip.value === active ? "true" : "false"}
+      >
+        {chip.label}
+      </button>
+    ))
+  }
+</div>
+
+<style>
+  .filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .chip {
+    height: 36px;
+    padding-inline: var(--space-4);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-line);
+    font-size: var(--text-small);
+    color: var(--color-ink);
+    background: transparent;
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .chip:hover {
+    background: var(--color-paper-2);
+  }
+
+  .chip[aria-pressed="true"] {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    border-color: var(--color-ink);
+  }
+</style>
+
+<script>
+  // Toggles active state locally. Dispatches "filterchange" with the
+  // selected value so a page-level listener (added in Phase 3) can
+  // re-render the filtered list.
+  document.querySelectorAll<HTMLElement>(".filter-chips").forEach((group) => {
+    group.addEventListener("click", (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>(".chip");
+      if (!button) return;
+
+      group.querySelectorAll(".chip").forEach((chip) => chip.setAttribute("aria-pressed", "false"));
+      button.setAttribute("aria-pressed", "true");
+
+      group.dispatchEvent(
+        new CustomEvent("filterchange", { detail: { value: button.dataset.value }, bubbles: true })
+      );
+    });
+  });
+</script>

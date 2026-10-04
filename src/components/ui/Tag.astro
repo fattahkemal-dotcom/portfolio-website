@@ -1,0 +1,30 @@
+---
+// DESIGN-SYSTEM.md §7.2 — pill, not clickable, two surfaces.
+interface Props {
+  surface?: "paper" | "ink";
+}
+
+const { surface = "paper" } = Astro.props;
+---
+
+<span class:list={["tag", surface === "ink" && "tag-ink"]}>
+  <slot />
+</span>
+
+<style>
+  .tag {
+    display: inline-block;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-line);
+    color: var(--color-olive);
+    font-size: var(--text-caption);
+    font-weight: 450;
+    letter-spacing: 0.01em;
+    padding: 4px 12px;
+  }
+
+  .tag-ink {
+    border-color: var(--color-line-dark);
+    color: var(--color-ink-soft);
+  }
+</style>

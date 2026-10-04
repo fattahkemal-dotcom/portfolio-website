@@ -1,0 +1,91 @@
+---
+// DESIGN-SYSTEM.md §7.11.
+import { navLinks, contact, footerNote, site } from "../../data/site";
+import Button from "../ui/Button.astro";
+---
+
+<footer class="site-footer" data-surface="ink">
+  <div class="container footer-top">
+    <ul class="footer-links">
+      {
+        navLinks.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="footer-contact">
+      <a href={`mailto:${contact.email}`}>{contact.email}</a>
+      <Button href={contact.linkedinUrl} variant="text-ink" external>LinkedIn</Button>
+    </div>
+  </div>
+
+  <div class="footer-wordmark-wrap" aria-hidden="true">
+    <span class="footer-wordmark">{site.name}</span>
+  </div>
+
+  <div class="container footer-bottom">
+    <p>&copy; {new Date().getFullYear()} {site.name}. {footerNote}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    overflow: hidden;
+  }
+
+  .footer-top {
+    padding-block: var(--space-8);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-6);
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    list-style: none;
+    font-size: var(--text-small);
+  }
+
+  .footer-links a:hover {
+    color: var(--color-ink-soft);
+  }
+
+  .footer-contact {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    font-size: var(--text-small);
+    color: var(--color-ink-soft);
+  }
+
+  .footer-wordmark-wrap {
+    width: 100%;
+    overflow: hidden;
+    line-height: 0.7;
+    text-align: center;
+  }
+
+  .footer-wordmark {
+    display: inline-block;
+    font-size: 24vw;
+    font-weight: 300;
+    letter-spacing: -0.05em;
+    color: var(--color-wordmark);
+    transform: translateY(18%);
+  }
+
+  .footer-bottom {
+    padding-block: var(--space-5);
+    border-top: 1px solid var(--color-line-dark);
+    font-size: var(--text-caption);
+    color: var(--color-ink-soft);
+  }
+</style>

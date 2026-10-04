@@ -1,0 +1,12 @@
+---
+// Horizontal max-width + inline padding wrapper (DESIGN-SYSTEM.md §5.2).
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<div class:list={["container", className]}>
+  <slot />
+</div>

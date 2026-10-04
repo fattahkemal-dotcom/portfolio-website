@@ -1,0 +1,88 @@
+---
+// DESIGN-SYSTEM.md §7.1. Labels must say exactly what happens — no arrows
+// appended, except `external` which carries the only allowed icon (↗).
+interface Props {
+  href?: string;
+  variant?: "primary" | "primary-ink" | "text" | "text-ink";
+  external?: boolean;
+  class?: string;
+  type?: "button" | "submit";
+}
+
+const {
+  href,
+  variant = "primary",
+  external = false,
+  class: className = "",
+  type = "button",
+} = Astro.props;
+
+const Tag = href ? "a" : "button";
+---
+
+<Tag
+  class:list={["btn", `btn-${variant}`, className]}
+  href={href}
+  type={!href ? type : undefined}
+  target={external ? "_blank" : undefined}
+  rel={external ? "noopener" : undefined}
+>
+  <slot />
+  {external && <span aria-hidden="true">↗</span>}
+</Tag>
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-small);
+    line-height: 1.5;
+    transition: background-color var(--dur-fast) var(--ease-out),
+      text-decoration-thickness var(--dur-fast) var(--ease-out);
+  }
+
+  .btn-primary {
+    border-radius: var(--radius-pill);
+    height: 48px;
+    padding-inline: var(--space-5);
+    font-weight: 500;
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .btn-primary:hover {
+    background: var(--color-olive);
+  }
+
+  .btn-primary-ink {
+    border-radius: var(--radius-pill);
+    height: 48px;
+    padding-inline: var(--space-5);
+    font-weight: 500;
+    background: var(--color-bone);
+    color: var(--color-ink);
+  }
+  .btn-primary-ink:hover {
+    background: var(--color-paper);
+  }
+
+  .btn-text {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+  .btn-text:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  .btn-text-ink {
+    color: var(--color-paper);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+  .btn-text-ink:hover {
+    text-decoration-thickness: 2px;
+  }
+</style>

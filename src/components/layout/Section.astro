@@ -1,0 +1,29 @@
+---
+// Vertical-rhythm section wrapper with a background per
+// DESIGN-SYSTEM.md §2.3. `surface="ink"` flips text-pairing context so
+// child components (hairlines, focus rings) can key off [data-surface].
+interface Props {
+  id?: string;
+  background?: "paper" | "paper-2" | "ink";
+  class?: string;
+}
+
+const { id, background = "paper", class: className = "" } = Astro.props;
+
+const bgVar = {
+  paper: "var(--color-paper)",
+  "paper-2": "var(--color-paper-2)",
+  ink: "var(--color-ink)",
+}[background];
+
+const surface = background === "ink" ? "ink" : "paper";
+---
+
+<section
+  id={id}
+  class:list={["section-padding", className]}
+  style={`background:${bgVar}`}
+  data-surface={surface}
+>
+  <slot />
+</section>

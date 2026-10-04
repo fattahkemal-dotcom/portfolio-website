@@ -1,0 +1,60 @@
+/* DESIGN-SYSTEM.md §13 — source of truth for every token. Do not hard-code
+   a hex value, font size, or spacing value inside a component; reference
+   these variables (directly, or via the Tailwind theme mapping in global.css). */
+
+:root {
+  /* color */
+  --color-ink: #11120D;
+  --color-olive: #565449;
+  --color-bone: #D8CFBC;
+  --color-paper: #FFFBF4;
+  --color-paper-2: #F3EEE3;
+  --color-ink-soft: #9C9687;
+  --color-line: #D8CFBC;
+  --color-line-dark: #2C2D26;
+  --color-wordmark: #1D1E18;
+
+  /* type */
+  --font-sans: "Hanken Grotesk Variable", "Helvetica Neue", Arial, sans-serif;
+  --text-display: clamp(3rem, 7vw + 1rem, 8rem);
+  --text-h1: clamp(2.5rem, 4vw + 1rem, 4.5rem);
+  --text-h2: clamp(2rem, 2.5vw + 1rem, 3rem);
+  --text-h3: 1.5rem;
+  --text-metric: clamp(2.5rem, 3vw + 1.25rem, 4rem);
+  --text-lead: 1.25rem;
+  --text-body: 1.0625rem;
+  --text-small: 0.9375rem;
+  --text-caption: 0.8125rem;
+
+  /* space */
+  --space-1: 4px;  --space-2: 8px;   --space-3: 12px;  --space-4: 16px;
+  --space-5: 24px; --space-6: 32px;  --space-7: 48px;  --space-8: 64px;
+  --space-9: 96px; --space-10: 128px; --space-11: 160px;
+  --space-section: clamp(5rem, 10vw, 10rem);
+
+  /* layout */
+  --container-max: 1320px;
+  --container-pad: clamp(1.25rem, 4vw, 3rem);
+  --grid-gap: 24px;
+
+  /* shape */
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* motion */
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-draw: 900ms;
+}
+
+@media (max-width: 767px) {
+  :root { --grid-gap: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur-base: 0ms; --dur-draw: 0ms; }
+}

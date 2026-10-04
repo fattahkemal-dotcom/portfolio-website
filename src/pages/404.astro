@@ -1,0 +1,17 @@
+---
+// Minimal placeholder — Phase 4 gives this a real design per PRD.md §3.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Container from "../components/layout/Container.astro";
+import Section from "../components/layout/Section.astro";
+---
+
+<BaseLayout title="Page not found — Kemal">
+  <Section>
+    <Container>
+      <h1 class="text-h1">Page not found</h1>
+      <p class="text-lead" style="margin-top: var(--space-4); color: var(--color-olive)">
+        <a href="/" class="underline">Back to home</a>
+      </p>
+    </Container>
+  </Section>
+</BaseLayout>

@@ -1,0 +1,51 @@
+---
+// DESIGN-SYSTEM.md §7.4 — hairline on top, value, label below.
+interface Props {
+  value: string;
+  label: string;
+  surface?: "paper" | "ink";
+}
+
+const { value, label, surface = "paper" } = Astro.props;
+---
+
+<div class:list={["metric", surface === "ink" && "metric-ink"]}>
+  <p class="metric-value tabular-nums">{value}</p>
+  <p class="metric-label">{label}</p>
+</div>
+
+<style>
+  .metric {
+    border-top: 1px solid var(--color-line);
+    padding-top: var(--space-4);
+    text-align: left;
+  }
+
+  .metric-ink {
+    border-top-color: var(--color-line-dark);
+  }
+
+  .metric-value {
+    font-size: var(--text-metric);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-ink);
+  }
+
+  .metric-ink .metric-value {
+    color: var(--color-bone);
+  }
+
+  .metric-label {
+    margin-top: var(--space-2);
+    font-size: var(--text-caption);
+    font-weight: 450;
+    letter-spacing: 0.01em;
+    color: var(--color-olive);
+  }
+
+  .metric-ink .metric-label {
+    color: var(--color-ink-soft);
+  }
+</style>

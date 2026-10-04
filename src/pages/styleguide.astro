@@ -1,0 +1,201 @@
+---
+// Dev-only reference page: every token + every UI component, so visual
+// decisions can be checked against DESIGN-SYSTEM.md without hunting
+// through pages. Redirects away in production builds.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Container from "../components/layout/Container.astro";
+import Section from "../components/layout/Section.astro";
+import Button from "../components/ui/Button.astro";
+import Tag from "../components/ui/Tag.astro";
+import Metric from "../components/ui/Metric.astro";
+import FilterChips from "../components/ui/FilterChips.astro";
+
+if (import.meta.env.PROD) {
+  return Astro.redirect("/404");
+}
+
+const colors = [
+  { token: "--color-ink", name: "Smoky Black" },
+  { token: "--color-olive", name: "Olive Drab" },
+  { token: "--color-bone", name: "Bone" },
+  { token: "--color-paper", name: "Floral White" },
+  { token: "--color-paper-2", name: "Sunk surface" },
+  { token: "--color-ink-soft", name: "Secondary on ink" },
+  { token: "--color-line", name: "Hairline on paper" },
+  { token: "--color-line-dark", name: "Hairline on ink" },
+] as const;
+
+const typeScale = [
+  { class: "text-display", label: "Display", sample: "Growth systems" },
+  { class: "text-h1", label: "H1", sample: "Growth systems" },
+  { class: "text-h2", label: "H2", sample: "Selected work" },
+  { class: "text-h3", label: "H3", sample: "Diagnose" },
+  { class: "text-metric", label: "Metric", sample: "12" },
+  { class: "text-lead", label: "Lead", sample: "Performance marketing, websites, tracking." },
+  { class: "text-body", label: "Body", sample: "I rebuilt the tracking so the CRM got clean leads." },
+  { class: "text-small", label: "Small", sample: "Row details, nav" },
+  { class: "text-caption", label: "Caption", sample: "Cost per lead" },
+] as const;
+
+const spacing = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
+
+const radii = [
+  { token: "--radius-none", label: "none" },
+  { token: "--radius-sm", label: "sm · 4px" },
+  { token: "--radius-md", label: "md · 12px" },
+  { token: "--radius-lg", label: "lg · 20px" },
+  { token: "--radius-pill", label: "pill · 999px" },
+] as const;
+
+const filterChips = [
+  { label: "All", value: "all" },
+  { label: "Performance", value: "performance" },
+  { label: "Architecture & CRM", value: "architecture-crm" },
+  { label: "Build", value: "build" },
+  { label: "Content systems", value: "content-systems" },
+];
+---
+
+<BaseLayout title="Styleguide — dev only" description="Internal reference, not linked in navigation.">
+  <Section id="styleguide-intro">
+    <Container>
+      <h1 class="text-h1">Styleguide</h1>
+      <p class="text-lead" style="margin-top: var(--space-4); color: var(--color-olive)">
+        Dev-only reference. Redirects to /404 in production. Check every page against
+        this before calling a phase done — see DESIGN-SYSTEM.md §12 for the "do not" list.
+      </p>
+    </Container>
+  </Section>
+
+  <Section id="styleguide-color" background="paper-2">
+    <Container>
+      <h2 class="text-h2 hairline-top" style="padding-top: var(--space-4)">Color</h2>
+      <div class="swatch-grid">
+        {
+          colors.map((c) => (
+            <div class="swatch">
+              <div class="swatch-fill" style={`background:var(${c.token}); border: 1px solid var(--color-line)`} />
+              <p class="text-caption" style="margin-top: var(--space-2); color: var(--color-olive)">{c.token}</p>
+              <p class="text-small">{c.name}</p>
+            </div>
+          ))
+        }
+      </div>
+      <p class="text-small" style="margin-top: var(--space-6); color: var(--color-olive)">
+        Never: bone text on paper, olive text on ink. See DESIGN-SYSTEM.md §3 for the
+        approved pairings table.
+      </p>
+    </Container>
+  </Section>
+
+  <Section id="styleguide-type">
+    <Container>
+      <h2 class="text-h2 hairline-top" style="padding-top: var(--space-4)">Type scale</h2>
+      <div style="margin-top: var(--space-6); display: flex; flex-direction: column; gap: var(--space-6)">
+        {
+          typeScale.map((t) => (
+            <div class="hairline-bottom" style="padding-bottom: var(--space-5)">
+              <p class="text-caption" style={`color: var(--color-olive)`}>{t.label} · .{t.class}</p>
+              <p class={t.class} style="margin-top: var(--space-2)">{t.sample}</p>
+            </div>
+          ))
+        }
+      </div>
+    </Container>
+  </Section>
+
+  <Section id="styleguide-space" background="paper-2">
+    <Container>
+      <h2 class="text-h2 hairline-top" style="padding-top: var(--space-4)">Spacing scale</h2>
+      <div style="margin-top: var(--space-6); display: flex; flex-direction: column; gap: var(--space-3)">
+        {
+          spacing.map((s) => (
+            <div style="display:flex; align-items:center; gap: var(--space-4)">
+              <span class="text-caption" style="width: 72px; color: var(--color-olive)">--space-{s}</span>
+              <span style={`display:block; height:12px; width:var(--space-${s}); background:var(--color-ink)`} />
+            </div>
+          ))
+        }
+      </div>
+    </Container>
+  </Section>
+
+  <Section id="styleguide-radius">
+    <Container>
+      <h2 class="text-h2 hairline-top" style="padding-top: var(--space-4)">Radius</h2>
+      <div class="swatch-grid" style="margin-top: var(--space-6)">
+        {
+          radii.map((r) => (
+            <div class="swatch">
+              <div
+                class="swatch-fill"
+                style={`background:var(--color-bone); border-radius:var(${r.token}); border: 1px solid var(--color-line)`}
+              />
+              <p class="text-small" style="margin-top: var(--space-2)">{r.label}</p>
+            </div>
+          ))
+        }
+      </div>
+    </Container>
+  </Section>
+
+  <Section id="styleguide-components" background="paper-2">
+    <Container>
+      <h2 class="text-h2 hairline-top" style="padding-top: var(--space-4)">Components</h2>
+
+      <div style="margin-top: var(--space-7)">
+        <p class="text-caption" style="color: var(--color-olive); margin-bottom: var(--space-4)">Button — primary / text, on paper</p>
+        <div style="display:flex; gap: var(--space-4); flex-wrap: wrap; align-items:center">
+          <Button variant="primary">Book a call</Button>
+          <Button variant="text">Read case study</Button>
+          <Button variant="text" external href="https://example.com">LinkedIn</Button>
+        </div>
+      </div>
+
+      <div style="margin-top: var(--space-8); background:var(--color-ink); padding: var(--space-6); border-radius: var(--radius-lg)" data-surface="ink">
+        <p class="text-caption" style="color: var(--color-ink-soft); margin-bottom: var(--space-4)">Button — on ink</p>
+        <div style="display:flex; gap: var(--space-4); flex-wrap: wrap; align-items:center">
+          <Button variant="primary-ink">Download CV</Button>
+          <Button variant="text-ink">Email</Button>
+        </div>
+      </div>
+
+      <div style="margin-top: var(--space-8)">
+        <p class="text-caption" style="color: var(--color-olive); margin-bottom: var(--space-4)">Tag</p>
+        <div style="display:flex; gap: var(--space-3); flex-wrap: wrap">
+          <Tag>Performance</Tag>
+          <Tag>Architecture & CRM</Tag>
+          <Tag>Build</Tag>
+        </div>
+      </div>
+
+      <div style="margin-top: var(--space-8)">
+        <p class="text-caption" style="color: var(--color-olive); margin-bottom: var(--space-4)">Filter chips</p>
+        <FilterChips chips={filterChips} />
+      </div>
+
+      <div style="margin-top: var(--space-8)">
+        <p class="text-caption" style="color: var(--color-olive); margin-bottom: var(--space-4)">Metric</p>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-5)">
+          <Metric value="8+" label="Brands handled" />
+          <Metric value="Rp5B+" label="Ad spend managed" />
+          <Metric value="40K+" label="Leads generated" />
+          <Metric value="12" label="Systems shipped" />
+        </div>
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>
+
+<style>
+  .swatch-grid {
+    margin-top: var(--space-6);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-5);
+  }
+
+  .swatch-fill {
+    height: 72px;
+  }
+</style>

@@ -1,0 +1,189 @@
+@import "tailwindcss";
+@import "./tokens.css";
+@import "@fontsource-variable/hanken-grotesk";
+
+/* Map design tokens into the Tailwind theme so utilities like bg-ink,
+   text-olive, rounded-pill are generated from the tokens above — never
+   from new literal values. */
+@theme inline {
+  --color-ink: var(--color-ink);
+  --color-olive: var(--color-olive);
+  --color-bone: var(--color-bone);
+  --color-paper: var(--color-paper);
+  --color-paper-2: var(--color-paper-2);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-line: var(--color-line);
+  --color-line-dark: var(--color-line-dark);
+  --color-wordmark: var(--color-wordmark);
+
+  --font-sans: var(--font-sans);
+
+  --radius-none: var(--radius-none);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-pill: var(--radius-pill);
+}
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    background: var(--color-paper);
+    color-scheme: light;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    color: var(--color-ink);
+    background: var(--color-paper);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  img, svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Numbers: metrics, years, step numbers */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* Visible focus states (DESIGN-SYSTEM.md §7.1) */
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+
+  .on-ink :focus-visible,
+  [data-surface="ink"] :focus-visible {
+    outline-color: var(--color-bone);
+  }
+
+  .skip-link {
+    position: absolute;
+    left: var(--space-4);
+    top: -100px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-sm);
+    z-index: 100;
+    transition: top var(--dur-fast) var(--ease-out);
+  }
+
+  .skip-link:focus {
+    top: var(--space-4);
+  }
+}
+
+@layer components {
+  /* Layout */
+  .container {
+    width: 100%;
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: var(--container-pad);
+  }
+
+  .section-padding {
+    padding-block: var(--space-section);
+  }
+
+  /* Type scale presets (DESIGN-SYSTEM.md §4.2) — use these instead of
+     composing font-size/weight/tracking utilities by hand. */
+  .text-display {
+    font-size: var(--text-display);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+  }
+
+  .text-h1 {
+    font-size: var(--text-h1);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .text-h2 {
+    font-size: var(--text-h2);
+    font-weight: 350;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .text-h3 {
+    font-size: var(--text-h3);
+    font-weight: 450;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .text-metric {
+    font-size: var(--text-metric);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .text-lead {
+    font-size: var(--text-lead);
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+  }
+
+  .text-body {
+    font-size: var(--text-body);
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  .text-small {
+    font-size: var(--text-small);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .text-caption {
+    font-size: var(--text-caption);
+    font-weight: 450;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+  }
+
+  .prose-measure {
+    max-width: 62ch;
+  }
+
+  /* Hairline (DESIGN-SYSTEM.md §5.4 — no shadows, hairlines only) */
+  .hairline-top {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .hairline-bottom {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  [data-surface="ink"] .hairline-top {
+    border-top-color: var(--color-line-dark);
+  }
+
+  [data-surface="ink"] .hairline-bottom {
+    border-bottom-color: var(--color-line-dark);
+  }
+}
