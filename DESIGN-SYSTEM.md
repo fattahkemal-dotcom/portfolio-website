@@ -140,30 +140,63 @@ No monospace font. No serif. No italic accents.
 
 ### 6.1 Hero
 
+**Revision (2026-10-04): the hero carries a portrait.** Earlier drafts kept the
+hero text-only so the Growth System Map was the single bold element. Reviewing
+against a reference layout (large light display word + full-bleed portrait +
+rotated side label + top stat numbers + scroll cue) showed that device works
+well here too, as long as the Map keeps its own uncluttered moment immediately
+below rather than competing inside the same row. So: hero now has a portrait,
+and the Map becomes the hero section's closing beat, not a line squeezed in
+next to a photo.
+
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │ Kemal                     Work  About  Approach  Contact  [Book a call] │
 ├──────────────────────────────────────────────────────────────┤
-│ Senior Growth Specialist                                     │
-│                                                              │
-│ I build growth systems, from the                             │   ← display, cols 1–10
-│ first ad click to the CRM that                               │
-│ closes the deal.                                             │
-│                                                              │
-│ Performance marketing, websites, tracking...   [Book a call] │   ← lead cols 1–6, CTAs cols 8–12
-│                                                 See selected work │
-│                                                              │
-│ ○────────○────────○────────○────────○                        │   ← SYSTEM MAP (full width)
-│ Ads      Landing  Tracking CRM      Automation               │
-│ ...      page     ...      ...      ...                      │
-│                                                              │
-│ ───────────  ───────────  ───────────  ───────────           │   ← hairline above each metric
-│ 8+           Rp5B+        40K+         12                    │
-│ brands       ad spend     leads        systems shipped       │
+│ │                                                  ┌──────────────┐│
+│S│ 8+            55+                                │              ││
+│e│ Brands        Systems                            │              ││
+│n│ handled       shipped                            │   portrait   ││
+│i│                                                   │  (grayscale, ││
+│o│ I build growth systems, from the                 │  bone-mult.  ││
+│r│ first ad click to the CRM that                   │  overlay,    ││
+│ │ closes the deal.                                 │  bleeds to   ││
+│G│                                                   │  the right   ││
+│r│ Performance marketing, websites,    [Book a call] │  viewport    ││
+│o│ tracking, CRM and automation.       See selected  │  edge)       ││
+│w│                                      work         │              ││
+│t│                                                   │              ││
+│h│ 2026                               Scroll down ↓  └──────────────┘│
 └──────────────────────────────────────────────────────────────┘
+────────────────────────────────────────────────────────────────  (hairline)
+  ○────────○────────○────────○────────○                              ← SYSTEM MAP, its own row
+  Ads      Landing  Tracking CRM      Automation
+  ...      page     ...      ...      ...
 ```
 
-Hero height: content-driven, min `90svh` on desktop. No hero photo (the portrait lives in About).
+- **Rotated side label** (desktop only): role line (`Senior Growth`, wrapped),
+  `text-caption`, olive, rotated -90°, anchored to the far-left edge of the
+  container, reading bottom-to-top. Same device as the small stat/role labels
+  in editorial portfolio references — informational, not decorative, so it's
+  allowed under §12.
+- **Top stat row**: 2 metrics (not the full impact row — that stays with the
+  System Map below), same `Metric` component, smaller context-setting numbers.
+- **Portrait**: real photo of Kemal, same treatment as the About portrait
+  (§9: grayscale + bone multiply overlay), but `radius-none` and allowed to
+  bleed to the right edge of the viewport (breaks out of `.container`) since
+  it's anchored to the frame rather than mounted inside it. Until a real photo
+  exists, use the flat-`bone`-block placeholder from §9.
+- **Year + scroll cue**: bottom-left `2026` in `text-caption` olive (tabular
+  nums), bottom-right (under the CTAs) `Scroll down ↓` in `text-small` olive.
+  This is the one place a bare `↓` is allowed outside a button, since it's a
+  static scroll affordance, not a link label.
+- The Growth System Map (§8) sits directly below the hero content as its own
+  full-width row with a hairline above it — still inside the `#top` section
+  (hero stays one of the seven sections), still the site's one animated
+  element, just no longer sharing a row with CTAs or a photo.
+
+Hero height: content-driven, min `90svh` on desktop (text column + portrait),
+System Map row adds its own height below that.
 
 ### 6.2 Section header
 
@@ -291,6 +324,7 @@ Runs once. Under `prefers-reduced-motion: reduce`, render the final state immedi
 ## 9. Imagery
 
 - **Portrait (About):** real photo of Kemal, cropped 4:5, `radius-md`. Treatment: `filter: grayscale(1) contrast(1.05)` plus an overlay of `bone` with `mix-blend-mode: multiply` at 30% opacity, so the photo sits inside the palette.
+- **Portrait (Hero):** same photo treatment as About (grayscale + bone multiply overlay), but `radius-none` and allowed to bleed to the right edge of the viewport — see §6.1. Taller crop (~3:4) than the About portrait so it reads as a frame edge, not a mounted photo.
 - **Project covers:** real screenshots of the work (landing pages, dashboards, CRM pipelines, ad creatives) shown on a `bone` background with generous padding inside the frame, like a print mount. Never stock photos, never AI-generated objects or abstract 3D shapes.
 - **Placeholders** (until real assets exist): flat `bone` block with the project name in `caption` olive, bottom-left.
 - Images never have shadows, borders, or tilt.

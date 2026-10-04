@@ -1,0 +1,221 @@
+---
+// DESIGN-SYSTEM.md §6.1 (revised 2026-10-04 — hero now carries a portrait).
+import Container from "../layout/Container.astro";
+import Button from "../ui/Button.astro";
+import Metric from "../ui/Metric.astro";
+import SystemMap from "../system/SystemMap.astro";
+import { hero, systemMapNodes } from "../../data/site";
+---
+
+<section id="top" class="hero" data-surface="paper">
+  <div class="hero-edge-label" aria-hidden="true">
+    <span>{hero.rotatedLabel}</span>
+  </div>
+
+  <Container class="hero-grid">
+    <div class="hero-text">
+      <div class="hero-top-stats">
+        {hero.topStats.map((stat) => <Metric value={stat.value} label={stat.label} />)}
+      </div>
+
+      <h1 class="text-display hero-headline">{hero.headline}</h1>
+
+      <div class="hero-lead-row">
+        <p class="text-lead hero-lead">{hero.lead}</p>
+        <div class="hero-ctas">
+          <Button variant="primary" href={hero.ctaPrimary.href}>{hero.ctaPrimary.label}</Button>
+          <Button variant="text" href={hero.ctaSecondary.href}>{hero.ctaSecondary.label}</Button>
+        </div>
+      </div>
+
+      <div class="hero-footer-row">
+        <span class="text-caption tabular-nums hero-year">{hero.year}</span>
+        <span class="text-small hero-scroll-cue">{hero.scrollCue}</span>
+      </div>
+    </div>
+
+    <div class="hero-portrait" aria-hidden="true">
+      <div class="hero-portrait-placeholder">
+        <span class="text-caption">Kemal — portrait placeholder</span>
+      </div>
+    </div>
+  </Container>
+
+  <div class="hero-map hairline-top">
+    <Container>
+      <SystemMap nodes={systemMapNodes} />
+      <div class="hero-impact-row">
+        {hero.impactStats.map((stat) => <Metric value={stat.value} label={stat.label} />)}
+      </div>
+    </Container>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    background: var(--color-paper);
+    padding-top: var(--space-8);
+    overflow: hidden;
+  }
+
+  .hero-edge-label {
+    display: none;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-7);
+    align-items: center;
+    min-height: 60svh;
+  }
+
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .hero-top-stats {
+    display: flex;
+    gap: var(--space-7);
+    max-width: 320px;
+  }
+
+  .hero-headline {
+    max-width: 16ch;
+  }
+
+  .hero-lead-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  .hero-lead {
+    max-width: 48ch;
+    color: var(--color-olive);
+  }
+
+  .hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-5);
+  }
+
+  .hero-footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--color-olive);
+  }
+
+  .hero-portrait {
+    width: 100%;
+  }
+
+  .hero-portrait-placeholder {
+    aspect-ratio: 3 / 4;
+    width: 100%;
+    background: var(--color-bone);
+    display: flex;
+    align-items: flex-end;
+    padding: var(--space-4);
+  }
+
+  .hero-portrait-placeholder span {
+    color: var(--color-olive);
+  }
+
+  .hero-map {
+    margin-top: var(--space-8);
+  }
+
+  .hero-map :global(.system-map) {
+    padding-block: var(--space-7);
+  }
+
+  .hero-impact-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
+    padding-bottom: var(--space-8);
+  }
+
+  @media (min-width: 768px) {
+    .hero-impact-row {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero {
+      padding-left: var(--space-7);
+    }
+
+    .hero-edge-label {
+      display: flex;
+      position: absolute;
+      left: var(--space-3);
+      top: var(--space-8);
+      bottom: 0;
+      align-items: flex-start;
+    }
+
+    .hero-edge-label span {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-size: var(--text-caption);
+      font-weight: 450;
+      letter-spacing: 0.01em;
+      color: var(--color-olive);
+    }
+
+    .hero-grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--space-8);
+    }
+
+    .hero-headline {
+      max-width: 14ch;
+    }
+
+    .hero-lead-row {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-6);
+    }
+
+    .hero-lead {
+      max-width: 36ch;
+    }
+
+    .hero-ctas {
+      flex-direction: column;
+      align-items: flex-start;
+      flex-shrink: 0;
+    }
+
+    .hero-portrait {
+      position: relative;
+      align-self: stretch;
+      margin-right: calc(-1 * var(--container-pad));
+      width: calc(100% + var(--container-pad));
+    }
+
+    .hero-portrait-placeholder {
+      height: 100%;
+      aspect-ratio: auto;
+    }
+  }
+
+  @media (min-width: 1320px) {
+    .hero-portrait {
+      margin-right: calc(-50vw + var(--container-max) / 2);
+      width: calc(100% + 50vw - var(--container-max) / 2);
+    }
+  }
+</style>

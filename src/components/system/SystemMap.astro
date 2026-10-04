@@ -1,0 +1,175 @@
+---
+// DESIGN-SYSTEM.md §8 — the one signature, animated element on the site.
+// Desktop: 5 nodes on one horizontal line. Mobile (<768px): vertical line,
+// nodes stacked. `static` renders the finished state with no animation
+// (for case-study reuse later; prefers-reduced-motion always forces this too).
+interface Node {
+  label: string;
+  note?: string;
+  href?: string;
+}
+
+interface Props {
+  nodes: readonly Node[];
+  static?: boolean;
+}
+
+const { nodes, static: isStatic = false } = Astro.props;
+---
+
+<div class="system-map" data-static={isStatic ? "true" : "false"}>
+  <div class="map-line" aria-hidden="true"></div>
+  <ol class="map-nodes">
+    {
+      nodes.map((node, i) => (
+        <li class="map-node" style={`--i:${i}`}>
+          {node.href ? (
+            <a class="node-dot" href={node.href} aria-label={`${node.label} — see ${node.label} case study`} />
+          ) : (
+            <span class="node-dot" aria-hidden="true" />
+          )}
+          <p class="node-label">{node.label}</p>
+          {node.note && <p class="node-note">{node.note}</p>}
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<style>
+  .system-map {
+    position: relative;
+    padding-block: var(--space-6);
+  }
+
+  .map-line {
+    position: absolute;
+    top: 7px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--color-olive);
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+
+  .system-map[data-playing="true"] .map-line {
+    transform: scaleX(0);
+    animation: draw-line-x var(--dur-draw) var(--ease-out) forwards;
+  }
+
+  @keyframes draw-line-x {
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .map-nodes {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    list-style: none;
+  }
+
+  .map-node {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    max-width: 200px;
+    opacity: 1;
+  }
+
+  .system-map[data-playing="true"] .map-node {
+    opacity: 0;
+    animation: node-in var(--dur-fast) var(--ease-out) forwards;
+    animation-delay: calc(var(--i) * (var(--dur-draw) / 4));
+  }
+
+  @keyframes node-in {
+    to {
+      opacity: 1;
+    }
+  }
+
+  .node-dot {
+    display: block;
+    width: 14px;
+    height: 14px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    border: 1px solid var(--color-ink);
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  a.node-dot:hover,
+  a.node-dot:focus-visible {
+    background: var(--color-ink);
+  }
+
+  .node-label {
+    font-size: var(--text-body);
+    font-weight: 450;
+    color: var(--color-ink);
+  }
+
+  .node-note {
+    font-size: var(--text-caption);
+    color: var(--color-olive);
+    max-width: 22ch;
+  }
+
+  @media (max-width: 767px) {
+    .map-line {
+      top: 0;
+      left: 7px;
+      width: 1px;
+      height: 100%;
+      transform: scaleY(1);
+      transform-origin: top center;
+    }
+
+    .system-map[data-playing="true"] .map-line {
+      transform: scaleY(0);
+      animation-name: draw-line-y;
+    }
+
+    @keyframes draw-line-y {
+      to {
+        transform: scaleY(1);
+      }
+    }
+
+    .map-nodes {
+      flex-direction: column;
+      gap: var(--space-6);
+      padding-left: var(--space-6);
+    }
+
+    .map-node {
+      max-width: none;
+      position: relative;
+      padding-left: var(--space-5);
+    }
+
+    .node-dot {
+      position: absolute;
+      left: 0;
+      top: 2px;
+    }
+  }
+</style>
+
+<script>
+  const maps = document.querySelectorAll<HTMLElement>(".system-map");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  maps.forEach((map) => {
+    if (map.dataset.static === "true" || reduceMotion) {
+      return;
+    }
+    requestAnimationFrame(() => {
+      map.setAttribute("data-playing", "true");
+    });
+  });
+</script>

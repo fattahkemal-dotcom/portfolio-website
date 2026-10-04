@@ -58,13 +58,17 @@ Seven sections, in this order. Keep each section to the content listed; do not a
 ### 4.1 Hero — `#top`
 **Job:** say who Kemal is and what makes him different, in one screen.
 
-Content:
+Content (see DESIGN-SYSTEM.md §6.1 for the full layout — revised 2026-10-04 to add a hero portrait):
+- Rotated side label (desktop only): role line, e.g. `Senior Growth`.
+- Top stat row: 2 metrics (placeholders), same `Metric` component used elsewhere.
 - Name: `Kemal`
 - Role line: `Senior Growth Specialist`
 - Headline (placeholder, editable): `I build growth systems, from the first ad click to the CRM that closes the deal.`
 - Supporting line: `Performance marketing, websites, tracking, CRM and automation, built by one person who knows how they connect.`
 - Two CTAs: primary `Book a call`, secondary `See selected work`.
-- **Signature element: the Growth System Map** (spec in DESIGN-SYSTEM.md §8). A horizontal chain of 5 nodes: `Ads → Landing page → Tracking → CRM → Automation`. Each node links to the project that best demonstrates it. On mobile it becomes a vertical chain.
+- Portrait: real photo of Kemal (placeholder block until supplied), grayscale + bone overlay per DESIGN-SYSTEM.md §9, bleeding to the right viewport edge.
+- Year (`2026`) bottom-left, `Scroll down ↓` cue bottom-right.
+- **Signature element: the Growth System Map** (spec in DESIGN-SYSTEM.md §8), as its own full-width row directly below the hero content, with a hairline above it. A horizontal chain of 5 nodes: `Ads → Landing page → Tracking → CRM → Automation`. Each node links to the project that best demonstrates it. On mobile it becomes a vertical chain.
 - Impact row under the map: 3–4 metrics (placeholders: `[X]+ brands handled`, `Rp[X]B+ ad spend managed`, `[X]K+ leads generated`, `[X] systems shipped`). Kemal will fill real numbers.
 
 ### 4.2 Selected Work — `#work`

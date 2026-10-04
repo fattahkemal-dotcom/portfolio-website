@@ -25,3 +25,35 @@ export const contact = {
 
 export const footerNote =
   "Designed and built with Claude Code. Deployed on Vercel."; // [placeholder — confirm host]
+
+// Hero — DESIGN-SYSTEM.md §6.1 (dummy copy; Kemal to replace all of it)
+export const hero = {
+  rotatedLabel: "Senior Growth",
+  topStats: [
+    { value: "8+", label: "Brands handled" },
+    { value: "55+", label: "Systems shipped" },
+  ],
+  headline:
+    "I build growth systems, from the first ad click to the CRM that closes the deal.",
+  lead: "Performance marketing, websites, tracking, CRM and automation, built by one person who knows how they connect.",
+  ctaPrimary: { label: "Book a call", href: "/#contact" },
+  ctaSecondary: { label: "See selected work", href: "/#work" },
+  year: "2026",
+  scrollCue: "Scroll down ↓",
+  impactStats: [
+    { value: "8+", label: "Brands handled" },
+    { value: "Rp5B+", label: "Ad spend managed" },
+    { value: "40K+", label: "Leads generated" },
+    { value: "12", label: "Systems shipped" },
+  ],
+};
+
+// Growth System Map (DESIGN-SYSTEM.md §8) — hero's fixed 5 nodes.
+// `href` left undefined until Phase 3 case studies exist to link to.
+export const systemMapNodes = [
+  { label: "Ads", note: "Meta, Google, TikTok" },
+  { label: "Landing page", note: "Built in-house" },
+  { label: "Tracking", note: "GA4, GTM, CAPI" },
+  { label: "CRM", note: "HubSpot" },
+  { label: "Automation", note: "Cekat, Mekari" },
+] as const;
