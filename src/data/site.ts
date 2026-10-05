@@ -33,9 +33,8 @@ export const hero = {
     { value: "8+", label: "Brands handled" },
     { value: "55+", label: "Systems shipped" },
   ],
-  headline:
-    "I build growth systems, from the first ad click to the CRM that closes the deal.",
-  lead: "Performance marketing, websites, tracking, CRM and automation, built by one person who knows how they connect.",
+  headline: "Hello",
+  lead: "I'm Kemal a Senior Growth Performance",
   ctaPrimary: { label: "Book a call", href: "/#contact" },
   ctaSecondary: { label: "See selected work", href: "/#work" },
   year: "2026",

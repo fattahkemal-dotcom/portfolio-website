@@ -34,10 +34,17 @@ import { hero, systemMapNodes } from "../../data/site";
       </div>
     </div>
 
-    <div class="hero-portrait" aria-hidden="true">
-      <div class="hero-portrait-placeholder">
-        <span class="text-caption">Kemal — portrait placeholder</span>
-      </div>
+    <div class="hero-portrait">
+      <img
+        class="hero-portrait-img"
+        src="/images/foto-kemal.svg"
+        alt="Portrait of Kemal"
+        width="810"
+        height="810"
+        loading="eager"
+        decoding="async"
+      />
+      <div class="hero-portrait-overlay" aria-hidden="true"></div>
     </div>
   </Container>
 
@@ -113,20 +120,27 @@ import { hero, systemMapNodes } from "../../data/site";
   }
 
   .hero-portrait {
+    position: relative;
     width: 100%;
-  }
-
-  .hero-portrait-placeholder {
     aspect-ratio: 3 / 4;
-    width: 100%;
     background: var(--color-bone);
-    display: flex;
-    align-items: flex-end;
-    padding: var(--space-4);
+    overflow: hidden;
   }
 
-  .hero-portrait-placeholder span {
-    color: var(--color-olive);
+  .hero-portrait-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    filter: grayscale(1) contrast(1.05);
+  }
+
+  .hero-portrait-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--color-bone);
+    mix-blend-mode: multiply;
+    opacity: 0.3;
   }
 
   .hero-map {
@@ -200,15 +214,11 @@ import { hero, systemMapNodes } from "../../data/site";
     }
 
     .hero-portrait {
-      position: relative;
       align-self: stretch;
-      margin-right: calc(-1 * var(--container-pad));
-      width: calc(100% + var(--container-pad));
-    }
-
-    .hero-portrait-placeholder {
       height: 100%;
       aspect-ratio: auto;
+      margin-right: calc(-1 * var(--container-pad));
+      width: calc(100% + var(--container-pad));
     }
   }
 
