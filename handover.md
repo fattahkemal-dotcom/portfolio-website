@@ -1,6 +1,6 @@
 # Handover — Kemal Portfolio Website
 
-**Last updated:** 2026-10-05 — Hero spec revised (CTAs removed, portrait becomes an alpha cutout). Spec only; code not yet changed.
+**Last updated:** 2026-10-05 — Hero spec implemented: CTAs removed, portrait is now a real alpha cutout, full color (client overrode the toned-filter design-director decision mid-build).
 
 **State:**
 - Project is an Astro + TypeScript + Tailwind v4 site, per PRD.md and DESIGN-SYSTEM.md (both at repo root — DESIGN-SYSTEM.md is the source of truth for all visual decisions).
@@ -10,20 +10,19 @@
   - `src/components/system/SystemMap.astro` — the signature animated element: CSS `scale()` line-draw + staggered node fade-in, respects `prefers-reduced-motion`, vertical layout under 768px, `static` prop for future case-study reuse. **Working well, out of scope for the current hero revision.**
   - `src/data/site.ts` — hero copy + system-map node data, all placeholder content.
   - `src/pages/index.astro` renders `<Hero />`.
-- **2026-10-05 — hero spec revised, implementation still pending.** Client feedback: (1) get the hero closer to the reference, (2) use the portrait with no background, (3) drop both hero CTA buttons. DESIGN-SYSTEM.md §6.1 was rewritten and §5.3 / §7.1 / §9 / §10 / §12 / §13 touched; PRD.md §4.1 / §7 / §8 updated. **No `src/` file has been changed yet — the built hero still shows the old CTAs, the bone box and `/images/foto-kemal.svg`.**
-- Real portrait asset now in repo: `src/assets/images/kemal-portrait.png`, 1440×2560, chest-up, verified true alpha (0 outside subject, 255 on subject).
+- **2026-10-05 — hero spec implemented.** Client feedback that drove it: (1) get the hero closer to the reference, (2) use the portrait with no background, (3) drop both hero CTA buttons. Mid-build, a second round of client feedback arrived and was incorporated before commit: (4) no grayscale/tone filter at all — photo renders full natural color, `--hero-cutout-filter` is no longer applied anywhere (token still defined in `tokens.css` for history only). DESIGN-SYSTEM.md §6.1 "Tone" subsection now documents this override explicitly (kept the old filter-chain spec text below it, marked superseded, for context).
+  - `src/components/sections/Hero.astro`: `.hero-lead-row`/`.hero-ctas`/`Button` import/`.hero-portrait-overlay` all removed; portrait is now an `astro:assets` `<Image>` import of `src/assets/images/kemal-portrait.png` (1440×2560, true alpha), no filter, no backdrop; new `.hero-rule` vertical hairline between lead and year/scroll row; `.hero-grid` 8fr/4fr at ≥1024px; cutout sized via `--hero-cutout-h` / `-md` / `-sm`, `align-self: end` flush to the hairline above the System Map (torso-cut is intentional), bled right past the viewport edge via negative `margin-right` (24px extra at ≥1024px / 1320px breakpoints, 16px below 1024px).
+  - `src/data/site.ts`: `hero.ctaPrimary` / `hero.ctaSecondary` removed (nothing else referenced them).
+  - `src/styles/tokens.css`: added `--hero-cutout-h`, `-md`, `-sm`, `--hero-cutout-filter` (unused now), `--hero-rule-h`.
+  - `public/images/foto-kemal.svg` (3.9MB source SVG) deleted — no longer referenced anywhere.
+  - Fixed a layout bug along the way: `.hero-text` needed explicit `align-self: stretch` and `.hero-footer-row` needed `margin-top: auto` to actually push the year/scroll row down to the row bottom (flush with the image and the hairline) on desktop — without that the footer row floated mid-column instead of sitting on the hairline.
+  - Known minor rough edge, not fixed: on mobile (<768px) there's a visible gap between the footer row and the portrait image, caused by `.hero-grid`'s `min-height: 60svh` interacting with the single-column stacked layout (pre-existing behavior, not introduced by this revision — `align-content: start` was added to reduce it but didn't fully resolve it). Low priority, didn't chase further given it's not part of the explicit §6.1 pixel spec (which is written for the ≥1024px two-column case).
+- Real portrait asset in repo: `src/assets/images/kemal-portrait.png`, 1440×2560, chest-up, verified true alpha (0 outside subject, 255 on subject). Build correctly emits it as WebP via `astro:assets` (alpha preserved).
 
 **Next steps:**
-1. **Implement the revised hero** per DESIGN-SYSTEM.md §6.1 (the spec is written to be implementable without further design decisions):
-   - Delete `.hero-lead-row`, `.hero-ctas`, the `Button` import, and `hero.ctaPrimary` / `hero.ctaSecondary` from `src/data/site.ts`.
-   - Add the short vertical hairline rule between the lead line and the year/scroll row.
-   - Replace the portrait: `astro:assets` import of `kemal-portrait.png`, no bone background, **delete `.hero-portrait-overlay`** (a multiply layer over a transparent PNG repaints the bone rectangle — this is the main trap), apply `--hero-cutout-filter` to the `<img>`.
-   - `align-self: end` so the figure's torso is cut by the hairline above the System Map; height-driven sizing via `--hero-cutout-h*`; right edge 24px past the viewport edge; verify by eye that the face/glasses/near shoulder are never cropped.
-   - Add the new hero tokens to `src/styles/tokens.css` (§13).
-   - Grid goes 7fr/5fr → 8fr/4fr at ≥1024px.
-2. Verify the hero's mobile layout (<1024px: rotated label hides, cutout stacks below text, right-aligned not centered). Use real DevTools device emulation — window-resize screenshots were unreliable last session.
-3. Build the remaining 6 home sections (Selected Work, About & Capabilities, Approach, Stack, Experience, Contact) — placeholder data until Kemal supplies real copy and numbers.
-4. When real case studies exist (Phase 3), wire `systemMapNodes[].href` to real project slugs.
+1. Optional polish: investigate the mobile `.hero-grid` min-height/gap quirk above if it bothers review (not spec-required).
+2. Build the remaining 6 home sections (Selected Work, About & Capabilities, Approach, Stack, Experience, Contact) — placeholder data until Kemal supplies real copy and numbers.
+3. When real case studies exist (Phase 3), wire `systemMapNodes[].href` to real project slugs.
 
 **Decisions / gotchas:**
 - **Hero CTAs are gone on purpose.** Both were duplicates of nav affordances (`Book a call` button, `Work` link). `See selected work` is not relocated: making `Scroll down ↓` a link would put an arrow on a link label, which §12 forbids. Tracking consequence (documented in PRD §7): `cta_click` never fires with `cta_location: "hero"` — not a bug.

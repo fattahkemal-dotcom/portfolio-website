@@ -257,7 +257,17 @@ hero — a real asset exists.
 `--radius-none`, no shadow (§5.4). The figure stands directly on `paper`. The
 element must not be given `overflow: hidden` — there is nothing to clip.
 
-*Tone.* Apply a single alpha-safe filter chain to the `<img>` itself:
+*Tone.* **2026-10-05 client override — supersedes the filter-chain decision
+below.** The client rejected the toned treatment outright: the hero photo
+renders in its natural full color, with **no `filter` property on the `<img>`
+at all**. `--hero-cutout-filter` is no longer applied anywhere; the token stays
+defined in `tokens.css` for now only as a historical record, not referenced by
+any component. Do not reintroduce `grayscale`/`sepia`/any tint on this image
+without a new client sign-off.
+
+*Original design-director tone spec (no longer in effect, kept for context).*
+The earlier instruction was to apply a single alpha-safe filter chain to the
+`<img>` itself:
 
 ```css
 filter: grayscale(1) contrast(1.04) sepia(0.22) saturate(1.15) brightness(0.98);

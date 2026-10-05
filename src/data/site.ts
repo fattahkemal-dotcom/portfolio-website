@@ -35,8 +35,6 @@ export const hero = {
   ],
   headline: "Hello",
   lead: "I'm Kemal a Senior Growth Performance",
-  ctaPrimary: { label: "Book a call", href: "/#contact" },
-  ctaSecondary: { label: "See selected work", href: "/#work" },
   year: "2026",
   scrollCue: "Scroll down ↓",
   impactStats: [
