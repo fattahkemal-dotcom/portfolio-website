@@ -125,9 +125,9 @@ No monospace font. No serif. No italic accents.
 
 | Token | Value | Use |
 |---|---|---|
-| `--radius-none` | 0 | Rows, lists, pillars, hairline structures |
+| `--radius-none` | 0 | Rows, lists, pillars, hairline structures, **hero cutout (no frame at all)** |
 | `--radius-sm` | 4px | Row thumbnails, small images |
-| `--radius-md` | 12px | Lead project media, portrait |
+| `--radius-md` | 12px | Lead project media, About portrait |
 | `--radius-lg` | 20px | Contact panel |
 | `--radius-pill` | 999px | Buttons, tags, filter chips |
 
@@ -140,8 +140,10 @@ No monospace font. No serif. No italic accents.
 
 ### 6.1 Hero
 
-**Revision (2026-10-04): the hero carries a portrait.** Earlier drafts kept the
-hero text-only so the Growth System Map was the single bold element. Reviewing
+**Revision history.**
+
+*2026-10-04 — the hero carries a portrait.* Earlier drafts kept the hero
+text-only so the Growth System Map was the single bold element. Reviewing
 against a reference layout (large light display word + full-bleed portrait +
 rotated side label + top stat numbers + scroll cue) showed that device works
 well here too, as long as the Map keeps its own uncluttered moment immediately
@@ -149,24 +151,42 @@ below rather than competing inside the same row. So: hero now has a portrait,
 and the Map becomes the hero section's closing beat, not a line squeezed in
 next to a photo.
 
+*2026-10-05 — CTAs removed from the hero; the portrait becomes a free-standing
+die-cut figure.* Two changes, both client-directed, both pushing the hero closer
+to the reference layout:
+1. **No CTA buttons in the hero body.** The reference hero has no button inside
+   the content block at all — the only `Book a call` lives in the nav bar. Both
+   hero CTAs were duplicates of affordances the nav already carries sitewide
+   (`Book a call` button, `Work` link), so removing them costs no path and
+   returns the hero to being a statement rather than a conversion unit. See
+   "Why the secondary CTA does not resurface" below.
+2. **The portrait is now a true alpha cutout, so the bone mount is gone.** The
+   §9 hero treatment was written for an opaque rectangular photo cropped inside
+   a `bone` block with a `bone` multiply overlay — a print-mount device. The
+   real asset (`src/assets/images/kemal-portrait.png`, 1440×2560, verified true
+   alpha) has no rectangle to mount. Keeping the bone block would re-draw the
+   exact rectangle the cutout removes, and would read as a card. So the cutout
+   stands directly on `paper` with no backdrop, no frame, no radius.
+
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │ Kemal                     Work  About  Approach  Contact  [Book a call] │
 ├──────────────────────────────────────────────────────────────┤
-│ │                                                  ┌──────────────┐│
-│S│ 8+            55+                                │              ││
-│e│ Brands        Systems                            │              ││
-│n│ handled       shipped                            │   portrait   ││
-│i│                                                   │  (grayscale, ││
-│o│ I build growth systems, from the                 │  bone-mult.  ││
-│r│ first ad click to the CRM that                   │  overlay,    ││
-│ │ closes the deal.                                 │  bleeds to   ││
-│G│                                                   │  the right   ││
-│r│ Performance marketing, websites,    [Book a call] │  viewport    ││
-│o│ tracking, CRM and automation.       See selected  │  edge)       ││
-│w│                                      work         │              ││
-│t│                                                   │              ││
-│h│ 2026                               Scroll down ↓  └──────────────┘│
+│ │                                                                      │
+│S│ 8+            55+                                     ▄▄▄▄           │
+│e│ Brands        Systems                                ███████         │
+│n│ handled       shipped                               ████████         │
+│i│                                                    ██████████        │
+│o│ I build growth systems, from the                   ██████████        │
+│r│ first ad click to the CRM that                    ████████████       │
+│ │ closes the deal.                                 ██████████████      │
+│G│                                                 ███████████████      │
+│r│ Performance marketing, websites,               ██████████████████    │
+│o│ tracking, CRM and automation.                 ███████████████████    │
+│w│                                              █████████████████████   │
+│t│ │  ← short vertical rule                    ███████████████████████  │
+│h│ │                                         █████████████████████████ │
+│ │ 2026                      Scroll down ↓  ████████████████████████████│
 └──────────────────────────────────────────────────────────────┘
 ────────────────────────────────────────────────────────────────  (hairline)
   ○────────○────────○────────○────────○                              ← SYSTEM MAP, its own row
@@ -174,29 +194,140 @@ next to a photo.
   ...      page     ...      ...      ...
 ```
 
-- **Rotated side label** (desktop only): role line (`Senior Growth`, wrapped),
-  `text-caption`, olive, rotated -90°, anchored to the far-left edge of the
-  container, reading bottom-to-top. Same device as the small stat/role labels
-  in editorial portfolio references — informational, not decorative, so it's
-  allowed under §12.
-- **Top stat row**: 2 metrics (not the full impact row — that stays with the
-  System Map below), same `Metric` component, smaller context-setting numbers.
-- **Portrait**: real photo of Kemal, same treatment as the About portrait
-  (§9: grayscale + bone multiply overlay), but `radius-none` and allowed to
-  bleed to the right edge of the viewport (breaks out of `.container`) since
-  it's anchored to the frame rather than mounted inside it. Until a real photo
-  exists, use the flat-`bone`-block placeholder from §9.
-- **Year + scroll cue**: bottom-left `2026` in `text-caption` olive (tabular
-  nums), bottom-right (under the CTAs) `Scroll down ↓` in `text-small` olive.
-  This is the one place a bare `↓` is allowed outside a button, since it's a
-  static scroll affordance, not a link label.
-- The Growth System Map (§8) sits directly below the hero content as its own
-  full-width row with a hairline above it — still inside the `#top` section
-  (hero stays one of the seven sections), still the site's one animated
-  element, just no longer sharing a row with CTAs or a photo.
+*(The figure is a cutout silhouette standing on `paper` — no box edge anywhere.
+Its torso is cut only by the hairline above the System Map, and its outer
+shoulder is tangent to the right viewport edge.)*
 
-Hero height: content-driven, min `90svh` on desktop (text column + portrait),
-System Map row adds its own height below that.
+**Content, top to bottom (this is the complete list — nothing else goes in the hero body):**
+
+1. **Rotated side label** (≥1024px only): role line (`Senior Growth`, wrapped),
+   `text-caption`, olive, rotated -90°, anchored to the far-left edge of the
+   container, reading bottom-to-top. Informational, not decorative, so it's
+   allowed under §12. This also carries the role, which is why the hero body has
+   no separate name/role line (the name is the nav wordmark).
+2. **Top stat row**: 2 metrics (not the full impact row — that stays with the
+   System Map below), same `Metric` component, smaller context-setting numbers.
+3. **Display headline** — `text-display`, ink, `max-width: 16ch` mobile /
+   `14ch` ≥1024px.
+4. **Lead line** — one short line in `text-lead`, olive, directly under the
+   headline. Now a direct child of the text column: the old `.hero-lead-row`
+   (lead paragraph and CTA stack side by side) is **deleted**, not repurposed.
+   The lead gets the full text column width back: `max-width: 44ch` ≥1024px,
+   `48ch` below. No em-dash or any other decorative prefix (the reference's
+   `— It's Finox…` dash encodes nothing; §1 principle 2).
+5. **Short vertical rule** — the one thing that takes over the space the CTA
+   stack vacated. `1px` wide, `var(--color-line)`, height `var(--hero-rule-h)`,
+   left-aligned to the text column's left edge, `--space-6` above and below.
+   It encodes the boundary between the statement block (stats, headline, lead)
+   and the frame furniture (year, scroll cue) — the same job as the hairline
+   above the System Map, rotated — and it keeps the column from going
+   top-heavy once the buttons are gone. It is not a link and carries no hover
+   state. `aria-hidden="true"`.
+6. **Year + scroll cue**: bottom-left `2026` in `text-caption` olive (tabular
+   nums), bottom-right `Scroll down ↓` in `text-small` olive. **Static text, not
+   a link** — this is the one place a bare `↓` is allowed, precisely because it
+   is an affordance and not a label (§12 bans arrows on button/link labels, so
+   making this a link would break that rule).
+7. **The cutout portrait** (spec below), right column.
+
+Below the content row, unchanged and out of scope for this revision: the
+Growth System Map (§8) as its own full-width row with a hairline above it, then
+the impact metrics row. Still inside the `#top` section, still the site's one
+animated element.
+
+**Why the secondary CTA does not resurface.** `See selected work` is dropped
+outright rather than moved next to the scroll cue. Three reasons: the nav's
+`Work` link already covers it from every scroll position; the next thing below
+the fold is the System Map, whose nodes link into the work in Phase 3, so the
+hero already points at the work structurally; and turning `Scroll down ↓` into
+a link would put an arrow on a link label, which §12 forbids. Tracking
+consequence: `cta_click` with `cta_location: "hero"` is no longer emitted —
+that is expected, not a regression. The nav remains the only CTA source above
+the fold.
+
+**The cutout portrait — exact treatment.**
+
+*Asset.* `src/assets/images/kemal-portrait.png`, 1440×2560 (intrinsic 9:16),
+chest-up, true alpha (alpha 0 outside the subject). Import through
+`astro:assets` and emit explicit `width`/`height` so there is no CLS. `loading="eager"`,
+`decoding="async"`. The §9 bone-block placeholder rule no longer applies to the
+hero — a real asset exists.
+
+*Backdrop.* None. No `background`, no `bone` block, no frame, no border,
+`--radius-none`, no shadow (§5.4). The figure stands directly on `paper`. The
+element must not be given `overflow: hidden` — there is nothing to clip.
+
+*Tone.* Apply a single alpha-safe filter chain to the `<img>` itself:
+
+```css
+filter: grayscale(1) contrast(1.04) sepia(0.22) saturate(1.15) brightness(0.98);
+```
+
+(token: `--hero-cutout-filter`). Intent: the same job the old grayscale + bone
+multiply did — pull the photo into the ink/olive/bone family — achieved without
+touching a rectangle. Acceptance check: sample a blazer or skin midtone; it must
+read as a **warm neutral gray in the bone/olive family** (hue roughly 35–45°,
+saturation under ~15%). If it reads as a sepia photograph, lower `sepia()`
+first, then `saturate()`.
+
+*Banned implementation (this is the trap).* Do **not** keep the
+`.hero-portrait-overlay` div — an absolutely positioned `bone` layer with
+`mix-blend-mode: multiply` over a transparent PNG tints its whole box, including
+the transparent region, which paints back exactly the bone rectangle this
+revision removes. Any `mix-blend-mode` layer over an alpha cutout is wrong
+unless it is masked by the image's own alpha; do not use a mask here, the filter
+chain above is the approved route.
+
+*Size.* Height-driven, width derived, so the figure can never grow past the
+fold and crop its own head:
+
+```css
+height: var(--hero-cutout-h);   /* clamp(400px, 64svh, 760px) */
+width: auto;                    /* ≈ 0.5625 × height, from the 9:16 asset */
+```
+
+At a 1440×900 desktop this renders ≈576×324 — roughly a third of the text
+column's width, deliberately slimmer than the old full-bleed block, because a
+die-cut figure reads at a smaller scale than a photo panel. Breakpoint values:
+`--hero-cutout-h-md` `clamp(320px, 42svh, 420px)` for 640–1023px, and
+`--hero-cutout-h-sm` `clamp(260px, 38svh, 340px)` below 640px.
+
+*Vertical alignment.* Hard constraint: `align-self: end` — the bottom of the
+image box sits flush on the bottom of the hero content row, i.e. directly on the
+hairline above the System Map, so the figure's torso is cut by that hairline.
+That cut is the whole point: a figure standing up out of the line reads as a
+deliberate die-cut; a vertically sliced arm reads as a bug. Tuning target: the
+crown of the head should land level with, or up to ~24px above, the cap line of
+the display headline's first line. If it falls below the cap line at a given
+viewport, raise the `svh` term in `--hero-cutout-h` — never translate the image
+up, which would break the flush bottom.
+
+*Horizontal placement.* Grid cols 8–12, `justify-self: end`, and the image box's
+right edge sits **24px (`--space-5`) past the right viewport edge**, with
+`overflow: hidden` on `.hero` doing the cropping. Keep the existing breakout
+math (`margin-right: calc(-1 * var(--container-pad))` at ≥1024px, and
+`calc(-50vw + var(--container-max) / 2)` at ≥1320px) and add the extra 24px on
+top. Rule the engineer must verify by eye, not by number: **no more than ~6% of
+the subject's width may sit beyond the viewport edge, and the face, glasses and
+near shoulder must never be cropped.** The outer shoulder grazing the edge is
+intended tangency; anything more is a slice — pull it back.
+
+*Below 1024px.* The cutout follows the text block in flow, `justify-self: end`,
+right edge 16px (`--space-4`) past the viewport edge, same filter, same
+`align-self: end` against the hairline, heights per the `-md` / `-sm` tokens
+above. It is never centered (§12) and never overlaps the text. The rotated side
+label stays hidden below 1024px.
+
+**Grid.** `.hero-grid` becomes `minmax(0, 8fr) minmax(0, 4fr)` at ≥1024px (was
+7fr/5fr) — the slimmer cutout hands a column back to the text. Gap `--space-8`.
+Content row `min-height: 60svh`. Hero height overall: content-driven, min
+`90svh` on desktop including the System Map row.
+
+**Implementation note (not code, just the delta):** `hero.ctaPrimary` and
+`hero.ctaSecondary` come out of `src/data/site.ts`; the `Button` import and
+`.hero-lead-row` / `.hero-ctas` / `.hero-portrait-overlay` markup and styles
+come out of `Hero.astro`. The `<img src="/images/foto-kemal.svg">` is replaced
+by an `astro:assets` import of `kemal-portrait.png`.
 
 ### 6.2 Section header
 
@@ -254,9 +385,10 @@ One lead project (media cols 1–8, text cols 9–12), then the rest as rows. **
 | Primary (on ink) | bg `bone`, text `ink`. Hover: bg `paper`. |
 | Text link | text `ink`, underline 1px, `text-underline-offset: 4px`. Hover: underline 2px. On ink: `paper`. |
 
-- Labels say exactly what happens: `Book a call`, `Download CV`, `Read case study`, `See selected work`.
+- Labels say exactly what happens: `Book a call`, `Download CV`, `Read case study`, `All projects`.
 - **No arrows appended to labels.** The only allowed icon is `↗` on links that open an external site (LinkedIn, WhatsApp, live project URL), because it carries meaning.
 - Focus: `outline: 2px solid var(--color-ink); outline-offset: 3px` (on ink: `bone`).
+- No buttons in the hero body (§6.1) — the nav's `Book a call` is the only CTA above the fold.
 
 ### 7.2 Tag
 Pill, `1px solid var(--color-line)`, text `olive`, `text-caption`, padding `4px 12px`. On ink: border `line-dark`, text `ink-soft`. Tags are not clickable.
@@ -323,10 +455,11 @@ Runs once. Under `prefers-reduced-motion: reduce`, render the final state immedi
 
 ## 9. Imagery
 
-- **Portrait (About):** real photo of Kemal, cropped 4:5, `radius-md`. Treatment: `filter: grayscale(1) contrast(1.05)` plus an overlay of `bone` with `mix-blend-mode: multiply` at 30% opacity, so the photo sits inside the palette.
-- **Portrait (Hero):** same photo treatment as About (grayscale + bone multiply overlay), but `radius-none` and allowed to bleed to the right edge of the viewport — see §6.1. Taller crop (~3:4) than the About portrait so it reads as a frame edge, not a mounted photo.
+- **Portrait (About):** real photo of Kemal, cropped 4:5, `radius-md`. Treatment: `filter: grayscale(1) contrast(1.05)` plus an overlay of `bone` with `mix-blend-mode: multiply` at 30% opacity, so the photo sits inside the palette. This is the print-mount treatment and it stays, because the About portrait is a rectangular photo mounted inside the layout. Unchanged by the 2026-10-05 hero revision.
+- **Portrait (Hero) — alpha cutout, revised 2026-10-05:** a true transparent-background cutout (`src/assets/images/kemal-portrait.png`, 1440×2560, alpha 0 outside the subject), standing directly on `paper` with **no backdrop block, no frame, no border, `--radius-none`**. Tone comes from one alpha-safe filter chain on the image — `grayscale(1) contrast(1.04) sepia(0.22) saturate(1.15) brightness(0.98)` (`--hero-cutout-filter`) — and **never** from a `mix-blend-mode` overlay layer, which would tint the transparent region and repaint a bone rectangle. Sizing, alignment and bleed rules: §6.1. The earlier spec here (cover-cropped inside a bone box with a bone multiply overlay) was written for an opaque rectangular photo and no longer applies to the hero.
 - **Project covers:** real screenshots of the work (landing pages, dashboards, CRM pipelines, ad creatives) shown on a `bone` background with generous padding inside the frame, like a print mount. Never stock photos, never AI-generated objects or abstract 3D shapes.
-- **Placeholders** (until real assets exist): flat `bone` block with the project name in `caption` olive, bottom-left.
+- **Placeholders** (until real assets exist): flat `bone` block with the project name in `caption` olive, bottom-left. Does not apply to the hero portrait — the real cutout exists.
+- **Alpha cutouts in general:** no backdrop block behind them, no `mix-blend-mode` layer over them, and they are cropped only by a structural edge (a hairline, the viewport edge) — never by a box of their own.
 - Images never have shadows, borders, or tilt.
 
 ---
@@ -340,7 +473,7 @@ Runs once. Under `prefers-reduced-motion: reduce`, render the final state immedi
 | Filter change | 200ms | opacity crossfade of the list |
 | Mobile menu open | 250ms `cubic-bezier(0.2,0,0,1)` | opacity |
 
-**No** scroll-triggered reveals on sections, no parallax, no cursor followers, no marquee, no counters that tick up.
+**No** scroll-triggered reveals on sections, no parallax, no cursor followers, no marquee, no counters that tick up. The hero cutout does not animate, float, or parallax.
 
 ---
 
@@ -372,6 +505,7 @@ Review every page against this list before calling a phase done.
 - ❌ Fade-and-slide-up on every section
 - ❌ Centered layouts (except the Contact panel heading)
 - ❌ Colors or font sizes not defined in this file
+- ❌ A rectangular backdrop block behind a transparent cutout image (§9)
 
 ---
 
@@ -412,6 +546,13 @@ Review every page against this list before calling a phase done.
   --container-max: 1320px;
   --container-pad: clamp(1.25rem, 4vw, 3rem);
   --grid-gap: 24px;
+
+  /* hero (§6.1) */
+  --hero-cutout-h: clamp(400px, 64svh, 760px);
+  --hero-cutout-h-md: clamp(320px, 42svh, 420px);
+  --hero-cutout-h-sm: clamp(260px, 38svh, 340px);
+  --hero-cutout-filter: grayscale(1) contrast(1.04) sepia(0.22) saturate(1.15) brightness(0.98);
+  --hero-rule-h: clamp(40px, 6vw, 72px);
 
   /* shape */
   --radius-none: 0;

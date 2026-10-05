@@ -58,16 +58,15 @@ Seven sections, in this order. Keep each section to the content listed; do not a
 ### 4.1 Hero — `#top`
 **Job:** say who Kemal is and what makes him different, in one screen.
 
-Content (see DESIGN-SYSTEM.md §6.1 for the full layout — revised 2026-10-04 to add a hero portrait):
-- Rotated side label (desktop only): role line, e.g. `Senior Growth`.
+Content (see DESIGN-SYSTEM.md §6.1 for the full layout — revised 2026-10-04 to add a hero portrait, revised again 2026-10-05 to remove the hero CTAs and present the portrait as a transparent cutout):
+- Rotated side label (desktop only): role line, e.g. `Senior Growth`. This carries the role, so the hero body has no separate name/role line — the name is the nav wordmark.
 - Top stat row: 2 metrics (placeholders), same `Metric` component used elsewhere.
-- Name: `Kemal`
-- Role line: `Senior Growth Specialist`
 - Headline (placeholder, editable): `I build growth systems, from the first ad click to the CRM that closes the deal.`
-- Supporting line: `Performance marketing, websites, tracking, CRM and automation, built by one person who knows how they connect.`
-- Two CTAs: primary `Book a call`, secondary `See selected work`.
-- Portrait: real photo of Kemal (placeholder block until supplied), grayscale + bone overlay per DESIGN-SYSTEM.md §9, bleeding to the right viewport edge.
-- Year (`2026`) bottom-left, `Scroll down ↓` cue bottom-right.
+- Supporting line, one short line directly under the headline (placeholder, editable): `Performance marketing, websites, tracking, CRM and automation, built by one person who knows how they connect.`
+- Short vertical hairline rule below the supporting line, marking the boundary between the statement block and the year/scroll row (DESIGN-SYSTEM.md §6.1).
+- **No CTA buttons in the hero.** `Book a call` lives only in the nav; `See selected work` is dropped (the nav `Work` link and the System Map below already lead there). Consequence for §7: `cta_click` is never fired with `cta_location: "hero"`.
+- Portrait: real transparent-background cutout of Kemal (`src/assets/images/kemal-portrait.png`), standing directly on the paper background with no backdrop block, toned with the alpha-safe filter chain in DESIGN-SYSTEM.md §9, bottom-aligned to the hairline above the System Map and grazing the right viewport edge.
+- Year (`2026`) bottom-left, `Scroll down ↓` cue bottom-right — static text, not links.
 - **Signature element: the Growth System Map** (spec in DESIGN-SYSTEM.md §8), as its own full-width row directly below the hero content, with a hairline above it. A horizontal chain of 5 nodes: `Ads → Landing page → Tracking → CRM → Automation`. Each node links to the project that best demonstrates it. On mobile it becomes a vertical chain.
 - Impact row under the map: 3–4 metrics (placeholders: `[X]+ brands handled`, `Rp[X]B+ ad spend managed`, `[X]K+ leads generated`, `[X] systems shipped`). Kemal will fill real numbers.
 
@@ -213,6 +212,8 @@ Push these to `window.dataLayer` (GTM handles GA4):
 
 Use a single helper `src/lib/track.ts`. GTM must load only when `PUBLIC_GTM_ID` is set.
 
+`cta_location: "hero"` is intentionally never emitted — the hero has no CTA buttons (§4.1). Above the fold, CTA clicks come from `cta_location: "nav"` only.
+
 ---
 
 ## 8. SEO, performance, accessibility
@@ -221,7 +222,7 @@ Use a single helper `src/lib/track.ts`. GTM must load only when `PUBLIC_GTM_ID` 
 - `sitemap.xml` and `robots.txt`.
 - JSON-LD `Person` on home, `CreativeWork` on case studies.
 - Lighthouse targets (mobile): Performance ≥ 95, Accessibility 100, Best Practices 100, SEO 100.
-- Images via `astro:assets`, AVIF/WebP, explicit width/height, lazy below the fold.
+- Images via `astro:assets`, AVIF/WebP, explicit width/height, lazy below the fold. The hero cutout must keep its alpha channel — WebP/AVIF only, never JPEG.
 - Total JS on home < 30 KB gzipped.
 - WCAG AA contrast (token pairings in DESIGN-SYSTEM.md §3 are pre-checked; do not use other pairings for text).
 - Visible focus states, skip-to-content link, semantic landmarks, `prefers-reduced-motion` respected.
