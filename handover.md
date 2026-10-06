@@ -1,6 +1,6 @@
 # Handover — Kemal Portfolio Website
 
-**Last updated:** 2026-10-07 — Spec-only pass: hero cutout resized/repositioned (§6.1 third revision) and the Stack section fully specced as a card grid (§6.4 + §7.8). No component code written yet.
+**Last updated:** 2026-10-07 — Implementation pass: built the §6.1 hero cutout revision and the new Stack section in code.
 
 **State:**
 - Project is an Astro + TypeScript + Tailwind v4 site, per PRD.md and DESIGN-SYSTEM.md (both at repo root — DESIGN-SYSTEM.md is the source of truth for all visual decisions).
@@ -18,12 +18,12 @@
   - PRD: §4.1 portrait bullet, §4.5 rewritten with the verbatim client tool list, §7 and §8 notes, §11 exception clause.
 
 **Next steps:**
-1. **Implement the 2026-10-07 §6.1 hero revision** in `Hero.astro` + `src/styles/tokens.css`. Watch for: `--hero-cutout-h` has changed meaning (figure, not canvas) — do not carry over old numbers; `.hero-portrait-img` loses its `height` rules entirely; verify the `min()` width guard on a tall narrow viewport (1024×1366) where the width term binds.
-2. **Build the Stack section** (`src/components/sections/Stack.astro` + `src/data/stack.ts`) to §7.8. Then the remaining home sections (Selected Work, About, Approach, Experience, Contact).
-3. When real case studies exist (Phase 3), wire `systemMapNodes[].href` to real project slugs.
-4. Ask Kemal for real tool logo assets; the chip is designed so they drop in one at a time without disturbing the grid.
+1. Build the remaining home sections (Selected Work, About, Approach, Experience, Contact) and wire them into `src/pages/index.astro` between/after `<Hero />` / `<Stack />` in PRD §4 order.
+2. When real case studies exist (Phase 3), wire `systemMapNodes[].href` to real project slugs.
+3. Ask Kemal for real tool logo assets; the chip is designed so they drop in one at a time without disturbing the grid.
 
 **Decisions / gotchas:**
+- **New gotcha found while implementing §6.1 (2026-10-07):** `global.css`'s base-layer rule `img, svg { max-width: 100% }` silently clamps any `<img>` width set in percent above 100%, even from an unlayered component `<style>` block (layers don't help here — `max-width` wins over `width` in used-value resolution regardless of cascade origin). This broke the `.hero-portrait-img` crop-box math (`width: 137.40%`) until `max-width: none` was added directly on `.hero-portrait-img`. Any future component that needs an `<img>` wider than its container (crop boxes, bleed images) will hit this — add the same override.
 - **The hero asset has a big empty alpha band at the top.** Subject box is 1048×1798 inside a 1440×2560 canvas. Anything that sizes the raw canvas will undersize the figure by ~30%. This is measured, recorded in §6.1, and should not be re-derived by eye.
 - **`overflow: hidden` on `.hero-portrait` is allowed now** and is not the banned "backdrop block behind a cutout" — the box paints nothing, it only trims transparent pixels. The 2026-10-05 line forbidding it is explicitly superseded in §6.1.
 - **The hero is allowed to exceed the fold now.** The System Map sitting below the fold on a 900px laptop is intended; don't "fix" it by shrinking the photo.

@@ -1,6 +1,6 @@
 ---
-// DESIGN-SYSTEM.md §6.1 (revised 2026-10-05 — CTAs removed, portrait is now
-// a true alpha cutout, no bone mount).
+// DESIGN-SYSTEM.md §6.1 (revised 2026-10-07 — the cutout is sized from the
+// subject's alpha box via a crop box, not the raw canvas; grid goes 7fr/5fr).
 import { Image } from "astro:assets";
 import Container from "../layout/Container.astro";
 import Metric from "../ui/Metric.astro";
@@ -71,9 +71,8 @@ import { hero, systemMapNodes } from "../../data/site";
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-7);
-    align-items: center;
     align-content: start;
-    min-height: 60svh;
+    min-height: auto;
   }
 
   .hero-text {
@@ -113,16 +112,28 @@ import { hero, systemMapNodes } from "../../data/site";
   }
 
   .hero-portrait {
+    /* the box IS the figure — crop box, not a backdrop (DESIGN-SYSTEM.md §6.1) */
+    aspect-ratio: var(--hero-cutout-ar);
+    overflow: hidden;
     justify-self: end;
     align-self: end;
-    width: fit-content;
-    margin-right: calc(-1 * var(--container-pad) - var(--space-4));
+    width: min(
+      calc(var(--hero-cutout-h-sm) * 1048 / 1798),
+      calc(100% + var(--hero-cutout-bleed))
+    );
+    margin-right: calc(-1 * var(--container-pad) - var(--hero-cutout-bleed));
   }
 
   .hero-portrait-img {
     display: block;
-    height: var(--hero-cutout-h-sm);
-    width: auto;
+    /* global.css sets `img { max-width: 100% }`; without this override the
+       browser clamps the crop box's scale-up and the whole crop math below
+       silently breaks (figure renders short, with empty box below it). */
+    max-width: none;
+    width: 137.40%;
+    height: auto;
+    margin-left: -28.24%;
+    margin-top: -72.71%;
   }
 
   .hero-map {
@@ -145,8 +156,11 @@ import { hero, systemMapNodes } from "../../data/site";
       grid-template-columns: repeat(4, 1fr);
     }
 
-    .hero-portrait-img {
-      height: var(--hero-cutout-h-md);
+    .hero-portrait {
+      width: min(
+        calc(var(--hero-cutout-h-md) * 1048 / 1798),
+        calc(100% + var(--hero-cutout-bleed))
+      );
     }
   }
 
@@ -174,30 +188,32 @@ import { hero, systemMapNodes } from "../../data/site";
     }
 
     :global(.hero-grid) {
-      grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
       gap: var(--space-8);
+      min-height: var(--hero-cutout-h);
+      align-items: center;
     }
 
     .hero-headline {
-      max-width: 14ch;
+      max-width: 11ch;
     }
 
     .hero-lead {
-      max-width: 44ch;
+      max-width: 40ch;
     }
 
     .hero-portrait {
-      margin-right: calc(-1 * var(--container-pad) - var(--space-5));
-    }
-
-    .hero-portrait-img {
-      height: var(--hero-cutout-h);
+      width: min(
+        calc(var(--hero-cutout-h) * 1048 / 1798),
+        calc(100% + var(--hero-cutout-bleed))
+      );
+      margin-right: calc(-1 * var(--container-pad) - var(--hero-cutout-bleed));
     }
   }
 
   @media (min-width: 1320px) {
     .hero-portrait {
-      margin-right: calc(-50vw + var(--container-max) / 2 - var(--space-5));
+      margin-right: calc(-50vw + var(--container-max) / 2 - var(--hero-cutout-bleed));
     }
   }
 </style>

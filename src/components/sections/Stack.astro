@@ -1,0 +1,131 @@
+---
+// DESIGN-SYSTEM.md §6.4 (layout) + §7.8 (card) — client-directed card grid,
+// replacing the never-built text-row spec. See §12 for the two narrow
+// AI-slop-checklist carve-outs this section relies on.
+import Section from "../layout/Section.astro";
+import Container from "../layout/Container.astro";
+import { stackGroups } from "../../data/stack";
+
+const slugify = (value: string) =>
+  value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+---
+
+<Section id="stack" background="paper">
+  <Container>
+    <div class="stack-header">
+      <h2 class="text-h2">Stack</h2>
+      <p class="text-small stack-note">
+        The tools I actually build with, grouped by the job they do.
+      </p>
+    </div>
+    <div class="stack-header-rule hairline-bottom" aria-hidden="true"></div>
+
+    <div class="stack-grid">
+      {
+        stackGroups.map((group) => {
+          const headingId = `stack-${slugify(group.group)}`;
+          return (
+            <section class="stack-card" aria-labelledby={headingId}>
+              <h3 id={headingId} class="text-h3 stack-card-heading">
+                {group.group}
+              </h3>
+              <div class="stack-card-rule hairline-bottom" aria-hidden="true" />
+              <ul class="stack-tool-list">
+                {group.tools.map((tool) => (
+                  <li class="stack-tool-row">
+                    <span class="stack-chip" aria-hidden="true" />
+                    <span class="text-caption stack-tool-name">{tool.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })
+      }
+    </div>
+  </Container>
+</Section>
+
+<style>
+  .stack-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+  }
+
+  .stack-note {
+    max-width: 320px;
+    color: var(--color-olive);
+  }
+
+  .stack-header-rule {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-8);
+  }
+
+  .stack-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    align-items: stretch;
+  }
+
+  .stack-card {
+    background: var(--color-paper-2);
+    border-radius: var(--radius-md);
+    padding: var(--stack-card-pad);
+  }
+
+  .stack-card-heading {
+    color: var(--color-ink);
+  }
+
+  .stack-card-rule {
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+
+  .stack-tool-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--stack-row-gap);
+    list-style: none;
+  }
+
+  .stack-tool-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    height: var(--stack-chip-h);
+  }
+
+  .stack-chip {
+    flex: 0 0 var(--stack-chip-w);
+    width: var(--stack-chip-w);
+    height: var(--stack-chip-h);
+    border-radius: var(--radius-sm);
+    background: var(--color-paper);
+    border: 1px solid var(--color-line);
+  }
+
+  .stack-tool-name {
+    color: var(--color-olive);
+    white-space: nowrap;
+  }
+
+  @media (min-width: 768px) {
+    .stack-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-5);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .stack-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-5);
+    }
+  }
+</style>
