@@ -33,7 +33,7 @@ Reference feel: minimal portfolio layouts with large light grotesk type, row-bas
 
 | Token | Hex | Role |
 |---|---|---|
-| `--color-paper-2` | `#F3EEE3` | Sunk surface (About section bg, row hover) |
+| `--color-paper-2` | `#F3EEE3` | Sunk surface (About section bg, Stack cards, row hover) |
 | `--color-ink-soft` | `#9C9687` | Secondary text **on ink** backgrounds |
 | `--color-line` | `#D8CFBC` | Hairlines on paper (= bone) |
 | `--color-line-dark` | `#2C2D26` | Hairlines on ink |
@@ -51,6 +51,8 @@ No other colors. No gradients. No accent color beyond the palette. Status colors
 | Contact panel | `ink` (rounded panel sitting on `paper`) |
 | Footer | `ink` |
 
+The Stack section's own background stays `paper`; its four cards are `paper-2` panels sitting on it (§7.8). That `paper` → `paper-2` shift is the only separation they get — no border, no shadow (§5.4).
+
 ---
 
 ## 3. Approved text/background pairings (WCAG checked)
@@ -61,7 +63,8 @@ Use only these for text. Anything not listed is decorative-only.
 |---|---|---|---|
 | ink | paper | ~18:1 | All primary text |
 | olive | paper | ~7.4:1 | Secondary text, captions, labels |
-| olive | paper-2 | ~6.5:1 | Secondary text in About |
+| ink | paper-2 | ~17:1 | Headings and primary text on paper-2 (About pillars, Stack card headings) |
+| olive | paper-2 | ~6.5:1 | Secondary text in About, Stack tool names |
 | ink | bone | ~12:1 | Text on bone (active chip alt, placeholders) |
 | olive | bone | ~4.9:1 | Small text on bone tags |
 | paper | ink | ~18:1 | Primary text on dark |
@@ -91,12 +94,12 @@ No monospace font. No serif. No italic accents.
 | `--text-display` | `clamp(3rem, 7vw + 1rem, 8rem)` | 300 | 0.95 | -0.035em | Hero headline only |
 | `--text-h1` | `clamp(2.5rem, 4vw + 1rem, 4.5rem)` | 300 | 1.0 | -0.03em | Case study title, `/work` title |
 | `--text-h2` | `clamp(2rem, 2.5vw + 1rem, 3rem)` | 350 | 1.05 | -0.02em | Section headings |
-| `--text-h3` | `1.5rem` | 450 | 1.2 | -0.01em | Project titles, pillar titles, step names |
+| `--text-h3` | `1.5rem` | 450 | 1.2 | -0.01em | Project titles, pillar titles, step names, Stack card headings |
 | `--text-metric` | `clamp(2.5rem, 3vw + 1.25rem, 4rem)` | 300 | 1.0 | -0.03em | Metric values |
 | `--text-lead` | `1.25rem` | 400 | 1.5 | -0.005em | Hero supporting line, intros |
 | `--text-body` | `1.0625rem` | 400 | 1.6 | 0 | Body copy |
 | `--text-small` | `0.9375rem` | 400 | 1.5 | 0 | Row details, nav |
-| `--text-caption` | `0.8125rem` | 450 | 1.4 | 0.01em | Labels, metric labels, tags |
+| `--text-caption` | `0.8125rem` | 450 | 1.4 | 0.01em | Labels, metric labels, tags, Stack tool names |
 
 ### 4.3 Rules
 - Left-aligned everywhere. Centered text is allowed only inside the Contact panel heading.
@@ -126,10 +129,12 @@ No monospace font. No serif. No italic accents.
 | Token | Value | Use |
 |---|---|---|
 | `--radius-none` | 0 | Rows, lists, pillars, hairline structures, **hero cutout (no frame at all)** |
-| `--radius-sm` | 4px | Row thumbnails, small images |
-| `--radius-md` | 12px | Lead project media, About portrait |
+| `--radius-sm` | 4px | Row thumbnails, small images, **Stack logo chips (§7.8)** |
+| `--radius-md` | 12px | Lead project media, About portrait, **Stack cards (§7.8)** |
 | `--radius-lg` | 20px | Contact panel |
 | `--radius-pill` | 999px | Buttons, tags, filter chips |
+
+Hierarchy inside Stack is deliberate: the card (a container) takes `md`, the chip (a small object inside it) takes `sm`. Never give both the same radius.
 
 ### 5.4 Elevation
 **No shadows.** Separation comes from hairlines (`1px solid var(--color-line)`) and background shifts (`paper` → `paper-2` → `ink`).
@@ -168,25 +173,55 @@ to the reference layout:
    exact rectangle the cutout removes, and would read as a card. So the cutout
    stands directly on `paper` with no backdrop, no frame, no radius.
 
+*2026-10-07 — the figure is sized from the subject, not the canvas, and reads
+at hero scale.* Client-directed: "put my photo on the right side and with
+proper size… the current design is too small and not proper position… make it a
+good hero banner, the objective is showing professionality."
+
+Root cause, measured on the asset rather than guessed: **the subject only
+occupies the lower-right ~70% of the 1440×2560 canvas.** The alpha bounding box
+is `x 296…1344`, `y 762…2560` (1048 × 1798 px) — there is a ~762px fully
+transparent band above the crown of the head and ~290/100px of empty margin
+left/right. The 2026-10-05 spec sized the *canvas* (`height: clamp(400px, 64svh,
+760px)`), so at a 1440×900 desktop the canvas rendered 576px tall but the
+**visible figure was only ~404px tall and ~236px wide, floating in the lower
+part of its own box.** That is why it reads small and badly placed, and it is
+also why the old tuning target ("crown level with the headline's cap line") was
+unreachable no matter how far the `svh` term was raised.
+
+Three changes follow, all specified below:
+1. **A crop box removes the empty alpha padding**, so every number in this spec
+   describes the figure the visitor actually sees.
+2. **Sizing is expressed as figure height and is no longer capped at the fold.**
+   The hero content row is now allowed to be taller than the viewport; the
+   System Map sitting below the fold on a laptop is accepted and intended.
+3. **The right column grows from 4fr to 5fr** so the larger figure has a column
+   that belongs to it, and the headline tightens to match.
+
+Everything approved in the 2026-10-05 revision is **kept unchanged**: no
+backdrop, no frame, no border, no shadow, full natural color with no filter, and
+`align-self: end` so the torso is die-cut by the hairline above the System Map.
+
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │ Kemal                     Work  About  Approach  Contact  [Book a call] │
 ├──────────────────────────────────────────────────────────────┤
-│ │                                                                      │
-│S│ 8+            55+                                     ▄▄▄▄           │
-│e│ Brands        Systems                                ███████         │
-│n│ handled       shipped                               ████████         │
-│i│                                                    ██████████        │
-│o│ I build growth systems, from the                   ██████████        │
-│r│ first ad click to the CRM that                    ████████████       │
-│ │ closes the deal.                                 ██████████████      │
-│G│                                                 ███████████████      │
-│r│ Performance marketing, websites,               ██████████████████    │
-│o│ tracking, CRM and automation.                 ███████████████████    │
-│w│                                              █████████████████████   │
-│t│ │  ← short vertical rule                    ███████████████████████  │
-│h│ │                                         █████████████████████████ │
-│ │ 2026                      Scroll down ↓  ████████████████████████████│
+│ │                                              ▄▄▄▄▄▄▄▄▄▄▄▄  │
+│S│ 8+            55+                          ███████████████ │
+│e│ Brands        Systems                     ████████████████ │
+│n│ handled       shipped                    █████████████████ │
+│i│                                         ██████████████████ │
+│o│ I build growth                          ██████████████████ │
+│r│ systems, from the                      ███████████████████ │
+│ │ first ad click to                     ████████████████████ │
+│G│ the CRM that closes                  ██████████████████████│
+│r│ the deal.                           ███████████████████████│
+│o│                                    ████████████████████████│
+│w│ Performance marketing,            █████████████████████████│
+│t│ websites, tracking, CRM.         ██████████████████████████│
+│h│ │  ← short vertical rule        ███████████████████████████│
+│ │ │                              ████████████████████████████│
+│ │ 2026          Scroll down ↓   █████████████████████████████│
 └──────────────────────────────────────────────────────────────┘
 ────────────────────────────────────────────────────────────────  (hairline)
   ○────────○────────○────────○────────○                              ← SYSTEM MAP, its own row
@@ -195,8 +230,9 @@ to the reference layout:
 ```
 
 *(The figure is a cutout silhouette standing on `paper` — no box edge anywhere.
-Its torso is cut only by the hairline above the System Map, and its outer
-shoulder is tangent to the right viewport edge.)*
+The crown of the head now starts at the top of the content row, level with the
+top stat numbers. Its torso is cut only by the hairline above the System Map,
+and its outer shoulder is tangent to the right viewport edge.)*
 
 **Content, top to bottom (this is the complete list — nothing else goes in the hero body):**
 
@@ -208,13 +244,13 @@ shoulder is tangent to the right viewport edge.)*
 2. **Top stat row**: 2 metrics (not the full impact row — that stays with the
    System Map below), same `Metric` component, smaller context-setting numbers.
 3. **Display headline** — `text-display`, ink, `max-width: 16ch` mobile /
-   `14ch` ≥1024px.
+   **`11ch` ≥1024px** (was 14ch; see "Grid" below for why it tightened).
 4. **Lead line** — one short line in `text-lead`, olive, directly under the
    headline. Now a direct child of the text column: the old `.hero-lead-row`
    (lead paragraph and CTA stack side by side) is **deleted**, not repurposed.
-   The lead gets the full text column width back: `max-width: 44ch` ≥1024px,
-   `48ch` below. No em-dash or any other decorative prefix (the reference's
-   `— It's Finox…` dash encodes nothing; §1 principle 2).
+   `max-width: 40ch` ≥1024px (was 44ch), `48ch` below. No em-dash or any other
+   decorative prefix (the reference's `— It's Finox…` dash encodes nothing;
+   §1 principle 2).
 5. **Short vertical rule** — the one thing that takes over the space the CTA
    stack vacated. `1px` wide, `var(--color-line)`, height `var(--hero-rule-h)`,
    left-aligned to the text column's left edge, `--space-6` above and below.
@@ -253,9 +289,19 @@ chest-up, true alpha (alpha 0 outside the subject). Import through
 `decoding="async"`. The §9 bone-block placeholder rule no longer applies to the
 hero — a real asset exists.
 
+*Measured alpha bounding box (2026-10-07, do not re-derive by eye).*
+
+| Quantity | Value |
+|---|---|
+| Canvas | 1440 × 2560 |
+| Subject left edge | `x = 296` |
+| Subject right edge | `x = 1344` |
+| Subject top (crown of hair) | `y = 762` |
+| Subject bottom | `y = 2560` (bleeds off the canvas bottom) |
+| Subject box | **1048 × 1798** (aspect `1048 / 1798` ≈ 0.583) |
+
 *Backdrop.* None. No `background`, no `bone` block, no frame, no border,
-`--radius-none`, no shadow (§5.4). The figure stands directly on `paper`. The
-element must not be given `overflow: hidden` — there is nothing to clip.
+`--radius-none`, no shadow (§5.4). The figure stands directly on `paper`.
 
 *Tone.* **2026-10-05 client override — supersedes the filter-chain decision
 below.** The client rejected the toned treatment outright: the hero photo
@@ -263,7 +309,7 @@ renders in its natural full color, with **no `filter` property on the `<img>`
 at all**. `--hero-cutout-filter` is no longer applied anywhere; the token stays
 defined in `tokens.css` for now only as a historical record, not referenced by
 any component. Do not reintroduce `grayscale`/`sepia`/any tint on this image
-without a new client sign-off.
+without a new client sign-off. **Still in force after the 2026-10-07 revision.**
 
 *Original design-director tone spec (no longer in effect, kept for context).*
 The earlier instruction was to apply a single alpha-safe filter chain to the
@@ -285,59 +331,195 @@ first, then `saturate()`.
 `mix-blend-mode: multiply` over a transparent PNG tints its whole box, including
 the transparent region, which paints back exactly the bone rectangle this
 revision removes. Any `mix-blend-mode` layer over an alpha cutout is wrong
-unless it is masked by the image's own alpha; do not use a mask here, the filter
-chain above is the approved route.
+unless it is masked by the image's own alpha; do not use a mask here.
 
-*Size.* Height-driven, width derived, so the figure can never grow past the
-fold and crop its own head:
+*The crop box — new 2026-10-07, build this first.* `.hero-portrait` stops being
+a plain `width: fit-content` wrapper and becomes a **subject-tight crop box**:
+its edges are the subject's alpha bounding box, and the `<img>` is scaled and
+offset inside it so the empty alpha padding falls outside. Every other number in
+this section is measured against this box.
 
 ```css
-height: var(--hero-cutout-h);   /* clamp(400px, 64svh, 760px) */
-width: auto;                    /* ≈ 0.5625 × height, from the 9:16 asset */
+.hero-portrait {
+  /* the box IS the figure */
+  aspect-ratio: var(--hero-cutout-ar);          /* 1048 / 1798 */
+  overflow: hidden;                              /* clips transparent pixels only */
+  justify-self: end;
+  align-self: end;
+}
+
+.hero-portrait-img {
+  display: block;
+  width: 137.40%;        /* 1440 / 1048  — scale canvas up so the subject fills the box width */
+  height: auto;
+  margin-left: -28.24%;  /*  296 / 1048  — pull the left margin out */
+  margin-top: -72.71%;   /*  762 / 1048  — pull the empty top band out */
+  /* percentage margins resolve against the box WIDTH; that is what makes this work */
+}
 ```
 
-At a 1440×900 desktop this renders ≈576×324 — roughly a third of the text
-column's width, deliberately slimmer than the old full-bleed block, because a
-die-cut figure reads at a smaller scale than a photo panel. Breakpoint values:
-`--hero-cutout-h-md` `clamp(320px, 42svh, 420px)` for 640–1023px, and
-`--hero-cutout-h-sm` `clamp(260px, 38svh, 340px)` below 640px.
+Two things the engineer must know about this block:
 
-*Vertical alignment.* Hard constraint: `align-self: end` — the bottom of the
-image box sits flush on the bottom of the hero content row, i.e. directly on the
-hairline above the System Map, so the figure's torso is cut by that hairline.
-That cut is the whole point: a figure standing up out of the line reads as a
-deliberate die-cut; a vertically sliced arm reads as a bug. Tuning target: the
-crown of the head should land level with, or up to ~24px above, the cap line of
-the display headline's first line. If it falls below the cap line at a given
-viewport, raise the `svh` term in `--hero-cutout-h` — never translate the image
-up, which would break the flush bottom.
+- `overflow: hidden` here is **not** the banned backdrop rectangle (§9, §12).
+  Nothing is painted — the box has no background, no border and no radius. It
+  only stops transparent pixels from inflating the layout box. The §6.1
+  2026-10-05 line "the element must not be given `overflow: hidden` — there is
+  nothing to clip" is superseded: there *is* something to clip, 762px of empty
+  alpha, and clipping it is the fix for the client's complaint.
+- The subject bleeds off the canvas bottom (`y = 2560`), so the image's bottom
+  edge and the box's bottom edge coincide. The flush `align-self: end` die-cut
+  against the hairline is preserved exactly as before, with no extra offset.
+- **If a tightly cropped asset is ever supplied** (alpha box = full canvas), set
+  `width: 100%; margin-left: 0; margin-top: 0` and update `--hero-cutout-ar` to
+  the new file's ratio. Nothing else in this spec changes.
 
-*Horizontal placement.* Grid cols 8–12, `justify-self: end`, and the image box's
-right edge sits **24px (`--space-5`) past the right viewport edge**, with
-`overflow: hidden` on `.hero` doing the cropping. Keep the existing breakout
-math (`margin-right: calc(-1 * var(--container-pad))` at ≥1024px, and
-`calc(-50vw + var(--container-max) / 2)` at ≥1320px) and add the extra 24px on
-top. Rule the engineer must verify by eye, not by number: **no more than ~6% of
-the subject's width may sit beyond the viewport edge, and the face, glasses and
-near shoulder must never be cropped.** The outer shoulder grazing the edge is
-intended tangency; anything more is a slice — pull it back.
+*Size — revised 2026-10-07.* Sizing is still height-driven, but the height now
+means **the visible figure's height**, not the canvas height. Read that
+sentence twice: `--hero-cutout-h` changed meaning in this revision, and the old
+value would now render ~40% larger than it did before even with the same number.
+
+```css
+.hero-portrait {
+  width: min(
+    calc(var(--hero-cutout-h) * 1048 / 1798),   /* figure height → figure width  */
+    calc(100% + var(--hero-cutout-bleed))       /* never wider than its column + bleed */
+  );
+  aspect-ratio: var(--hero-cutout-ar);
+}
+```
+
+| Token | Value | Applies |
+|---|---|---|
+| `--hero-cutout-h` | `clamp(480px, 72svh, 860px)` | ≥1024px |
+| `--hero-cutout-h-md` | `clamp(380px, 52svh, 560px)` | 768–1023px |
+| `--hero-cutout-h-sm` | `clamp(300px, 44svh, 420px)` | <768px |
+| `--hero-cutout-ar` | `1048 / 1798` | all |
+| `--hero-cutout-bleed` | `24px` ≥1024px · `16px` 768–1023px · `12px` <768px | all |
+
+Worked examples (figure height × figure width, after the `min()` guard):
+
+| Viewport | Old visible figure | New visible figure |
+|---|---|---|
+| 1440 × 900 | ~404 × 236 | **648 × 378** |
+| 1920 × 1080 | ~484 × 283 | **778 × 453** |
+| 1512 × 982 (laptop) | ~441 × 258 | **707 × 412** |
+| 1280 × 800 | ~359 × 210 | **576 × 336** |
+
+That is roughly **1.6× the linear size and 2.6× the visual area** of the
+rejected version, before the column change below. The head alone goes from
+~112px wide to ~180px — large enough to read as a portrait rather than a
+thumbnail, which is the "showing professionality" the client asked for.
+
+The `min()` second term is the safety rail that replaces the old "never grow
+past the fold" conservatism: the figure can be as tall as it likes, but it can
+never be wider than its own grid column plus the bleed, so it can never slide
+left over the headline. On a tall narrow viewport (e.g. 1024 × 1366) the width
+term binds and the figure simply stops growing. Verify this case in dev tools
+before sign-off.
+
+*The fold constraint is deliberately relaxed.* The previous spec sized the photo
+so the hero content row always fitted above the fold. That is what produced a
+timid image. From 2026-10-07: **the hero content row may exceed the viewport
+height, and the System Map is expected to sit below the fold on a 900px-tall
+laptop.** The `Scroll down ↓` cue already handles that, and the Map was always
+specified as "the hero's closing beat", not an above-the-fold element. The one
+hard limit that remains: the crown of the head must never be clipped by the top
+of the section (guaranteed by `align-self: end` plus the content-row min-height
+below, not by a magic number).
+
+*Vertical alignment.* Unchanged in principle, with a tuning target that is now
+actually reachable because the crop box starts at the crown of the head:
+
+- Hard constraint, unchanged: `align-self: end`. The bottom of the box sits
+  flush on the bottom of the hero content row — directly on the hairline above
+  the System Map — so the figure's torso is die-cut by that hairline. A figure
+  standing up out of the line reads as deliberate; a vertically sliced arm
+  reads as a bug. Never translate the image up; that breaks the flush bottom.
+- New tuning target: **the crown of the head lands level with the top of the
+  top stat row** (its hairline), within ±16px. This falls out automatically
+  when the content row's `min-height` equals the figure height, so set
+  `min-height: var(--hero-cutout-h)` on `.hero-grid` at ≥1024px rather than
+  nudging anything by hand.
+- The old instruction "if the crown falls below the headline's cap line, raise
+  the `svh` term" is **deleted**. It was compensating for the empty alpha band
+  and will now oversize the figure.
+
+*Horizontal placement — revised 2026-10-07.* Grid cols 8–12 (see "Grid" below),
+`justify-self: end`, with the box's right edge sitting
+`var(--hero-cutout-bleed)` past the right viewport edge and `overflow: hidden`
+on `.hero` doing the cropping. Keep the existing breakout math and add the bleed
+on top:
+
+```css
+/* ≥1024px */
+.hero-portrait { margin-right: calc(-1 * var(--container-pad) - var(--hero-cutout-bleed)); }
+/* ≥1320px */
+.hero-portrait { margin-right: calc(-50vw + var(--container-max) / 2 - var(--hero-cutout-bleed)); }
+```
+
+Rule the engineer must verify by eye, not by number, unchanged in intent and
+now easier to check because the box is the figure: **no more than ~6% of the
+box's width may sit beyond the viewport edge, and the face, glasses and near
+shoulder must never be cropped.** At the worked sizes above, 24px of a 378–453px
+box is 5.3–6.4% — right at the limit, which is the intended tangency. The outer
+(viewer-right) sleeve grazing the edge is correct; a visibly sliced arm is not.
+If a future viewport pushes past ~6%, reduce `--hero-cutout-bleed`, never the
+figure height.
 
 *Below 1024px.* The cutout follows the text block in flow, `justify-self: end`,
-right edge 16px (`--space-4`) past the viewport edge, same filter, same
-`align-self: end` against the hairline, heights per the `-md` / `-sm` tokens
-above. It is never centered (§12) and never overlaps the text. The rotated side
-label stays hidden below 1024px.
+`align-self: end` against the hairline, heights per the `-md` / `-sm` tokens and
+bleed per the table above. Same crop box, same no-filter full color. It is never
+centered (§12) and never overlaps the text. The rotated side label stays hidden
+below 1024px.
 
-**Grid.** `.hero-grid` becomes `minmax(0, 8fr) minmax(0, 4fr)` at ≥1024px (was
-7fr/5fr) — the slimmer cutout hands a column back to the text. Gap `--space-8`.
-Content row `min-height: 60svh`. Hero height overall: content-driven, min
-`90svh` on desktop including the System Map row.
+**Grid — revised 2026-10-07.**
 
-**Implementation note (not code, just the delta):** `hero.ctaPrimary` and
-`hero.ctaSecondary` come out of `src/data/site.ts`; the `Button` import and
-`.hero-lead-row` / `.hero-ctas` / `.hero-portrait-overlay` markup and styles
-come out of `Hero.astro`. The `<img src="/images/foto-kemal.svg">` is replaced
-by an `astro:assets` import of `kemal-portrait.png`.
+```css
+/* ≥1024px */
+.hero-grid {
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);   /* was 8fr / 4fr */
+  gap: var(--space-8);
+  min-height: var(--hero-cutout-h);                        /* was 60svh */
+  align-items: center;
+}
+/* <1024px */
+.hero-grid {
+  grid-template-columns: 1fr;
+  gap: var(--space-7);
+  align-content: start;
+  min-height: auto;                                        /* was 60svh — see note */
+}
+```
+
+Why 7fr/5fr and not 6fr/6fr: the client asked for right-side prominence, and
+5fr is what the larger figure needs — at a 1320px container the right column
+goes from 387px to 483px, so the figure fills ~78–94% of its column instead of
+~61% and finally owns the right side of the screen. 6fr/6fr was tested on paper
+and rejected: it leaves the text column at 580px, and `--text-display` at that
+viewport is ~108px, so the headline would wrap to five or six ragged lines and
+the hero would lose its statement. 7fr/5fr is the largest photo column the
+display type survives.
+
+Consequences of the narrower text column, both already folded into the content
+list above: headline `max-width` drops from `14ch` to `11ch` and the lead from
+`44ch` to `40ch` at ≥1024px. At 7fr the column is 512–677px wide and the display
+type is 88–128px, which is ~11 characters per line — so `11ch` is now a real cap
+that produces a balanced rag instead of a value the column was already
+overriding. A taller, narrower text block is also the right counterweight to a
+taller figure.
+
+`min-height: auto` below 1024px is an intentional fix, not an omission: the old
+blanket `min-height: 60svh` on the single-column stack is what opened the gap
+between the footer row and the portrait on mobile (noted in `handover.md`).
+Hero height overall stays content-driven.
+
+**Implementation note (not code, just the delta from the 2026-10-05 build):**
+`.hero-portrait` gains `aspect-ratio` + `overflow: hidden` + the `min()` width
+and loses `width: fit-content`; `.hero-portrait-img` loses its `height` rules
+and gains the three percentage values; `.hero-grid` goes 8fr/4fr → 7fr/5fr and
+`min-height: 60svh` → `var(--hero-cutout-h)` at ≥1024px / `auto` below;
+`--space-4`/`--space-5` in the `margin-right` breakout math are replaced by
+`var(--hero-cutout-bleed)`. No markup changes, no data changes.
 
 ### 6.2 Section header
 
@@ -371,7 +553,35 @@ Heading `h2` cols 1–7; side note `small`/olive cols 9–12, aligned to the hea
 ```
 One lead project (media cols 1–8, text cols 9–12), then the rest as rows. **Never** a uniform 3-column card grid.
 
-### 6.4 Contact
+### 6.4 Stack
+
+Full component spec in §7.8. Layout at a glance: the standard §6.2 section
+header, then one row of four equal cards.
+
+```
+Stack                                          The tools I actually build
+                                               with, grouped by the job
+                                               they do.
+──────────────────────────────────────────────────────────────── (hairline)
+
+┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+│ Digital        │ │ Digital        │ │ Website        │ │ CRM and        │
+│ performance    │ │ tracking       │ │ developer      │ │ automation     │
+│ ─────────────  │ │ ─────────────  │ │ ─────────────  │ │ ─────────────  │
+│ ▭  Google An.. │ │ ▭  Google An.. │ │ ▭  Laravel     │ │ ▭  n8n         │
+│ ▭  Google Ads  │ │ ▭  Google Ta.. │ │ ▭  Cloudflare  │ │ ▭  Make.com    │
+│ ▭  Meta Ads    │ │ ▭  Pixel Hub.. │ │ ▭  Vercel      │ │ ▭  HubSpot     │
+│ ▭  TikTok Ads  │ │                │ │ ▭  Lovable     │ │ ▭  Zapier      │
+│                │ │                │ │ ▭  GitHub      │ │ ▭  Spreadsheet │
+│                │ │                │ │ ▭  Codex       │ │ ▭  WABA        │
+│                │ │                │ │ ▭  Claude Code │ │                │
+└────────────────┘ └────────────────┘ └────────────────┘ └────────────────┘
+```
+
+(Names are truncated in this ASCII sketch only — they never truncate or wrap in
+the build; see §7.8.)
+
+### 6.5 Contact
 
 ```
 ┌──────────────────────────────────────────────────────────────┐  ink, radius-lg
@@ -422,8 +632,143 @@ No card. Top hairline, `h3` title, one-sentence outcome in `body` ink, then 3–
 ### 7.7 Approach step (on ink)
 Row with bottom hairline `line-dark`. Grid: number cols 1–2 (`text-metric`, `bone`, e.g. `1` not `01`), name cols 3–6 (`h3`, `paper`), principle cols 7–12 (`lead`, `ink-soft`).
 
-### 7.8 Stack group
-Definition-list style rows separated by hairlines: group name cols 1–4 (`small`, olive), tools cols 5–12 as a comma-separated sentence in `lead`, ink. Text only, no logos.
+### 7.8 Stack card
+
+**Revision history.**
+
+*Original spec (superseded 2026-10-07).* "Definition-list style rows separated
+by hairlines: group name cols 1–4 (`small`, olive), tools cols 5–12 as a
+comma-separated sentence in `lead`, ink. Text only, no logos." That treatment
+was never built. It is replaced in full by the card grid below.
+
+*2026-10-07 — client-directed replacement.* Client's words: *"Please make
+section for such as 'ads', 'landing page'… change with a good section design. I
+need you to create this with a card section and same size with each others to
+make this design clean and more professional, you have 1 main card and card for
+photo placeholder for a logo for skill/tools I build. For logo placeholder its
+shape rectangle with a same size for every logo and dont put this big, perhaps
+you can build this 15px x 15px."*
+
+Read as: four equal cards (one per tool group), each with the group name as a
+heading and a uniform column of small rectangular logo slots inside, one per
+tool. That is what is specified here.
+
+**§12 override — read this before building.** This section breaks two entries on
+the AI-slop checklist, both by explicit client instruction, and both are
+narrowed rather than deleted (see §12 for the matching carve-outs):
+
+1. *"❌ Logo walls for tools."* The rule stands everywhere else on the site. The
+   exception is narrow and is defined by all four of these conditions holding at
+   once: the chips are **small** (56 × 32px, ~19% of card width), they are
+   **grouped by function** rather than dumped in one undifferentiated grid,
+   **every chip carries a text label** so it is readable without logo
+   recognition, and there are **four groups, never more**. What the rule was
+   protecting against — a wide undifferentiated band of vendor marks used as
+   borrowed credibility — is exactly what this layout is not. A full-width
+   logo strip, a 3+ column chip grid, or logo chips anywhere outside this
+   section remain banned.
+2. *"❌ Uniform grids of identical rounded cards with icons in circles."* Four
+   equal-size rounded cards is the client's explicit, repeated request ("same
+   size with each others"), and the client's instruction wins over the checklist.
+   The parts of that pattern that are *not* required by the client are still
+   refused: no icons, no circles, no shadows (§5.4), no border, no hover lift,
+   no per-card accent color. The cards are flat `paper-2` panels and nothing
+   more. The grid is also honest content — four real capability groups, matching
+   the three pillars in §4.3 of the PRD and the System Map's node language —
+   not four invented buckets filled to make a grid balance.
+
+**Card.**
+
+| Property | Value |
+|---|---|
+| Background | `var(--color-paper-2)` on the section's `paper` |
+| Border / shadow | none / none (§5.4 — the background shift is the separation) |
+| Radius | `var(--radius-md)` (12px) |
+| Padding | `var(--space-6)` (32px) all sides; `var(--space-5)` (24px) below 768px |
+| Width | `1fr` of the card grid — never a fixed px width |
+| Height | equal across the row via `align-items: stretch` on the grid — **do not** set a `min-height`, and **do not** use `justify-content: space-between` inside the card (that would spread short lists and break cross-card row alignment) |
+
+**Card grid.**
+
+| Breakpoint | Columns | Gap |
+|---|---|---|
+| ≥1024px | `repeat(4, minmax(0, 1fr))` | `var(--space-5)` (24px) |
+| 768–1023px | `repeat(2, minmax(0, 1fr))` | `var(--space-5)` (24px) |
+| <768px | `1fr` | `var(--space-4)` (16px) |
+
+At the 1320px container this gives a 294px card; at 768px, a ~341px card. Equal
+height applies only when cards sit side by side (≥768px); stacked on mobile each
+card hugs its own content.
+
+**Card heading.** Group name, `text-h3` (1.5rem / 450), ink, sentence case. Wraps
+to two lines on a 294px card — that is fine and expected, and the hairline below
+it keeps the cards aligned anyway. Below the heading: `var(--space-4)` (16px),
+then a `1px solid var(--color-line)` hairline across the full card content
+width, then `var(--space-5)` (24px) before the first tool row. No tool count, no
+eyebrow, no icon — the heading is the only label the card gets (§1 principle 2).
+
+**Tool row.** One row per tool, in the order given in the data file. Always a
+**single column**, at every breakpoint, so the rows line up horizontally across
+all four cards and the section reads as a table rather than four unrelated
+boxes.
+
+```
+▭   Google Tag Manager
+└─ chip 56×32       └─ text-caption, olive
+```
+
+| Property | Value |
+|---|---|
+| Row layout | flex, `align-items: center`, `gap: var(--space-3)` (12px) |
+| Row height | `32px` (= chip height) |
+| Row-to-row gap | `var(--space-3)` (12px) |
+| Label | `text-caption` (0.8125rem / 450 / 0.01em), `var(--color-olive)`, sentence-case as written in the data file (brand names keep their own casing: `n8n`, `Make.com`, `GitHub`, `HubSpot`, `TikTok Ads`) |
+| Label wrapping | must not wrap. At a 294px card there are 162px of label space, which fits ~22 characters at `text-caption`. **Keep tool names ≤ 20 characters.** The longest current name, `Google Tag Manager` (18), measures ~113px — comfortable. |
+
+**Logo chip (the placeholder).**
+
+| Property | Value |
+|---|---|
+| Size | **56 × 32px**, identical for every chip in every card, never intrinsic to the logo |
+| Radius | `var(--radius-sm)` (4px) |
+| Background | `var(--color-paper)` |
+| Border | `1px solid var(--color-line)` |
+| Content, placeholder state | empty — the framed rectangle *is* the placeholder. No letter, no initial, no `?`, no emoji. |
+| Content, real-logo state | the logo image centred inside, `max-width: 44px; max-height: 20px; object-fit: contain`, natural color, no filter. The chip frame, size and background do not change when a logo lands, so swapping assets in one at a time never disturbs the grid. |
+| `flex: 0 0 56px` | so the chip never shrinks when a label is long |
+
+*On the client's "15px x 15px".* Taken as intent, not as a measurement, and
+documented here as a deliberate override. 15 × 15px cannot hold a logo: typical
+vendor wordmarks are 3:1 to 5:1, so at 15px tall a mark would render under 4px
+of cap height — illegible, and visually indistinguishable from a stray dot
+rather than an intentional slot. It is also off the 4px spacing scale's useful
+range for a bordered box. **56 × 32px (7:4)** is the smallest rectangle that
+holds a real wordmark at a legible ~20px cap height while staying clearly
+modest: it is 19% of the card's width and the chips together occupy under a
+quarter of the card's area. The client's actual constraint — "don't put this
+big", no logo wall — is honored. The ~15px figure survives as the logo's cap
+height inside the chip, which is almost certainly what was meant.
+
+**Data.** `src/data/stack.ts`, shape:
+
+```ts
+export const stackGroups = [
+  { group: "Digital performance", tools: [{ name: "Google Analytics" }, …] },
+  …
+] as const;
+```
+
+`tools[].logo?` is added later as an `ImageMetadata` import when real assets
+exist; until then every chip renders in its placeholder state. Groups and tool
+names are client-supplied verbatim (sentence-cased per §4.3) — do not rename,
+reorder, merge or "improve" them, including `Website developer`, `Pixel
+Hubspot`, `Spreadsheet` and `WABA`. The full list lives in PRD §4.5.
+
+**Accessibility.** The card is a `<section>` with its heading as the accessible
+name; the tool list is a `<ul>`. Chips are decorative placeholders — `aria-hidden="true"`
+until a real logo exists, at which point the `<img>` takes `alt=""` because the
+adjacent text label already names the tool. Nothing here is interactive: no
+links, no hover state, no focus target (§7.2's "tags are not clickable" logic).
 
 ### 7.9 Experience row
 Hairline-separated. Company + location (`h3`) and period (`caption` olive) cols 1–5; role/scope (`small` olive) cols 6–9; tags right-aligned cols 10–12.
@@ -465,12 +810,13 @@ Runs once. Under `prefers-reduced-motion: reduce`, render the final state immedi
 
 ## 9. Imagery
 
-- **Portrait (About):** real photo of Kemal, cropped 4:5, `radius-md`. Treatment: `filter: grayscale(1) contrast(1.05)` plus an overlay of `bone` with `mix-blend-mode: multiply` at 30% opacity, so the photo sits inside the palette. This is the print-mount treatment and it stays, because the About portrait is a rectangular photo mounted inside the layout. Unchanged by the 2026-10-05 hero revision.
-- **Portrait (Hero) — alpha cutout, revised 2026-10-05:** a true transparent-background cutout (`src/assets/images/kemal-portrait.png`, 1440×2560, alpha 0 outside the subject), standing directly on `paper` with **no backdrop block, no frame, no border, `--radius-none`**. Tone comes from one alpha-safe filter chain on the image — `grayscale(1) contrast(1.04) sepia(0.22) saturate(1.15) brightness(0.98)` (`--hero-cutout-filter`) — and **never** from a `mix-blend-mode` overlay layer, which would tint the transparent region and repaint a bone rectangle. Sizing, alignment and bleed rules: §6.1. The earlier spec here (cover-cropped inside a bone box with a bone multiply overlay) was written for an opaque rectangular photo and no longer applies to the hero.
+- **Portrait (About):** real photo of Kemal, cropped 4:5, `radius-md`. Treatment: `filter: grayscale(1) contrast(1.05)` plus an overlay of `bone` with `mix-blend-mode: multiply` at 30% opacity, so the photo sits inside the palette. This is the print-mount treatment and it stays, because the About portrait is a rectangular photo mounted inside the layout. Unchanged by the hero revisions.
+- **Portrait (Hero) — alpha cutout, revised 2026-10-05, resized 2026-10-07:** a true transparent-background cutout (`src/assets/images/kemal-portrait.png`, 1440×2560, alpha 0 outside the subject), standing directly on `paper` with **no backdrop block, no frame, no border, `--radius-none`**. It renders in **full natural color with no `filter` at all** (2026-10-05 client override — the filter-chain text that used to sit here is superseded; see §6.1 "Tone"). Tone must **never** come from a `mix-blend-mode` overlay layer, which would tint the transparent region and repaint a bone rectangle. Sizing, the subject-tight crop box, alignment and bleed rules: §6.1. The earliest spec here (cover-cropped inside a bone box with a bone multiply overlay) was written for an opaque rectangular photo and no longer applies to the hero.
 - **Project covers:** real screenshots of the work (landing pages, dashboards, CRM pipelines, ad creatives) shown on a `bone` background with generous padding inside the frame, like a print mount. Never stock photos, never AI-generated objects or abstract 3D shapes.
-- **Placeholders** (until real assets exist): flat `bone` block with the project name in `caption` olive, bottom-left. Does not apply to the hero portrait — the real cutout exists.
-- **Alpha cutouts in general:** no backdrop block behind them, no `mix-blend-mode` layer over them, and they are cropped only by a structural edge (a hairline, the viewport edge) — never by a box of their own.
-- Images never have shadows, borders, or tilt.
+- **Placeholders** (until real assets exist): flat `bone` block with the project name in `caption` olive, bottom-left. Does not apply to the hero portrait — the real cutout exists. Does not apply to Stack logo chips either — they have their own placeholder state (§7.8).
+- **Tool logos (Stack only):** real vendor marks, natural color, contained inside the fixed 56×32 chip (§7.8). Never scaled to their own intrinsic size, never used anywhere else on the site, never used as a credibility strip.
+- **Alpha cutouts in general:** no backdrop block behind them, no `mix-blend-mode` layer over them, and they are cropped only by a structural edge (a hairline, the viewport edge) — never by a visible box of their own. A transparent, unpainted crop box used solely to trim empty alpha padding (§6.1) is not a backdrop block and is allowed.
+- Images never have shadows, borders, or tilt. (The Stack logo chip's 1px hairline frames an empty *slot*, not an image, and is part of the chip, not of any photo.)
 
 ---
 
@@ -483,7 +829,7 @@ Runs once. Under `prefers-reduced-motion: reduce`, render the final state immedi
 | Filter change | 200ms | opacity crossfade of the list |
 | Mobile menu open | 250ms `cubic-bezier(0.2,0,0,1)` | opacity |
 
-**No** scroll-triggered reveals on sections, no parallax, no cursor followers, no marquee, no counters that tick up. The hero cutout does not animate, float, or parallax.
+**No** scroll-triggered reveals on sections, no parallax, no cursor followers, no marquee, no counters that tick up. The hero cutout does not animate, float, or parallax. Stack cards and logo chips have **no** hover state at all — nothing in that section is interactive.
 
 ---
 
@@ -501,7 +847,7 @@ Runs once. Under `prefers-reduced-motion: reduce`, render the final state immedi
 Review every page against this list before calling a phase done.
 
 - ❌ Gradients, glow, glassmorphism, blurred blobs, noise textures
-- ❌ Uniform grids of identical rounded cards with icons in circles
+- ❌ Uniform grids of identical rounded cards with icons in circles — **one carve-out: the four Stack cards (§7.8), client-directed. Even there: no icons, no circles, no borders, no shadows, no hover state, no per-card color.**
 - ❌ Drop shadows of any kind
 - ❌ All-caps labels or eyebrows above headings
 - ❌ One highlighted word in a headline
@@ -510,12 +856,12 @@ Review every page against this list before calling a phase done.
 - ❌ Arrows appended to button labels (only `↗` for external links)
 - ❌ Meta strings joined with middle dots
 - ❌ Emoji as icons
-- ❌ Logo walls for tools
+- ❌ Logo walls for tools — **one carve-out: the Stack logo chips (§7.8), client-directed, and only while all four conditions in §7.8 hold (56×32 chips, grouped by function, every chip text-labelled, four groups max). Logo chips are banned in every other section, as is any full-width logo strip.**
 - ❌ Stock photos, AI-generated 3D objects, abstract illustrations
 - ❌ Fade-and-slide-up on every section
 - ❌ Centered layouts (except the Contact panel heading)
 - ❌ Colors or font sizes not defined in this file
-- ❌ A rectangular backdrop block behind a transparent cutout image (§9)
+- ❌ A rectangular backdrop block behind a transparent cutout image (§9). A transparent, unpainted crop box that only trims empty alpha padding is not this.
 
 ---
 
@@ -557,12 +903,24 @@ Review every page against this list before calling a phase done.
   --container-pad: clamp(1.25rem, 4vw, 3rem);
   --grid-gap: 24px;
 
-  /* hero (§6.1) */
-  --hero-cutout-h: clamp(400px, 64svh, 760px);
-  --hero-cutout-h-md: clamp(320px, 42svh, 420px);
-  --hero-cutout-h-sm: clamp(260px, 38svh, 340px);
-  --hero-cutout-filter: grayscale(1) contrast(1.04) sepia(0.22) saturate(1.15) brightness(0.98);
+  /* hero (§6.1) — revised 2026-10-07.
+     NOTE: --hero-cutout-h now means the VISIBLE FIGURE height, not the canvas
+     height. The canvas is cropped to the subject's alpha box by .hero-portrait. */
+  --hero-cutout-h: clamp(480px, 72svh, 860px);     /* >=1024px */
+  --hero-cutout-h-md: clamp(380px, 52svh, 560px);  /* 768-1023px */
+  --hero-cutout-h-sm: clamp(300px, 44svh, 420px);  /* <768px */
+  --hero-cutout-ar: 1048 / 1798;                   /* measured subject alpha box */
+  --hero-cutout-bleed: 24px;                       /* past the right viewport edge */
+  --hero-cutout-filter: grayscale(1) contrast(1.04) sepia(0.22) saturate(1.15) brightness(0.98); /* historical only — not applied */
   --hero-rule-h: clamp(40px, 6vw, 72px);
+
+  /* stack (§7.8) */
+  --stack-card-pad: var(--space-6);
+  --stack-chip-w: 56px;
+  --stack-chip-h: 32px;
+  --stack-chip-logo-max-w: 44px;
+  --stack-chip-logo-max-h: 20px;
+  --stack-row-gap: var(--space-3);
 
   /* shape */
   --radius-none: 0;
@@ -578,8 +936,16 @@ Review every page against this list before calling a phase done.
   --dur-draw: 900ms;
 }
 
+@media (max-width: 1023px) {
+  :root { --hero-cutout-bleed: 16px; }
+}
+
 @media (max-width: 767px) {
-  :root { --grid-gap: 16px; }
+  :root {
+    --grid-gap: 16px;
+    --hero-cutout-bleed: 12px;
+    --stack-card-pad: var(--space-5);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
