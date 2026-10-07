@@ -89,14 +89,19 @@
   }
 }
 
+/* Tailwind v4 ships its own responsive "container" utility (breakpoint-keyed
+   max-width) that silently wins over an @layer components rule of the same
+   name regardless of source order. Redefine the utility itself via @utility
+   so our token-driven definition is what "container" actually resolves to. */
+@utility container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
 @layer components {
   /* Layout */
-  .container {
-    width: 100%;
-    max-width: var(--container-max);
-    margin-inline: auto;
-    padding-inline: var(--container-pad);
-  }
 
   .section-padding {
     padding-block: var(--space-section);

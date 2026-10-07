@@ -48,7 +48,23 @@
      distance from the bottom of the hero's top padding to the fold, so the
      crown sits --space-8 below the nav and the die-cut hairline lands at 100svh.
      Changing --nav-h or .hero's padding-top changes the figure. */
-  --hero-cutout-h: clamp(560px, calc(100svh - var(--nav-h) - var(--space-8)), 1040px); /* >=1024px */
+  --hero-row-h: clamp(560px, calc(100svh - var(--nav-h) - var(--space-8)), 1040px); /* >=1024px, content row (DESIGN-SYSTEM.md §6.1 (d)) */
+  --hero-gutter-x: calc((100vw - min(100vw, var(--container-max))) / 2 + var(--container-pad)); /* >=1024px */
+  --hero-figure-slot: calc(0.45 * (100vw + var(--hero-cutout-bleed) - var(--hero-gutter-x))); /* >=1024px */
+  --hero-figure-ar-max: 1; /* >=1024px — box never wider than tall */
+  --hero-figure-w-max: 610px; /* >=1024px — resolution ceiling, 1048 / 610 = 1.72x */
+  --hero-figure-w: clamp(
+    400px,
+    min(var(--hero-figure-slot), calc(var(--hero-row-h) * var(--hero-figure-ar-max))),
+    var(--hero-figure-w-max)
+  ); /* >=1024px — the primary dimension */
+  --hero-figure-h: min(var(--hero-row-h), calc(var(--hero-figure-w) * 1798 / 1048)); /* >=1024px — derived */
+  --hero-figure-gap: var(--space-8); /* >=1024px — designed text -> figure gutter */
+  --hero-figure-reserve: max(
+    0px,
+    calc(var(--hero-figure-w) - var(--hero-cutout-bleed) - var(--hero-gutter-x))
+  ); /* >=1024px */
+  --hero-text-max: 720px; /* >=1024px */
   --hero-cutout-h-md: clamp(380px, 52svh, 560px);  /* 768-1023px */
   --hero-cutout-h-sm: clamp(300px, 44svh, 420px);  /* <768px */
   --hero-cutout-ar: 1048 / 1798;                   /* measured subject alpha box */
