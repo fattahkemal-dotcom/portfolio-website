@@ -141,9 +141,20 @@ only while the hero headline is 1–2 words. The guard rail and the fallback are
   var(--space-7) }` shifted the hero's text column 24px right of the nav/
   footer/section-heading line, while contributing nothing the container's own
   gutter didn't already have room for. If an element needs to sit *outside*
-  the shared content edge (like the hero's rotated rail), position it
-  `absolute`/`fixed` within that gutter space — never widen the gutter itself
-  by padding the section.
+  the shared content edge (like the hero's rotated rail, or the hero portrait
+  since revision (d)), position it `absolute`/`fixed` within that gutter space
+  — never widen the gutter itself by padding the section.
+- **Corollary added 2026-10-07 (d) — right-edge bleeds are anchored, not
+  calculated.** An element that must reach the viewport's right edge from
+  inside a centered `Container` must not get there with a negative
+  `margin-right` built out of `50vw - var(--container-max) / 2`. That
+  expression omits `--container-pad` unless it is added explicitly, and
+  `100vw`/`50vw` count the classic scrollbar while the layout box does not, so
+  the result lands tens of pixels short or long depending on the browser. Pin
+  the element with `position: absolute; right: <negative bleed>` against a
+  full-width `position: relative` wrapper instead, and let the section's
+  `overflow: hidden` do the cropping. The hero portrait's 51px right-edge
+  shortfall (§6.1 revision (d)) was caused by exactly this.
 
 ### 5.3 Radius (hierarchical, not one value everywhere)
 
@@ -212,13 +223,14 @@ unreachable no matter how far the `svh` term was raised.
 
 Three changes followed: a crop box that removes the empty alpha padding; sizing
 expressed as figure height and no longer capped at the fold; and the right
-column growing from 4fr to 5fr. The crop-box technique and the 7fr/5fr grid from
-this revision both **survive into revision (b) below**; the specific
-`--hero-cutout-h` value from this revision (`clamp(480px, 72svh, 860px)`) does
-not.
+column growing from 4fr to 5fr. The crop-box technique survives into revisions
+(b) and (d) below; the 7fr/5fr grid survives into (b) and is **retired in (d)**;
+the specific `--hero-cutout-h` value from this revision (`clamp(480px, 72svh,
+860px)`) does not survive at all.
 
 *2026-10-07 (b) — the reference screenshot: a full-viewport figure, a left-rail
-spine, and a greeting-scale headline.* **This is the revision in force.**
+spine, and a greeting-scale headline.* **The composition in this entry is still
+in force; its `.hero-portrait` sizing mechanism is superseded by (d) below.**
 Client-directed, with an actual reference screenshot supplied for the first time
 (the "Finox" Webflow template hero, saved at
 `Documents\project\Portfolio Kemal\References\Hero-Banner.png`). Client's words:
@@ -238,86 +250,112 @@ never drops below 20px even at the narrowest desktop width. Fix: delete the
 `padding-left` rule, nothing else changes. See §5.2's new shared-edge rule —
 this bug is the reason that rule now exists, so it doesn't recur elsewhere.
 
-Revision (a) got the figure to ~72svh and ~378px wide at 1440×900. Measured
-against the reference screenshot, that is still roughly 15% short in height and,
-more importantly, **the supporting furniture is in the wrong places**. Findings,
-measured off the reference image rather than described from memory (reference
-viewport in the screenshot ≈ 1935 × 1233; percentages are of that viewport, and
-the ×0.73 column converts them to a 1440 × 900 laptop):
+*2026-10-07 (d) — the figure's width stops being a function of viewport height,
+the crop window becomes variable, and the photo leaves the grid.* **This is the
+revision in force.** Client-directed: *"I think for my photo on hero banner, you
+can make this to closely on the left container. Because I see its very far GAP
+from the left container and right container."*
 
-| Reference element | Measured | % of viewport | At 1440 × 900 |
-|---|---|---|---|
-| Nav bottom edge | y ≈ 130 | 10.5% h | ~72px (our nav height, unchanged) |
-| Photo crown of head | y ≈ 198 | 16.1% h | ~50px below the nav |
-| Photo bottom | clipped by the viewport | — | the fold |
-| **Visible figure height** | **≈ 1027px** | **83% of viewport h / 95% of the area below the nav** | **~750px** |
-| Rotated label (top of left rail) | y 228…408, x ≈ 98 | starts 8% below the nav; rail at 5.1% w | ~22px below the content top |
-| Top stat row | y 288…378 | starts 12.8% below the nav | ~66px below the content top |
-| **Long vertical rule — in the LEFT RAIL, not the text column** | y 455…1090, x ≈ 98 | 51.5% of viewport h | — |
-| **Year `2026` — rotated, at the BOTTOM of the left rail** | y 1100…1170, x ≈ 98 | 89…95% h | — |
-| `Scroll down ↓` | y ≈ 1160, x ≈ 218 (text-column left edge) | bottom-**left** | — |
-| Headline cap height | y 537…772 ≈ 235px | **19% of viewport h** | ~215px cap → ~240px font |
-| Headline rendered width | x 240…835 ≈ 595px | **~76% of its text column** | — |
+Measured live, in a real browser, at **1440 × 722** — a realistic laptop *window*,
+not the 1440×900 near-full-screen case revision (b) worked its examples against:
 
-Five changes follow, all specified below. Everything else in the hero is
-**reviewed and explicitly unchanged** (table at the end of this section).
+| Measured | Value |
+|---|---|
+| `.hero-text` right edge | `x = 774` |
+| `.hero-portrait` left edge | `x = 1014` |
+| **Dead space between the text column and the figure** | **240px** |
+| `.hero-portrait` right edge | `x = 1389` (viewport 1440) — **51px short** of the intended 24px bleed *past* the edge |
 
-1. **`--hero-cutout-h` is re-derived from the viewport, not guessed.** It is now
-   exactly the distance from the bottom of the hero's top padding to the fold, so
-   the figure fills the first screen and the hairline that die-cuts it lands on
-   the fold. `clamp(480px, 72svh, 860px)` → **`clamp(560px, calc(100svh -
-   var(--nav-h) - var(--space-8)), 1040px)`**.
-2. **The rotated label, the vertical rule and the year merge into one continuous
-   left rail.** In the reference these are not three scattered marks — they are a
-   single vertical spine at the far-left edge reading *who → boundary → when*.
-   The short vertical rule **moves out of the text column** and becomes the long
-   middle segment of that spine; the year **moves out of the bottom row** and
-   becomes its bottom terminal, rotated to match the label.
-3. **The bottom row keeps only `Scroll down ↓`**, bottom-**left**, aligned to the
-   text column's left edge — matching the reference exactly, and keeping the cue
-   permanently clear of the figure. (The previous spec put it bottom-right, which
-   under the larger figure would land underneath the portrait.)
-4. **The headline jumps to greeting scale** via the new `--text-display-xl`
-   (§4.2). The reference headline is ~19% of viewport height; `--text-display`
-   maxed out at 128px, roughly 2.5× too small.
-5. **The `min()` width guard is corrected.** Revision (a)'s second term
-   (`100% + bleed`) under-stated the room available to the figure by a whole
-   `--container-pad`, and at ≥1320px it ignored the entire container margin — so
-   on a 1920- or 2560-wide display the figure was being capped at ~507px wide and
-   silently refused to grow with `svh`. Fixed per breakpoint below.
+Two separate defects, both in revision (b)'s `.hero-portrait` block.
 
-**Which ui/ux-pro-max findings were applied, and how** (the client asked for the
-skill to be used, so this is recorded rather than left implicit):
+**Defect 1 — width was a pure function of viewport *height*, inside a
+fixed-fraction column.** `width: min(calc(var(--hero-cutout-h) * 1048 / 1798),
+…)` derives the figure's width from `--hero-cutout-h`, which is itself derived
+from `100svh`. The box then sits in a `minmax(0, 5fr)` grid track and is pinned
+to that track's **right** edge (`justify-self: end` + a negative
+`margin-right`). So when the viewport gets **shorter — not narrower, shorter** —
+the derived width shrinks while the track's width does not, and because the box
+is right-anchored, every pixel of width it loses moves its **left** edge further
+right. The gap to the text column grows as the window gets shorter. Real laptop
+windows are short: browser tabs, a bookmarks bar and the OS taskbar eat vertical
+space that `100svh` never sees, which is why the 1440×900 worked examples looked
+fine on paper and the same machine looked wrong in practice. At 1440×722 the
+height-derived width was ~375px against ~615px of genuinely available
+horizontal room — the figure was filling about 60% of its own slot and the
+remaining 40% was the hole the client is pointing at.
 
-- **`hero-centric-design`** (landing domain) — *"Full-bleed Hero (headline +
-  visual)… Let the hero dominate the initial viewport **without hiding the next
-  content cue**."* Applied in two halves, and the second half is the one that
-  shaped the spec most. *Dominate:* `--hero-cutout-h` is now literally defined as
-  "the initial viewport, minus the nav, minus the hero's top padding", so the
-  figure cannot be timid at any viewport height — it is sized **by** the fold
-  rather than fitted inside it; and the headline was raised to greeting scale so
-  the pair dominates together, rather than a big photo sitting next to small
-  type. *Without hiding the next cue:* this is why `Scroll down ↓` survives the
-  revision, why it moves to the bottom-left where the figure can never cover it,
-  and why the hairline + System Map are placed to begin **exactly at the fold**
-  (`figure bottom = 100svh`) rather than far below it — one scroll tick reveals
-  the next section. It is also why the figure is cut by a structural hairline at
-  the fold instead of simply overflowing off-screen the way the reference's photo
-  does.
-- **`minimalism-and-swiss-style`** (style domain) — *clean, high-contrast,
-  grid-based, sans-serif, monochromatic, no unnecessary decoration, single
-  primary accent only.* Used as a **veto list**, which is its most useful role
-  here: it confirms this revision is about proportion and composition only, so
-  the ink/olive/bone/paper palette, Hanken Grotesk, the hairline vocabulary, the
-  no-shadow/no-gradient rules and the no-filter client override are all
-  explicitly out of scope and untouched. It is also the direct justification for
-  change 2: consolidating three scattered marks into one continuous grid-aligned
-  rail is a Swiss move (structure that encodes something, §1 principle 2), where
-  leaving a stray rule floating in the middle of the text column was the
-  decorative option. And it is why three things visible in the reference were
-  examined and **not** copied: its grayscale photo treatment (the client's
-  full-colour override stands), its `— It's Finox a design wizerd` em-dash
-  prefix (encodes nothing), and its underlined nav CTA.
+**Defect 2 — the right-edge bleed was computed, and computed wrong.** The
+≥1320px term `margin-right: calc(-50vw + var(--container-max) / 2 -
+var(--hero-cutout-bleed))` accounts for the container's outer margin
+(`50vw - 660px`) but **omits `--container-pad` entirely** (48px at this width),
+so the box's right edge lands 48px inside where it should, of which the 24px
+bleed only buys back half: a guaranteed 24px shortfall by arithmetic, before
+anything else. The remainder of the measured 51px is the classic scrollbar:
+`50vw` counts it, the container's layout box does not, so the two halves of the
+expression are measured against different widths. The intended "slight graze
+past the right edge" was therefore never happening at any viewport. §5.2 gained
+a corollary so this class of bug does not recur elsewhere.
+
+**The fix, in one sentence.** The figure's **width** becomes the primary,
+horizontally-derived dimension — read off the space that actually exists between
+the text column and the viewport edge — its **height** becomes the derived and
+capped dimension, the crop window's aspect ratio becomes variable instead of
+fixed, the box leaves the grid and is pinned straight to the viewport edge, and
+the text column's width is derived *from the figure* so the gutter between them
+is a designed constant at every viewport. Full specification under "Size" and
+"Horizontal placement" below.
+
+**What does not change, and why that is the hard part.** The subject's alpha box
+is 1048 × 1798 (aspect 0.583) — tall and narrow. At the approved figure height
+(586px at 1440×722) an aspect-locked box is only 342px wide, and no amount of
+re-anchoring makes a 342px box fill a 615px slot. Growing it by height alone is
+not available either: closing the slot at 1440×722 by height would need a
+1055px-tall box, which would put the crown ~470px above the top of the content
+row — behind the nav and clipped by `.hero { overflow: hidden }`. So the gap
+could only be closed by making the box **wider relative to its height**, i.e. by
+cutting the figure higher on the torso. That is now done in CSS, and it is the
+one genuinely new idea in this revision:
+
+> **The crop box's aspect ratio is no longer fixed.** The three
+> `.hero-portrait-img` percentages (`width: 137.40%`, `margin-left: -28.24%`,
+> `margin-top: -72.71%`) resolve **against the box's width only** — percentage
+> margins on a child resolve against the containing block's *inline* size. They
+> scale the canvas so the subject's width equals the box's width exactly, and
+> offset it so the subject's left edge sits on the box's left edge and the crown
+> of the head sits on the box's **top** edge. None of that depends on the box's
+> height. The box's height therefore controls one thing only: **how far down the
+> subject the `overflow: hidden` edge cuts.** Revision (b)'s note that these
+> percentages are "tuned to the box's aspect ratio" is corrected here — they are
+> tuned to the box's *width*. **They are unchanged by this revision and must not
+> be recomputed.**
+
+Consequence: letting the box be wider than `height × 0.583` simply crops the
+figure higher — which is precisely the "wider head-and-shoulders cutout, cropped
+at the collarbone" that §9 logged as an asset request under revision (b). We can
+produce it from the existing asset, so that asset request is **withdrawn and
+replaced** (see §9 — what is still wanted from a new shoot is *resolution*, not a
+wider crop).
+
+**Which ui/ux findings this revision leans on** (project convention: record the
+pattern, not just the outcome):
+
+- **`hero-centric-design`** — the "let the hero dominate the initial viewport
+  without hiding the next content cue" clause is the constraint that kept this
+  from being solved the easy, wrong way. The easy fix for a 240px hole is to
+  shrink the figure until the hole closes; that would undo revision (b), which
+  the client signed off after seeing the reference. Instead the figure gets
+  **wider** (610px vs 445px at 1440×900, +37% linear) while the content row's
+  height is left exactly as (b) set it — so the scroll cue still sits on the
+  fold, the die-cut hairline and the System Map still start at `100svh`, and the
+  next-content cue is untouched.
+- **`minimalism-and-swiss-style`** — used again as a veto list, and again it is
+  what identifies the bug as a bug: §1 principle 2 says structure is information,
+  and a 240px void between two elements encodes nothing. It is also why the gap
+  is closed by **derivation** (the text column's width is computed from the
+  figure's, so the gutter is one constant, `--space-8`, already in the spacing
+  rhythm) rather than by a tuned magic number per breakpoint. Palette, typeface,
+  hairline vocabulary, the no-filter override and the full-colour cutout are
+  explicitly out of scope and untouched.
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -354,6 +392,12 @@ skill to be used, so this is recorded rather than left implicit):
 anywhere. Its crown is level with the top of the content row, 64px under the
 nav; its torso is cut only by the hairline above the System Map, which now sits
 on the fold; its outer shoulder is tangent to the right viewport edge.)*
+
+> **Proportions in the sketch above predate revision (d).** Since (d) the figure
+> is ~1.4× wider, is cut higher on the torso, actually clears the right viewport
+> edge by the 24px bleed, and its left edge sits exactly `--space-8` (64px) from
+> the text column at every viewport. The horizontal construction diagram is under
+> "Size" below; the vertical construction is unchanged.
 
 **Content, top to bottom (this is the complete list — nothing else goes in the hero body):**
 
@@ -397,7 +441,9 @@ on the fold; its outer shoulder is tangent to the right viewport edge.)*
      `↓` is allowed, precisely because it is an affordance and not a label (§12
      bans arrows on button/link labels, so making this a link would break that
      rule).
-6. **The cutout portrait** (spec below), right column.
+6. **The cutout portrait** (spec below). Through revision (c) it was the second
+   grid column; since **(d)** it is **out of flow** — absolutely positioned
+   against the right viewport edge inside `.hero-content`.
 
 Below the content row, unchanged and out of scope for this revision: the
 Growth System Map (§8) as its own full-width row with a hairline above it, then
@@ -408,7 +454,9 @@ animated element.
 > this revision):** the Map's draw animation is specified in §8.2 as running "on
 > first load of the hero". Now that the Map begins exactly at the fold rather
 > than above it, that animation may be spent before anyone sees it. Flag to the
-> client; do not change §8 as part of the hero work.
+> client; do not change §8 as part of the hero work. Revision (d) does not move
+> the Map — the content row's height is untouched — so this item is still open
+> and still unchanged.
 
 **Why the secondary CTA does not resurface.** `See selected work` is dropped
 outright rather than moved next to the scroll cue. Three reasons: the nav's
@@ -420,7 +468,7 @@ consequence: `cta_click` with `cta_location: "hero"` is no longer emitted —
 that is expected, not a regression. The nav remains the only CTA source above
 the fold.
 
-**Display headline — new 2026-10-07 (b).**
+**Display headline — new 2026-10-07 (b), acceptance basis amended (d).**
 
 The reference's `Hello` is ~19% of the viewport's height and fills ~76% of its
 text column. `--text-display` tops out at `8rem` (128px), which at a 1935px-wide
@@ -428,14 +476,15 @@ viewport is roughly 2.5× too small, and at a 1440px laptop fills only ~41% of t
 text column. The headline is therefore set in **`--text-display-xl`:
 `clamp(4.5rem, 16vw, 15rem)`**, weight 300, line-height 0.95, tracking -0.035em.
 
-| Viewport width | `--text-display-xl` | `Hello` rendered width | Text column (7fr) | Fill |
+| Viewport width | `--text-display-xl` | `Hello` rendered width | Text column (rev. d) | Fill |
 |---|---|---|---|---|
 | 390px | 72px (min binds) | ~156px | ~350px (single col) | 45% |
 | 768px | 123px | ~267px | ~706px (single col) | — |
-| 1024px | 164px | ~356px | ~472px | 75% |
-| 1280px | 205px | ~445px | ~584px | 76% |
-| 1440px | 230px | ~499px | ~677px | 74% |
-| ≥1519px | 240px (max binds) | ~521px | ~677px | 77% |
+| 1024px | 164px | ~356px | ~490px | 73% |
+| 1280px | 205px | ~445px | ~627px | 71% |
+| 1440px | 230px | ~499px | ~682px (at 900px tall) / ~706px (at 722px tall) | 73% / 71% |
+| 1920px | 240px (max binds) | ~521px | 720px (`--hero-text-max` binds) | 72% |
+| 2560px | 240px (max binds) | ~521px | 720px (`--hero-text-max` binds) | 72% |
 
 The `15rem` max exists because the text column stops growing once the container
 hits `1320px`; without it a `vw`-only size would eventually overrun its own
@@ -445,6 +494,14 @@ column on a wide display.
 headline must occupy **70–80% of the text column's width**. If it falls outside
 that band after a copy change, adjust the `15rem` maximum, never the `16vw` term
 (the `vw` term is what keeps the mid-range viewports proportional).
+
+*Amended 2026-10-07 (d) — what "the text column" means in that check.* The text
+column is no longer a `7fr` grid track; it is the container's content width minus
+the figure's reserve (see "Size"), capped by `--hero-text-max: 720px`. The
+numbers barely moved — 682px at 1440×900 against 677px at `7fr` — which is why
+the band still holds, and the `720px` cap is what keeps it holding on wide
+displays, where the figure's reserve stops binding and an uncapped column would
+balloon to ~1160px (fill would fall to 45%). The cap is inert below ~1500px.
 
 *The guard rail — read this before changing hero copy.* `--text-display-xl` is
 safe only for a **1–2 word headline**. The current approved copy is
@@ -497,9 +554,9 @@ renders in its natural full color, with **no `filter` property on the `<img>`
 at all**. `--hero-cutout-filter` is no longer applied anywhere; the token stays
 defined in `tokens.css` for now only as a historical record, not referenced by
 any component. Do not reintroduce `grayscale`/`sepia`/any tint on this image
-without a new client sign-off. **Still in force after both 2026-10-07 revisions
-— note in particular that the reference screenshot's photo is black and white,
-and we are deliberately not copying that.**
+without a new client sign-off. **Still in force after all three 2026-10-07
+revisions — note in particular that the reference screenshot's photo is black and
+white, and we are deliberately not copying that.**
 
 *Original design-director tone spec (no longer in effect, kept for context).*
 The earlier instruction was to apply a single alpha-safe filter chain to the
@@ -523,20 +580,22 @@ the transparent region, which paints back exactly the bone rectangle this
 revision removes. Any `mix-blend-mode` layer over an alpha cutout is wrong
 unless it is masked by the image's own alpha; do not use a mask here.
 
-*The crop box — introduced 2026-10-07 (a), **unchanged in (b)**, build this
-first.* `.hero-portrait` is not a plain `width: fit-content` wrapper; it is a
-**subject-tight crop box**: its edges are the subject's alpha bounding box, and
-the `<img>` is scaled and offset inside it so the empty alpha padding falls
-outside. Every other number in this section is measured against this box. All
-four percentage values below are correct as built — do not recompute them.
+*The crop box — introduced 2026-10-07 (a), **percentages unchanged in (b) and
+(d)**, build this first.* `.hero-portrait` is not a plain `width: fit-content`
+wrapper; it is a **crop window onto the subject**: its left and top edges are the
+subject's left and top alpha edges, and the `<img>` is scaled and offset inside
+it so the empty alpha padding falls outside. Every other number in this section
+is measured against this box. All three percentage values below are correct as
+built — **do not recompute them.**
 
 ```css
 .hero-portrait {
-  /* the box IS the figure */
-  aspect-ratio: var(--hero-cutout-ar);          /* 1048 / 1798 */
   overflow: hidden;                              /* clips transparent pixels only */
+  /* <1024px: a fixed-ratio box, in flow */
+  aspect-ratio: var(--hero-cutout-ar);           /* 1048 / 1798 */
   justify-self: end;
   align-self: end;
+  /* >=1024px: ratio is derived from an explicit width + height — see "Size" */
 }
 
 .hero-portrait-img {
@@ -547,11 +606,12 @@ four percentage values below are correct as built — do not recompute them.
   height: auto;
   margin-left: -28.24%;  /*  296 / 1048  — pull the left margin out */
   margin-top: -72.71%;   /*  762 / 1048  — pull the empty top band out */
-  /* percentage margins resolve against the box WIDTH; that is what makes this work */
+  /* percentage margins resolve against the box WIDTH; that is what makes this work,
+     and it is why the box's HEIGHT can vary freely without retuning them (rev. d) */
 }
 ```
 
-Three things the engineer must know about this block:
+Four things the engineer must know about this block:
 
 - `overflow: hidden` here is **not** the banned backdrop rectangle (§9, §12).
   Nothing is painted — the box has no background, no border and no radius. It
@@ -559,179 +619,358 @@ Three things the engineer must know about this block:
   2026-10-05 line "the element must not be given `overflow: hidden` — there is
   nothing to clip" is superseded: there *is* something to clip, 762px of empty
   alpha, and clipping it is the fix for the client's complaint.
-- The subject bleeds off the canvas bottom (`y = 2560`), so the image's bottom
-  edge and the box's bottom edge coincide. The flush `align-self: end` die-cut
-  against the hairline is preserved exactly as before, with no extra offset.
+- **The three percentages are a function of the box's WIDTH only** (percentage
+  margins resolve against the containing block's inline size). Given a box of
+  width `W`, the subject always renders `W` wide and `W × 1798 / 1048` tall, with
+  its left edge on the box's left edge and the crown on the box's top edge. So:
+  the head can never be cropped, and the box's height decides only how far down
+  the torso the bottom edge cuts. **Revision (d) changes the box's height/ratio
+  and therefore changes nothing here.**
+- The subject bleeds off the canvas bottom (`y = 2560`). Through revision (c) the
+  box's height was always exactly `W × 1798 / 1048`, so the image's bottom edge
+  and the box's bottom edge coincided. Since (d) the box may be *shorter* than
+  that, in which case the bottom of the chest is clipped by the box — which is
+  the same die-cut, just higher up the torso. The box must **never be taller**
+  than `W × 1798 / 1048`, or the figure floats above the hairline with empty box
+  below it; that is what the second `min()` in `--hero-figure-h` prevents.
 - **If a tightly cropped asset is ever supplied** (alpha box = full canvas), set
-  `width: 100%; margin-left: 0; margin-top: 0` and update `--hero-cutout-ar` to
-  the new file's ratio. Nothing else in this spec changes.
+  `width: 100%; margin-left: 0; margin-top: 0`, update `--hero-cutout-ar` to the
+  new file's ratio, and replace the `1798 / 1048` constants in `--hero-figure-h`
+  and in the acceptance checks with the new subject ratio. Nothing else in this
+  spec changes.
 
-*Size — revised 2026-10-07 (b).* Sizing is still height-driven and
-`--hero-cutout-h` still means **the visible figure's height**, not the canvas
-height. What changed is where the number comes from: it is no longer a tuned
-`svh` fraction but a **derivation from the fold**.
+*Size — rewritten 2026-10-07 (d). Width is the primary driver; height is derived
+and capped.*
 
-```css
---hero-cutout-h: clamp(560px, calc(100svh - var(--nav-h) - var(--space-8)), 1040px);
+**Superseded (rev. b).** `--hero-cutout-h: clamp(560px, calc(100svh -
+var(--nav-h) - var(--space-8)), 1040px)` as *the figure's height*, with
+`width: min(calc(var(--hero-cutout-h) * 1048 / 1798), <available width>)` and a
+per-breakpoint available-width table. Retired for the two defects recorded in the
+(d) revision entry above. The *value* of that clamp survives — it is now
+`--hero-row-h`, and it sizes the hero **content row** rather than the figure, so
+every vertical property revision (b) established (crown 64px below the nav,
+scroll cue and die-cut hairline on the fold, Map starting at `100svh`) is
+preserved exactly.
+
+The horizontal construction, which is what (d) adds:
+
+```
+ 0                                                                      100vw
+ │                                                                        │
+ │◀── gutter-x ──▶┌─ Container content box (C) ─────────┐◀── gutter-x ──▶ │
+ │                │                                     │                 │
+ │                │  text column           │◀─ gap ─▶│  figure (W)        │
+ │                │  = C − reserve − gap   └─────────┤███████████████████▓│▓▓
+ │                │                                  │                    │ └ bleed (24px),
+ │                └──────────────────────────────────┼────────────────────┘   clipped by
+ │                                                   │                        .hero {overflow}
+ │                                reserve ──────────▶│◀── the part of W that
+ │                                                                 lies inside C
 ```
 
-Read the middle term literally: *viewport height, minus the nav, minus the hero's
-top padding.* Because the content row's `min-height` equals this value and the
-figure is `align-self: end` inside it, the consequence is exact, and it is the
-whole point of the revision:
+```css
+/* tokens.css — all >=1024px only; see the token table for the full list */
+--hero-row-h:      clamp(560px, calc(100svh - var(--nav-h) - var(--space-8)), 1040px);
+--hero-gutter-x:   calc((100vw - min(100vw, var(--container-max))) / 2 + var(--container-pad));
+--hero-figure-slot: calc(0.45 * (100vw + var(--hero-cutout-bleed) - var(--hero-gutter-x)));
+--hero-figure-ar-max: 1;      /* the box is never wider than it is tall */
+--hero-figure-w-max: 610px;   /* resolution ceiling: 1048 source px / 610 = 1.72x */
+--hero-figure-w: clamp(
+  400px,
+  min(var(--hero-figure-slot), calc(var(--hero-row-h) * var(--hero-figure-ar-max))),
+  var(--hero-figure-w-max)
+);
+--hero-figure-h: min(var(--hero-row-h), calc(var(--hero-figure-w) * 1798 / 1048));
+--hero-figure-gap: var(--space-8);   /* the designed gutter, text column -> figure */
+--hero-figure-reserve: max(
+  0px,
+  calc(var(--hero-figure-w) - var(--hero-cutout-bleed) - var(--hero-gutter-x))
+);
+--hero-text-max: 720px;
+```
 
-> **The crown of the head sits `--space-8` (64px) below the nav, and the bottom
-> of the figure — with the hairline that die-cuts it — lands on the fold.**
+Read each term literally, in this order — the order is the argument:
 
-That reproduces the reference's single most important proportion (figure ≈ 95% of
-the height of the area below the nav) without a magic number, and it self-corrects
-on every viewport height instead of being tuned for one.
-
-- *Minimum `560px`* — binds below a ~696px-tall viewport (e.g. a 1280×650 window).
-  Below that, letting the figure keep shrinking turns it back into the thumbnail
-  this whole thread is about; accept that the hairline drops below the fold
-  instead.
-- *Maximum `1040px`* — binds above a ~1176px-tall viewport. Two reasons: past
-  ~1040px the head renders larger than life size on a 27" display, and the
-  subject in the source is 1798px tall, so 1040 CSS px is the last size that keeps
-  the figure above ~1.7× effective pixel density. Raise it only together with a
-  larger source asset.
-- *This formula is coupled to two other values.* `--nav-h` (§7.5's 72px, now a
-  token) and `.hero { padding-top: var(--space-8) }`. If either changes, the
-  figure changes with it — which is correct and intended, but it means neither
-  can be edited casually.
+1. **`--hero-gutter-x`** is the distance from a viewport edge to the `Container`'s
+   content edge: the container's own outer margin plus `--container-pad`. It is
+   the same on both sides (the container is centered), which is why one token
+   serves. At 1440 it is `60 + 48 = 108px`; at 1024, `0 + 40.96 = 41px`. This is
+   the quantity revision (b)'s `margin-right` formula was missing half of.
+2. **`--hero-figure-slot`** is the horizontally available width: the band from the
+   container's left content edge out to the viewport's right edge plus the bleed,
+   split **45% to the figure, 55% to the text**. The `0.45` is not a taste
+   number: at the client's own 1440px viewport width the band is
+   `1440 + 24 − 108 = 1356px`, and `0.45 × 1356 = 610.2px` — exactly the
+   resolution ceiling below. So the share is set so that at 1440 the figure is as
+   wide as the source file can afford, and narrower viewports scale down from
+   there in proportion. If the asset's resolution improves, raise
+   `--hero-figure-w-max` first and leave `0.45` alone.
+3. **`--hero-figure-w`** is the figure's width — **the primary dimension now.**
+   Three guards, in `clamp`/`min` order:
+   - the slot (above) — this is the term that closes the gap;
+   - `--hero-row-h × --hero-figure-ar-max` — **the box is never wider than it is
+     tall.** This is the head-safety rail: at `W = H` the box shows
+     `1 / 1.7156 = 58%` of the subject's rendered height, which lands the bottom
+     edge around the collarbone. It is the only tunable in this block (see the
+     acceptance check below);
+   - `--hero-figure-w-max: 610px` — effective pixel density `1048 / 610 = 1.72×`,
+     the floor revision (b) set. Raise only with a larger source asset.
+   - the `400px` floor is a backstop; at ≥1024px the slot never falls below
+     ~453px, so it does not bind in practice.
+4. **`--hero-figure-h`** is **derived**: the row height, or the height at which
+   the subject would run out of pixels, whichever is smaller. The second term
+   matters on tall, narrow viewports (1024×1366), where a 453px-wide box can only
+   be 777px tall before the subject's own bottom edge arrives; without it the box
+   would be 1040px tall and the figure would float 263px above the hairline with
+   empty box beneath it, breaking the die-cut.
+5. **`--hero-figure-reserve`** is the part of the figure that lies *inside* the
+   container's content box, and **the text column is `C − reserve −
+   --hero-figure-gap`**. That is the whole gap fix: the text column's right edge
+   is defined as "64px to the left of wherever the figure starts", so the gutter
+   is a constant at every viewport width *and* every viewport height, and it stays
+   a constant under any retuning of the figure's size. `max(0px, …)` handles very
+   wide viewports (≥~2200px) where the figure sits entirely outside the container
+   and reserves nothing.
+6. **`--hero-text-max: 720px`** caps the text column so the §6.1 headline-fill
+   band survives on wide displays (see "Display headline"). Inert below ~1500px.
 
 ```css
+/* >=1024px — the figure leaves the grid */
+.hero-content { position: relative; }   /* unchanged, from revision (b) */
+
 .hero-portrait {
-  aspect-ratio: var(--hero-cutout-ar);
-  width: min(
-    calc(var(--hero-cutout-h) * 1048 / 1798),   /* figure height → figure width */
-    /* the available-width term for this breakpoint — see the table below */
-  );
+  position: absolute;
+  bottom: 0;                                     /* replaces align-self: end — same die-cut */
+  right: calc(-1 * var(--hero-cutout-bleed));    /* the bleed, anchored not calculated */
+  width: var(--hero-figure-w);
+  height: var(--hero-figure-h);
+  aspect-ratio: auto;                            /* the ratio is now w/h, derived */
+  margin-right: 0;                               /* the rev. (b) breakout margins are deleted */
+  overflow: hidden;
+}
+
+.hero-text {
+  margin-right: calc(var(--hero-figure-reserve) + var(--hero-figure-gap));
+  max-width: var(--hero-text-max);
 }
 ```
 
-*The available-width term — corrected 2026-10-07 (b).* Revision (a) used
-`calc(100% + var(--hero-cutout-bleed))` at every breakpoint. That was wrong in
-two ways, and it is why the figure stopped growing on large monitors: the box's
-`margin-right` already pulls it out past the container padding, and at ≥1320px it
-pulls it all the way out into the container's side margin — neither of which the
-old term accounted for. At 1920×1080 the old term capped the figure at 507px wide
-(≈870px tall) when 944px of height was available. Use these instead:
+`.hero-portrait` stays where it is in the markup (inside `<Container
+class="hero-grid">`). `.container` sets no `position`, so an absolutely positioned
+child resolves against `.hero-content` — the full-viewport-width wrapper revision
+(b) introduced — and **no markup change is required by this revision.** Leaving it
+in the Container also means the base (<1024px) rules keep working untouched: there
+it is still a normal grid item with `aspect-ratio`, `justify-self: end`,
+`align-self: end`.
 
-| Breakpoint | `min()` second term |
-|---|---|
-| <768px | `calc(100% + var(--container-pad) + var(--hero-cutout-bleed))` |
-| 768–1023px | `calc(100% + var(--container-pad) + var(--hero-cutout-bleed))` |
-| 1024–1319px | `calc(100% + var(--container-pad) + var(--hero-cutout-bleed))` |
-| ≥1320px | `calc(100% + 50vw - var(--container-max) / 2 + var(--hero-cutout-bleed))` |
+Why absolute positioning rather than a grid column: the grid track was supplying
+a width the figure did not use, and the only way out of the track to the viewport
+edge was a negative margin built from `vw` arithmetic — the source of defect 2 and
+of the scrollbar mismatch. `right: calc(-1 * var(--hero-cutout-bleed))` is exact
+in every browser at every width, needs no breakpoint table, and the ≥1320px
+special case disappears with it. `bottom: 0` resolves against `.hero-content`,
+whose height is the content row's height, i.e. the hairline above the System Map —
+byte-for-byte the same edge `align-self: end` was hitting.
 
-Each term is exactly *column width + whatever the matching `margin-right` pulls
-the box out by*. Keep them paired: if one is edited the other must be too.
+*Why `100vw` is still acceptable in these formulas.* `--hero-gutter-x` and
+`--hero-figure-slot` do use `100vw`, which counts the classic scrollbar (~15px on
+Windows) while the layout box does not. The error is ~7px in `gutter-x`, which
+moves the figure's width by ~3px and the text column by ~4px — invisible, and it
+cannot affect the figure's right edge, which is anchored rather than computed.
+Do **not** "fix" it by swapping `100%` for `100vw`: percentages in
+`--hero-figure-w` would resolve against `.hero-content` (viewport width) while the
+same token used in `.hero-text`'s margin would resolve against the Container's
+content box, and the two would silently disagree.
 
-Worked examples at ≥1024px (figure height × figure width, after the `min()` guard;
-container 1320px max, pad 48px, gap `--space-8`):
+*Acceptance checks for this block, in dev tools, at ≥1024px:*
 
-| Viewport | Figure before (rev. a) | **Figure now** | Available width | Binding term |
-|---|---|---|---|---|
-| 1280 × 800 | 576 × 336 | **664 × 387** | 539 | height |
-| 1440 × 900 | 648 × 378 | **764 × 445** | 567 | height |
-| 1512 × 982 | 707 × 412 | **846 × 493** | 603 | height |
-| 1920 × 1080 | 778 × 453 (capped) | **944 × 550** | 807 | height |
-| 2560 × 1440 | 778 × 453 (capped) | **1040 × 606** (max) | 1127 | the `1040px` max |
-| 1024 × 1366 (tall, narrow) | 560 × 326 | **739 × 431** | 431 | **width** — the safety rail |
+1. `.hero-portrait` right edge = viewport width + 24px (clipped). Measure the
+   element, not the paint.
+2. `.hero-portrait` left edge − `.hero-text` right edge = **64px**, at 1440×722,
+   1440×900 and 1024×1366. This is the client's complaint; it must be 64 at every
+   one of them.
+3. `.hero-portrait` bottom edge = the hairline above the System Map (0px gap).
+4. The crown of the head is never clipped, and at 1440-wide viewports the box's
+   **bottom edge falls below the collarbone, never at or above the chin.** This is
+   the one thing a formula cannot verify, because the head's share of the subject
+   box was never measured. If 58% of the subject (the `W = H` case, which binds on
+   short viewports) cuts too high, lower **`--hero-figure-ar-max`** — `0.85` shows
+   68%, `0.75` shows 77% — and nothing else. Never raise it above `1`. The gap in
+   check 2 stays 64px whatever you set it to, because the reserve is derived from
+   the same token.
+5. Effective density `1048 / <measured box width>` ≥ 1.7.
 
-At 1440 × 900 that is **1.18× the linear size and 1.39× the area** of revision
-(a), and **1.89× / 3.57×** against the version the client rejected on 2026-10-07.
-Verify the 1024 × 1366 row in dev tools before sign-off — it is the only case
-where the width term binds, and it must degrade by getting shorter, never by
-overlapping the text.
+*Worked examples, ≥1024px (`--container-max` 1320px, pad `clamp(20px, 4vw, 48px)`,
+bleed 24px, nav 72px, `--space-8` 64px). "Visible" = the share of the subject's
+1798px height the box shows; the remainder is die-cut by the hairline.*
+
+| Viewport | Row h | Slot | **Figure (w × h)** | Visible | Text col | **Gap** | Figure right edge | Binding width term |
+|---|---|---|---|---|---|---|---|---|
+| **1440 × 722** (the reported case) | 586 | 610 | **586 × 586** | 58% | 706 | **64** | 1464 | `ar-max` (height) |
+| **1440 × 900** (rev. b's example) | 764 | 610 | **610 × 764** | 73% | 682 | **64** | 1464 | `w-max` |
+| 1280 × 800 | 664 | 565 | **565 × 664** | 68% | 627 | 64 | 1304 | slot |
+| 1366 × 768 | 632 | 594 | **594 × 632** | 62% | 661 | 64 | 1390 | slot |
+| **1024 × 1366** (tall, narrow) | 1040 | 453 | **453 × 777** | 100% | 490 | **64** | 1048 | slot |
+| 1024 × 640 (short, narrow) | 560 | 453 | **453 × 560** | 72% | 490 | 64 | 1048 | slot |
+| 1440 × 650 (very short) | 560 | 610 | **560 × 560** | 58% | 720 (capped) | 76 | 1464 | `ar-max` (height) |
+| 1920 × 1080 | 944 | 718 | **610 × 944** | 90% | 720 (capped) | 174 | 1944 | `w-max` |
+| 2560 × 1440 | 1040 | 862 | **610 × 1040** | 99% | 720 (capped) | 442 | 2584 | `w-max` |
+
+Against revision (b), at the same viewports: 1440×722 was **375 × 643** with a
+240px gap and the right edge 51px *short* of the viewport; it is now **586 × 586**
+with a 64px gap and the bleed landing correctly — **1.56× wider**. 1440×900 was
+764 × 445; it is now 764 tall × **610** wide — same height, **1.37× wider**,
+1.37× the area, so the "figure must read as dominant" constraint from (b) is met
+by a wider margin than before, not undone. 1024×1366 was 739 × 431 and is now
+777 × 453. 2560×1440 reproduces revision (b)'s maximum figure (1040 × 606) almost
+exactly at 1040 × 610 — the ceiling has not moved.
+
+Note the two rows where the gap is *not* 64px (1440×650, and ≥1600-wide
+viewports): there `--hero-text-max` has clipped the text column before the
+reserve could, so the surplus appears as extra air to the right of the text. That
+is the headline-fill band being protected, and it is a cap on a *text measure*,
+not dead space inside the figure's slot. At 1920 and above the figure also sits
+largely outside the capped container by construction — that is inherent to
+"bleed to the viewport edge" plus "container maxes out at 1320px", it was equally
+true of every previous revision, and the glyph-to-figure air at 1920 is
+unchanged from (b) (~465px vs ~477px).
+
+- *Row-height minimum `560px`* — binds below a ~696px-tall viewport (e.g. a
+  1280×650 window). Below that, letting the row keep shrinking turns the figure
+  back into the thumbnail this whole thread is about; accept that the hairline
+  drops below the fold instead.
+- *Row-height maximum `1040px`* — binds above a ~1176px-tall viewport. Past
+  ~1040px the head renders larger than life size on a 27" display, and at
+  `--hero-figure-w-max: 610px` the box is anyway within a pixel of showing the
+  entire subject, so more height would buy nothing.
+- *This formula is coupled to two other values.* `--nav-h` (§7.5's 72px, now a
+  token) and `.hero { padding-top: var(--space-8) }`. If either changes, the row
+  and therefore the figure change with it — which is correct and intended, but it
+  means neither can be edited casually.
 
 *The fold constraint stays relaxed.* **The hero content row may exceed the
 viewport height, and the System Map is expected to sit below the fold.** The
 `Scroll down ↓` cue handles that, and the Map was always specified as "the hero's
-closing beat". Under revision (b) the Map now starts *immediately* at the fold
-rather than well below it, which is the `hero-centric-design` pattern's "without
-hiding the next content cue" clause satisfied by construction. The one hard
-limit that remains: the crown of the head must never be clipped by the top of the
-section (guaranteed by `align-self: end` plus the content-row `min-height`, not
-by a magic number).
+closing beat". Since revision (b) the Map starts *immediately* at the fold, and
+revision (d) does not move it — the row height is untouched. The one hard limit
+that remains: the crown of the head must never be clipped by the top of the
+section, which `bottom: 0` plus `--hero-figure-h ≤ --hero-row-h` guarantees by
+construction rather than by a magic number.
 
-*Vertical alignment — tuning target revised 2026-10-07 (b).*
+*Vertical alignment — target from revision (b), mechanism updated in (d).*
 
-- Hard constraint, **unchanged**: `align-self: end`. The bottom of the box sits
-  flush on the bottom of the hero content row — directly on the hairline above
-  the System Map — so the figure's torso is die-cut by that hairline. A figure
-  standing up out of the line reads as deliberate; a vertically sliced arm reads
-  as a bug. Never translate the image up; that breaks the flush bottom.
+- Hard constraint, **unchanged**: the bottom of the box sits flush on the bottom
+  of the hero content row — directly on the hairline above the System Map — so
+  the figure's torso is die-cut by that hairline. A figure standing up out of the
+  line reads as deliberate; a vertically sliced arm reads as a bug. Never
+  translate the image up; that breaks the flush bottom. Since (d) this is
+  `bottom: 0` on an absolutely positioned box instead of `align-self: end` on a
+  grid item; the resulting edge is identical.
 - **Superseded (rev. a):** *"the crown of the head lands level with the top of
   the top stat row (its hairline), within ±16px."* The reference does not do
   this. Measured there, the crown is at 16.1% of viewport height and the stat
   row's top is at 23.4% — **the stats start ~90px (7.3% of viewport height) below
   the crown**, which at a 900px laptop is ~66px.
-- **New tuning target (rev. b):** the crown lands level with the **top of the
-  content row** (which `min-height: var(--hero-cutout-h)` + `align-self: end`
-  gives for free), and the top stat row sits **`--space-8` (64px) below it**, via
-  `padding-top: var(--space-8)` on `.hero-text` at ≥1024px only. Tolerance ±12px.
-  Do not nudge anything else by hand.
+- **Tuning target (rev. b, still in force):** the crown lands level with the
+  **top of the content row** (`min-height: var(--hero-row-h)` + a bottom-anchored
+  box of the same height gives this for free), and the top stat row sits
+  **`--space-8` (64px) below it**, via `padding-top: var(--space-8)` on
+  `.hero-text` at ≥1024px only. Tolerance ±12px. Do not nudge anything else by
+  hand.
+- **Exception introduced by (d), expected and correct:** when
+  `--hero-figure-h` is capped by the subject's own pixels rather than by the row
+  (tall, narrow viewports — 1024×1366 is the case), the box is shorter than the
+  row, so the crown sits *below* the row top (263px below it at 1024×1366) and
+  there is air above the head. The figure cannot be taller without being wider,
+  and it cannot be wider without overrunning the text column. Revision (b) had
+  the same behaviour and more of it (301px of air at the same viewport). Do not
+  "fix" this by scaling the image up inside the box — that would crop the crown.
 - The rotated label at the top of the left rail starts **`--space-5` (24px)** below
   the content-row top (reference: 30px at its scale ≈ 22px at ours), so the rail
   begins just under the crown, not level with it.
 
-*Horizontal placement — reviewed 2026-10-07 (b), unchanged.* Grid cols 8–12,
-`justify-self: end`, with the box's right edge sitting `var(--hero-cutout-bleed)`
-past the right viewport edge and `overflow: hidden` on `.hero` doing the
-cropping:
+*Horizontal placement — rewritten 2026-10-07 (d).* The figure is pinned to the
+right **viewport** edge, not to a grid column:
 
 ```css
-/* ≥1024px */
-.hero-portrait { margin-right: calc(-1 * var(--container-pad) - var(--hero-cutout-bleed)); }
-/* ≥1320px */
-.hero-portrait { margin-right: calc(-50vw + var(--container-max) / 2 - var(--hero-cutout-bleed)); }
+/* >=1024px, and the only rule needed at any width >=1024 */
+.hero-portrait { position: absolute; right: calc(-1 * var(--hero-cutout-bleed)); }
 ```
+
+**Superseded (rev. a/b/c):** `justify-self: end` plus
+`margin-right: calc(-1 * var(--container-pad) - var(--hero-cutout-bleed))` at
+≥1024px and `margin-right: calc(-50vw + var(--container-max) / 2 -
+var(--hero-cutout-bleed))` at ≥1320px, with the `min()` available-width table
+below. All of it is deleted at ≥1024px. The ≥1320px breakpoint for
+`.hero-portrait` disappears entirely — there is nothing left in it.
+
+**Superseded table (rev. b's `min()` second term), kept only so nobody
+reintroduces it:**
+
+| Breakpoint | `min()` second term — DO NOT USE at ≥1024px |
+|---|---|
+| <768px | `calc(100% + var(--container-pad) + var(--hero-cutout-bleed))` — **still in force below 768px** |
+| 768–1023px | `calc(100% + var(--container-pad) + var(--hero-cutout-bleed))` — **still in force 768–1023px** |
+| 1024–1319px | ~~`calc(100% + var(--container-pad) + var(--hero-cutout-bleed))`~~ |
+| ≥1320px | ~~`calc(100% + 50vw - var(--container-max) / 2 + var(--hero-cutout-bleed))`~~ |
 
 Rule the engineer must verify by eye, not by number: **no more than ~6% of the
 box's width may sit beyond the viewport edge, and the face, glasses and near
 shoulder must never be cropped.** The larger figure makes this *easier*, not
-harder — 24px of a 445–606px box is **4.0–5.4%**, comfortably inside the limit
-(it was 5.3–6.4%, right at the limit, under revision (a)). The outer
-(viewer-right) sleeve grazing the edge is correct; a visibly sliced arm is not.
-If a future viewport pushes past ~6%, reduce `--hero-cutout-bleed`, never the
-figure height.
+harder — 24px of a 453–610px box is **3.9–5.3%**, comfortably inside the limit.
+The outer (viewer-right) sleeve grazing the edge is correct; a visibly sliced arm
+is not. If a future viewport pushes past ~6%, reduce `--hero-cutout-bleed`, never
+the figure width.
 
-*Accepted deviation from the reference — the horizontal gap.* In the reference
-the headline's right edge and the subject's near shoulder almost touch (~15px
-apart), because that photo is a tight head-and-shoulders crop roughly as wide as
-it is tall. Our asset is a chest-up 9:16 crop with a subject aspect of 0.583, so
-at the same height it is ~45% narrower and leaves ~230px of air between the
-headline and the figure at 1440×900. This is a property of the asset, not of the
-layout, and it is **not** to be closed by shrinking the figure's height, widening
-the text column past 7fr, or scaling the headline beyond the 80% acceptance band.
-The only real fix is a wider head-and-shoulders cutout from the same shoot; that
-is logged as an asset request in §9 rather than compensated for in CSS.
+*~~Accepted deviation from the reference — the horizontal gap.~~ **Superseded
+2026-10-07 (d).*** Revision (b) recorded that our asset's 0.583 subject aspect
+leaves ~230px of air between the headline and the figure at 1440×900, that this
+was "a property of the asset, not of the layout", and that the only real fix was
+a wider head-and-shoulders cutout from the same shoot. That reasoning held only
+while the crop box's aspect ratio was locked to the subject's full alpha box. It
+is not locked: the three crop percentages depend on the box's width alone, so the
+box can be cut shorter and the figure rendered larger and wider from the same
+file. Revision (d) does exactly that, and the air at 1440×900 drops from ~230px to
+a designed 64px gutter. The asset request in §9 is updated accordingly — what is
+still wanted from a new shoot is **more pixels**, not a wider crop.
 
-*Below 1024px — reviewed, unchanged.* The cutout follows the text block in flow,
-`justify-self: end`, `align-self: end` against the hairline, heights per the `-md`
-/ `-sm` tokens and bleed per the token table below. Same crop box, same no-filter
-full color. It is never centered (§12) and never overlaps the text. The left rail
-stays hidden below 1024px, which is why the year and the short in-column rule are
-retained in the stacked layout at these breakpoints (content item 5). The `-md`
-and `-sm` heights are **deliberately not raised**: the reference is a desktop
-screenshot and gives no mobile guidance, the stacked layout already gives the
-figure a full-width row of its own, and `clamp(380px, 52svh, 560px)` on a
-768×1024 tablet is already ~55% of the viewport.
+*Below 1024px — reviewed, unchanged by (d).* The cutout follows the text block in
+flow, as a fixed-ratio box: `aspect-ratio: var(--hero-cutout-ar)`,
+`justify-self: end`, `align-self: end` against the hairline, `width: min(<height
+token> × 1048 / 1798, calc(100% + var(--container-pad) + var(--hero-cutout-bleed)))`,
+`margin-right: calc(-1 * var(--container-pad) - var(--hero-cutout-bleed))`,
+heights per the `-md` / `-sm` tokens and bleed per the token table below. Same
+crop box, same no-filter full color. It is never centered (§12) and never
+overlaps the text. The left rail stays hidden below 1024px, which is why the year
+and the short in-column rule are retained in the stacked layout at these
+breakpoints (content item 5). The `-md` and `-sm` heights are **deliberately not
+raised**: the reference is a desktop screenshot and gives no mobile guidance, the
+stacked layout already gives the figure a full-width row of its own, and
+`clamp(380px, 52svh, 560px)` on a 768×1024 tablet is already ~55% of the viewport.
+The stacked layout has no "gap to the text" to close — the figure is below the
+text, not beside it — so none of (d) applies here.
 
 | Token | Value | Applies | Status |
 |---|---|---|---|
-| `--nav-h` | `72px` | all | **new 2026-10-07 (b)** — tokenises the 72px nav height from §7.5 so `--hero-cutout-h` can reference it. No visual change to the nav. |
-| `--hero-cutout-h` | `clamp(560px, calc(100svh - var(--nav-h) - var(--space-8)), 1040px)` | ≥1024px | **revised 2026-10-07 (b)** (was `clamp(480px, 72svh, 860px)`) |
-| `--hero-cutout-h-md` | `clamp(380px, 52svh, 560px)` | 768–1023px | reviewed, unchanged |
-| `--hero-cutout-h-sm` | `clamp(300px, 44svh, 420px)` | <768px | reviewed, unchanged |
-| `--hero-cutout-ar` | `1048 / 1798` | all | unchanged |
-| `--hero-cutout-bleed` | `24px` ≥1024px · `16px` 768–1023px · `12px` <768px | all | reviewed, unchanged |
-| `--hero-rule-h` | `clamp(40px, 6vw, 72px)` | **<1024px only** | **scope narrowed 2026-10-07 (b)** — the ≥1024px rule is now the rail's `flex: 1` segment and has no fixed height |
+| `--nav-h` | `72px` | all | 2026-10-07 (b) — tokenises the 72px nav height from §7.5 so the hero row height can reference it. No visual change to the nav. |
+| `--hero-row-h` | `clamp(560px, calc(100svh - var(--nav-h) - var(--space-8)), 1040px)` | ≥1024px | **renamed + re-roled 2026-10-07 (d)** — same value as (b)'s `--hero-cutout-h`, but it now sizes the hero **content row** and caps the figure's height. It is no longer "the figure's height". |
+| ~~`--hero-cutout-h`~~ | ~~`clamp(560px, calc(100svh - var(--nav-h) - var(--space-8)), 1040px)`~~ | ~~≥1024px~~ | **deleted 2026-10-07 (d)** — replaced by `--hero-row-h`. Remove the name so nothing can keep sizing the figure from viewport height alone. |
+| `--hero-gutter-x` | `calc((100vw - min(100vw, var(--container-max))) / 2 + var(--container-pad))` | ≥1024px | **new (d)** — viewport edge → `Container` content edge, identical both sides |
+| `--hero-figure-slot` | `calc(0.45 * (100vw + var(--hero-cutout-bleed) - var(--hero-gutter-x)))` | ≥1024px | **new (d)** — the available-width term, and the gap fix |
+| `--hero-figure-ar-max` | `1` | ≥1024px | **new (d)** — box never wider than tall; the head-safety tunable |
+| `--hero-figure-w-max` | `610px` | ≥1024px | **new (d)** — resolution ceiling, `1048 / 610 = 1.72×` |
+| `--hero-figure-w` | `clamp(400px, min(var(--hero-figure-slot), calc(var(--hero-row-h) * var(--hero-figure-ar-max))), var(--hero-figure-w-max))` | ≥1024px | **new (d)** — **the primary dimension** |
+| `--hero-figure-h` | `min(var(--hero-row-h), calc(var(--hero-figure-w) * 1798 / 1048))` | ≥1024px | **new (d)** — derived from the width |
+| `--hero-figure-gap` | `var(--space-8)` | ≥1024px | **new (d)** — the designed text→figure gutter |
+| `--hero-figure-reserve` | `max(0px, calc(var(--hero-figure-w) - var(--hero-cutout-bleed) - var(--hero-gutter-x)))` | ≥1024px | **new (d)** — the figure's intrusion into the container; drives the text column's width |
+| `--hero-text-max` | `720px` | ≥1024px | **new (d)** — keeps the headline-fill band valid on wide displays |
+| `--hero-cutout-h-md` | `clamp(380px, 52svh, 560px)` | 768–1023px | reviewed, unchanged by (d) |
+| `--hero-cutout-h-sm` | `clamp(300px, 44svh, 420px)` | <768px | reviewed, unchanged by (d) |
+| `--hero-cutout-ar` | `1048 / 1798` | **<1024px only after (d)** | value unchanged; at ≥1024px the box's ratio is derived from its explicit width and height, so this token is no longer referenced there |
+| `--hero-cutout-bleed` | `24px` ≥1024px · `16px` 768–1023px · `12px` <768px | all | reviewed, unchanged — at ≥1024px it is now consumed by `right:` rather than by a `margin-right` |
+| `--hero-rule-h` | `clamp(40px, 6vw, 72px)` | **<1024px only** | scope narrowed 2026-10-07 (b) — the ≥1024px rule is the rail's `flex: 1` segment and has no fixed height |
 
-**The left rail — new 2026-10-07 (b), ≥1024px only.**
+**The left rail — new 2026-10-07 (b), ≥1024px only. Unchanged by (d).**
 
 The rail replaces the old `.hero-edge-label` (which held only the rotated role
 label) and absorbs two elements that used to live elsewhere. It must span the
@@ -739,12 +978,14 @@ label) and absorbs two elements that used to live elsewhere. It must span the
 System Map — *not* the whole `#top` section, which also contains the System Map
 and the impact row.
 
-*Required markup change.* Wrap `<Container class="hero-grid">` in a
-`position: relative` element — `<div class="hero-content">` — and make the rail a
-child of that wrapper, not of `.hero`. The current build anchors the rail with
-`position: absolute; top: var(--space-8); bottom: 0` against `.hero`, which now
-resolves to the bottom of the System Map row and would run the hairline straight
-down past the Map. Do not fix this with a hard-coded height.
+*Required markup.* `<Container class="hero-grid">` is wrapped in a
+`position: relative` element — `<div class="hero-content">` — and the rail is a
+child of that wrapper, not of `.hero`. Anchoring the rail with `position:
+absolute; top: var(--space-8); bottom: 0` against `.hero` would resolve to the
+bottom of the System Map row and run the hairline straight down past the Map. Do
+not fix that with a hard-coded height. (Since revision (d) this same wrapper is
+also the containing block for the absolutely positioned portrait, so it is now
+load-bearing twice.)
 
 ```css
 .hero-content { position: relative; }
@@ -753,7 +994,7 @@ down past the Map. Do not fix this with a hard-coded height.
 .hero-rail {
   position: absolute;
   inset-block: 0;                       /* = the content row, i.e. crown → hairline */
-  left: var(--space-3);                 /* 12px; .hero keeps padding-left: --space-7 to clear it */
+  left: var(--space-3);                 /* 12px; fits inside the container's own gutter (rev. c) */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -801,7 +1042,7 @@ the site states Kemal's role above the fold. Mark only `.hero-rail-rule` with
 `aria-hidden="true"`. This is also why the year must not be duplicated into the
 bottom row at ≥1024px: it would be read twice.
 
-**The text column — spacing revised 2026-10-07 (b).**
+**The text column — spacing revised 2026-10-07 (b), width revised (d).**
 
 At ≥1024px `.hero-text` stops using a single uniform flex `gap` and takes the
 measured rhythm from the reference. Below 1024px the existing uniform
@@ -815,23 +1056,41 @@ measured rhythm from the reference. Below 1024px the existing uniform
 | Lead line → bottom row | `margin-top: auto` on the bottom row | the reference leaves the column's lower third empty on purpose |
 | Bottom row → content-row bottom | 0 (the row sits on the hairline) | scroll cue at 94% of viewport height |
 
+**Width, revision (d).** `.hero-text` is the hero grid's only in-flow item at
+≥1024px, so its width is the container's content width minus the figure's
+reserve and the designed gutter, capped by `--hero-text-max`:
+
+```css
+/* ≥1024px */
+.hero-text {
+  margin-right: calc(var(--hero-figure-reserve) + var(--hero-figure-gap));
+  max-width: var(--hero-text-max);     /* 720px */
+}
+```
+
+This is the mechanism that makes the gap a constant: the column ends where the
+figure begins, minus 64px, by derivation rather than by a fraction that happens
+to fit. At 1440×900 it measures 682px against the 677px the retired `7fr` track
+gave, which is why none of the headline/lead measures or the fill band needed
+retuning.
+
 `.hero-text` keeps `align-self: stretch` so `margin-top: auto` on the bottom row
-resolves against the full row height. With the figure at 764px (1440×900) the
-text column's content measures ~500px, leaving ~250px of deliberate air above the
+resolves against the full row height. With the row at 764px (1440×900) the text
+column's content measures ~500px, leaving ~250px of deliberate air above the
 scroll cue — that emptiness is the reference's composition and is not a bug to
 fill.
 
-**Grid — reviewed 2026-10-07 (b), ratio unchanged.**
+**Grid — 7fr/5fr retired 2026-10-07 (d).**
 
 ```css
 /* ≥1024px */
 .hero-grid {
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);   /* UNCHANGED */
-  gap: var(--space-8);                                     /* UNCHANGED */
-  min-height: var(--hero-cutout-h);                        /* same rule, new value */
-  align-items: center;                                     /* UNCHANGED (inert: text stretches, photo ends) */
+  grid-template-columns: minmax(0, 1fr);   /* was minmax(0, 7fr) minmax(0, 5fr) */
+  gap: 0;                                  /* was var(--space-8); nothing to space */
+  min-height: var(--hero-row-h);           /* was var(--hero-cutout-h) — same value */
+  align-items: stretch;                    /* was center; inert either way now */
 }
-/* <1024px */
+/* <1024px — unchanged */
 .hero-grid {
   grid-template-columns: 1fr;
   gap: var(--space-7);
@@ -840,32 +1099,59 @@ fill.
 }
 ```
 
-7fr/5fr survives this revision, and revision (a)'s reasoning still holds, with one
-addition. The ratio no longer controls the figure's size at all — the figure's
-width is driven by its height and it breaks out of its column to the viewport
-edge, so the `5fr` track is now only a **cap**, and after the `min()` correction
-above it is a cap that binds in exactly one case (a tall, narrow 1024×1366
-viewport). What `7fr` still controls is the **text column**, and 677px at a 1440
-laptop is what makes the 70–80% headline fill band land where it does. Widening
-the text column to 8fr would not close the gap to the figure (that gap is set by
-the asset's crop — see "Accepted deviation" above) and would push the headline
-fill down to ~65%. 6fr/6fr remains rejected for the reason given in revision (a).
+**Superseded (rev. a/b):** `grid-template-columns: minmax(0, 7fr) minmax(0, 5fr)`
+with `gap: var(--space-8)` at ≥1024px. Revision (b) already observed that the
+ratio had stopped controlling the figure's size and that the `5fr` track was
+"now only a cap". It was worse than that: it was a cap that reserved 483px at
+1440 and then let the figure use only 375px of it, with the surplus landing as
+dead space on the figure's left — the bug this revision fixes. With the figure
+out of flow there is no second track to size, and the `--space-8` grid gap is
+re-expressed, unchanged in value, as `--hero-figure-gap`.
+
+What `7fr` used to control was the **text column**, and the replacement
+derivation lands within ~5px of it at the client's viewport (682px vs 677px at
+1440×900), so the 70–80% headline-fill band and the `40ch` lead measure carry
+over untouched. 6fr/6fr remains rejected for the reason given in revision (a) —
+and the question is now moot, since the split is derived from the figure rather
+than chosen.
 
 `min-height: auto` below 1024px is an intentional fix, not an omission: the old
 blanket `min-height: 60svh` on the single-column stack is what opened the gap
 between the footer row and the portrait on mobile. Hero height overall stays
 content-driven below 1024px.
 
-**Implementation note (not code — the delta from the current build):**
+**Implementation note (not code — the delta from the current build, which is at
+revision (c)):**
 
-1. New markup wrapper `<div class="hero-content">` around `<Container class="hero-grid">`; `position: relative`.
-2. `.hero-edge-label` → `.hero-rail`, moved inside `.hero-content`, now containing three children: `.hero-rail-label`, `.hero-rail-rule` (`aria-hidden`), `.hero-rail-year`. Its `top`/`bottom` are replaced by `inset-block: 0`.
-3. `.hero-rule` (the in-column rule) is rendered **only below 1024px**; `display: none` at ≥1024px.
-4. `.hero-footer-row`: at ≥1024px the year span is not rendered (it is in the rail) and `justify-content` becomes `flex-start`; below 1024px it is unchanged.
-5. `.hero-headline` gains the `--text-display-xl` modifier class per the copy-conditional table above.
-6. `.hero-text` gains `padding-top: var(--space-8)` at ≥1024px, and its uniform `gap` is replaced by the per-pair spacing table at that breakpoint only.
-7. `.hero-portrait`: the `min()` **second** term is replaced per the breakpoint table (`+ var(--container-pad)` added below 1320px; the `50vw` term added at ≥1320px). The first term, the `aspect-ratio`, the `margin-right` rules and the four crop percentages are untouched.
-8. `tokens.css`: `--nav-h` and `--text-display-xl` added; `--hero-cutout-h` re-valued. `--hero-rule-h` stays, now <1024px only.
+1. **No markup change.** `.hero-content`, `.hero-rail` and the portrait's
+   position in the tree all stay as built. (`.container` sets no `position`, so
+   the absolutely positioned portrait resolves against `.hero-content`.)
+2. `tokens.css`: delete `--hero-cutout-h`; add `--hero-row-h` (same value),
+   `--hero-gutter-x`, `--hero-figure-slot`, `--hero-figure-ar-max`,
+   `--hero-figure-w-max`, `--hero-figure-w`, `--hero-figure-h`,
+   `--hero-figure-gap`, `--hero-figure-reserve`, `--hero-text-max`. Full block in
+   §13. `--hero-cutout-ar`, `-h-md`, `-h-sm`, `--hero-cutout-bleed`,
+   `--hero-rule-h` are unchanged.
+3. `.hero-portrait` at **≥1024px**: replace the whole `width: min(...)` +
+   `margin-right` pair with `position: absolute; bottom: 0; right: calc(-1 *
+   var(--hero-cutout-bleed)); width: var(--hero-figure-w); height:
+   var(--hero-figure-h); aspect-ratio: auto; margin-right: 0`.
+4. **Delete the `@media (min-width: 1320px)` block from `Hero.astro`
+   entirely** — both of its rules were `.hero-portrait` width/margin overrides and
+   both are now wrong. Nothing replaces it.
+5. `.hero-portrait` base rule (<768px) and the 768–1023px override: **unchanged.**
+   They keep `aspect-ratio: var(--hero-cutout-ar)`, `justify-self: end`,
+   `align-self: end`, the `width: min(...)` pair and the `margin-right` breakout.
+6. `.hero-text` at ≥1024px: add `margin-right: calc(var(--hero-figure-reserve) +
+   var(--hero-figure-gap))` and `max-width: var(--hero-text-max)`. Its
+   `padding-top`, its per-pair spacing and `align-self: stretch` are unchanged.
+7. `.hero-grid` at ≥1024px: `grid-template-columns: minmax(0, 1fr)`, `gap: 0`,
+   `min-height: var(--hero-row-h)`, `align-items: stretch`.
+8. `.hero-portrait-img`: **untouched.** All three percentages stay exactly as
+   built, including `max-width: none`.
+9. Everything else in `Hero.astro` — the rail, the headline modifier logic, the
+   footer row, the map row, `.hero { padding-top / overflow: hidden }` — is
+   untouched.
 
 No data changes are required by this revision. The current `src/data/site.ts`
 copy (`headline: "Hello"`, `lead: "I'm Kemal a Senior Growth Performance"`) is
@@ -873,8 +1159,8 @@ already in the short-headline shape this spec assumes; it is still placeholder
 copy that Kemal replaces, but any replacement headline must stay 1–2 words or the
 token must change with it.
 
-**Reviewed in this revision and deliberately NOT changed — with reasons.** Do not
-"also fix" any of these.
+**Reviewed in revisions (b) and (d) and deliberately NOT changed — with reasons.**
+Do not "also fix" any of these.
 
 | Element | Reason |
 |---|---|
@@ -882,18 +1168,17 @@ token must change with it.
 | No backdrop, frame, border, radius, shadow | Client-approved 2026-10-05; §12 |
 | Full natural color, no `filter` | Client override 2026-10-05; the reference being black and white does not reopen it |
 | No CTA buttons in the hero body | Client-approved 2026-10-05; the reference agrees |
-| Crop-box technique + its four percentages | Fixes a measured bug; the reference does not bear on it |
-| 7fr/5fr grid ratio and the `--space-8` grid gap | See "Grid" above — the ratio now governs the text column only |
-| `align-self: end` die-cut at the hairline | Reproduces the reference's "figure cut by the bottom edge" with a structural edge instead of an overflow |
-| `--hero-cutout-bleed` 24/16/12px | The larger figure improves the overflow ratio to 4.0–5.4%; no change needed |
-| `--hero-cutout-h-md` / `-sm` | Reference gives no mobile guidance; current values already read as dominant in a stacked layout |
-| `.hero { padding-top: var(--space-8) }` | 64px vs the reference's ~50px equivalent; within tolerance, and it is now load-bearing in the `--hero-cutout-h` formula |
-| `.hero { overflow: hidden }` | Still what crops the bleed |
-| `.hero-portrait` `margin-right` breakout math | Correct as built; only the `min()` cap beside it was wrong |
-| Lead line directly under the headline, `40ch` / `48ch` | Matches the reference's tagline placement and measure |
+| Crop-box technique + its three `.hero-portrait-img` percentages | Fixes a measured bug; and (d) deliberately changes only the box's height/ratio, which these percentages do not depend on |
+| `--hero-row-h`'s value, i.e. the content row's height | (d) is a horizontal fix. Keeping the row height identical is what preserves the crown-64px-below-the-nav target, the scroll cue on the fold, the die-cut hairline at `100svh` and the Map's position |
+| Bottom-flush die-cut at the hairline | Reproduces the reference's "figure cut by the bottom edge" with a structural edge instead of an overflow. (d) changes only the CSS that achieves it (`bottom: 0` vs `align-self: end`) |
+| `--hero-cutout-bleed` 24/16/12px | The larger figure improves the overflow ratio to 3.9–5.3%; (d) makes the 24px actually land |
+| `--hero-cutout-h-md` / `-sm` and the whole <1024px layout | Reference gives no mobile guidance; the stacked figure has no side gap to close |
+| `.hero { padding-top: var(--space-8) }` | 64px vs the reference's ~50px equivalent; within tolerance, and load-bearing in `--hero-row-h` |
+| `.hero { overflow: hidden }` | Still what crops the bleed — and now the only thing that does |
+| Left rail, its position, styling and accessibility rules | Untouched by (d); it lives in the left gutter, the figure in the right |
+| Lead line directly under the headline, `40ch` / `48ch` | Matches the reference's tagline placement and measure; the derived column is within 5px of the retired `7fr` one |
 | Top stat row content (2 metrics, `Metric` component) | Matches the reference's two-stat row |
-| Rotated side label's left-edge position and `text-caption`/olive styling | Matches the reference at 5.1% of viewport width; only what sits *below* it in the rail changed |
-| System Map + impact row below | Out of scope for this revision |
+| System Map + impact row below | Out of scope for both revisions |
 
 ### 6.2 Section header
 
@@ -925,6 +1210,7 @@ Heading `h2` cols 1–7; side note `small`/olive cols 9–12, aligned to the hea
 ────────────────────────────────────────────────────────────────
                                                     All projects (8)
 ```
+
 One lead project (media cols 1–8, text cols 9–12), then the rest as rows. **Never** a uniform 3-column card grid.
 
 ### 6.4 Stack
@@ -1185,12 +1471,13 @@ Runs once. Under `prefers-reduced-motion: reduce`, render the final state immedi
 ## 9. Imagery
 
 - **Portrait (About):** real photo of Kemal, cropped 4:5, `radius-md`. Treatment: `filter: grayscale(1) contrast(1.05)` plus an overlay of `bone` with `mix-blend-mode: multiply` at 30% opacity, so the photo sits inside the palette. This is the print-mount treatment and it stays, because the About portrait is a rectangular photo mounted inside the layout. Unchanged by the hero revisions.
-- **Portrait (Hero) — alpha cutout, revised 2026-10-05, resized 2026-10-07 (a), resized again 2026-10-07 (b):** a true transparent-background cutout (`src/assets/images/kemal-portrait.png`, 1440×2560, alpha 0 outside the subject), standing directly on `paper` with **no backdrop block, no frame, no border, `--radius-none`**. It renders in **full natural color with no `filter` at all** (2026-10-05 client override — the filter-chain text that used to sit here is superseded; see §6.1 "Tone"). Tone must **never** come from a `mix-blend-mode` overlay layer, which would tint the transparent region and repaint a bone rectangle. Sizing, the subject-tight crop box, alignment and bleed rules: §6.1. The earliest spec here (cover-cropped inside a bone box with a bone multiply overlay) was written for an opaque rectangular photo and no longer applies to the hero.
-  - *Asset request, logged 2026-10-07 (b):* a **wider head-and-shoulders cutout** of Kemal from the same shoot (subject aspect closer to 1:1 than the current 0.583, i.e. cropped at the collarbone rather than mid-chest) would close the last gap to the reference composition — see §6.1 "Accepted deviation from the reference". Until it exists, nothing in CSS should compensate for it.
+- **Portrait (Hero) — alpha cutout, revised 2026-10-05, resized 2026-10-07 (a), (b) and (d):** a true transparent-background cutout (`src/assets/images/kemal-portrait.png`, 1440×2560, alpha 0 outside the subject), standing directly on `paper` with **no backdrop block, no frame, no border, `--radius-none`**. It renders in **full natural color with no `filter` at all** (2026-10-05 client override — the filter-chain text that used to sit here is superseded; see §6.1 "Tone"). Tone must **never** come from a `mix-blend-mode` overlay layer, which would tint the transparent region and repaint a bone rectangle. Sizing, the crop window, alignment and bleed rules: §6.1. Since revision (d) the crop window's **aspect ratio is variable** — it is cut as wide as the space beside the text allows and as deep as the viewport height allows, so on a short laptop window the figure reads as a head-and-shoulders crop and on a tall one as the full chest-up figure. The earliest spec here (cover-cropped inside a bone box with a bone multiply overlay) was written for an opaque rectangular photo and no longer applies to the hero.
+  - *~~Asset request, logged 2026-10-07 (b): a wider head-and-shoulders cutout.~~* **Withdrawn 2026-10-07 (d)** — the variable crop window produces that framing from the existing file, because the crop percentages depend on the box's width only (§6.1 "The crop box"). Nothing in CSS is compensating for a missing asset any more.
+  - *Asset request, replaced 2026-10-07 (d) — resolution, not crop.* The figure's width is capped at `--hero-figure-w-max: 610px` purely to hold effective pixel density at `1048 / 610 ≈ 1.72×`. A re-export of the same shoot with the **subject's alpha box at ≥1800px wide** (the current one is 1048px) is the only thing that would let that cap rise, which is the only thing that would let the figure grow further on large displays. It is a nice-to-have, not a blocker: at every viewport up to ~1520px wide the cap is not even the binding term.
 - **Project covers:** real screenshots of the work (landing pages, dashboards, CRM pipelines, ad creatives) shown on a `bone` background with generous padding inside the frame, like a print mount. Never stock photos, never AI-generated objects or abstract 3D shapes.
 - **Placeholders** (until real assets exist): flat `bone` block with the project name in `caption` olive, bottom-left. Does not apply to the hero portrait — the real cutout exists. Does not apply to Stack logo chips either — they have their own placeholder state (§7.8).
 - **Tool logos (Stack only):** real vendor marks, natural color, contained inside the fixed 56×32 chip (§7.8). Never scaled to their own intrinsic size, never used anywhere else on the site, never used as a credibility strip.
-- **Alpha cutouts in general:** no backdrop block behind them, no `mix-blend-mode` layer over them, and they are cropped only by a structural edge (a hairline, the viewport edge) — never by a visible box of their own. A transparent, unpainted crop box used solely to trim empty alpha padding (§6.1) is not a backdrop block and is allowed.
+- **Alpha cutouts in general:** no backdrop block behind them, no `mix-blend-mode` layer over them, and they are cropped only by a structural edge (a hairline, the viewport edge) — never by a visible box of their own. A transparent, unpainted crop box used solely to trim empty alpha padding, or to cut the figure at a structural edge, is not a backdrop block and is allowed (§6.1).
 - Images never have shadows, borders, or tilt. (The Stack logo chip's 1px hairline frames an empty *slot*, not an image, and is part of the chip, not of any photo.)
 
 ---
@@ -1236,8 +1523,9 @@ Review every page against this list before calling a phase done.
 - ❌ Fade-and-slide-up on every section
 - ❌ Centered layouts (except the Contact panel heading)
 - ❌ Colors or font sizes not defined in this file
-- ❌ A rectangular backdrop block behind a transparent cutout image (§9). A transparent, unpainted crop box that only trims empty alpha padding is not this.
+- ❌ A rectangular backdrop block behind a transparent cutout image (§9). A transparent, unpainted crop box that only trims empty alpha padding, or cuts the figure at a structural edge, is not this.
 - ❌ Copying a reference template's decoration along with its proportions. The 2026-10-07 (b) hero takes the reference's composition and measurements only; its grayscale photo, its `— ` em-dash tagline prefix and its underlined nav CTA were each examined and rejected (§6.1).
+- ❌ Large voids between two elements that nothing explains. Negative space is either a measured part of the composition (the air above the hero's scroll cue) or a layout bug (the hero's 240px text-to-figure gap, §6.1 revision (d)). If you cannot name which, it is the second one.
 
 ---
 
@@ -1280,20 +1568,45 @@ Review every page against this list before calling a phase done.
   --container-pad: clamp(1.25rem, 4vw, 3rem);
   --grid-gap: 24px;
   --nav-h: 72px;                     /* the §7.5 nav height, tokenised 2026-10-07 (b)
-                                        because --hero-cutout-h is derived from it.
+                                        because the hero row height is derived from it.
                                         Nav styling itself is unchanged. */
 
-  /* hero (§6.1) — revised 2026-10-07 (b).
-     NOTE 1: --hero-cutout-h means the VISIBLE FIGURE height, not the canvas
-     height. The canvas is cropped to the subject's alpha box by .hero-portrait.
-     NOTE 2: the >=1024px value is DERIVED, not tuned — it is exactly the
-     distance from the bottom of the hero's top padding to the fold, so the
-     crown sits --space-8 below the nav and the die-cut hairline lands at 100svh.
-     Changing --nav-h or .hero's padding-top changes the figure. */
-  --hero-cutout-h: clamp(560px, calc(100svh - var(--nav-h) - var(--space-8)), 1040px); /* >=1024px */
-  --hero-cutout-h-md: clamp(380px, 52svh, 560px);  /* 768-1023px */
-  --hero-cutout-h-sm: clamp(300px, 44svh, 420px);  /* <768px */
-  --hero-cutout-ar: 1048 / 1798;                   /* measured subject alpha box */
+  /* hero (§6.1) — horizontal sizing rewritten 2026-10-07 (d).
+     READ §6.1 "Size" BEFORE TOUCHING ANY OF THESE.
+     NOTE 1: the hero figure's PRIMARY dimension is now its WIDTH, derived from
+     the horizontal space beside the text column. Its HEIGHT is derived from that
+     width and capped by the row. Revision (b)'s --hero-cutout-h (width derived
+     from viewport HEIGHT) is deleted: it made the gap to the text column grow
+     whenever the browser window got shorter.
+     NOTE 2: the crop box's aspect ratio at >=1024px is VARIABLE (width / height
+     as computed below). The three .hero-portrait-img percentages depend on the
+     box's WIDTH only, so they are unaffected — do not recompute them.
+     NOTE 3: --hero-row-h carries revision (b)'s value and all of its vertical
+     consequences (crown --space-8 below the nav, scroll cue and die-cut hairline
+     on the fold). Changing --nav-h or .hero's padding-top changes it. */
+  --hero-row-h: clamp(560px, calc(100svh - var(--nav-h) - var(--space-8)), 1040px); /* >=1024px */
+  --hero-gutter-x: calc((100vw - min(100vw, var(--container-max))) / 2 + var(--container-pad));
+  --hero-figure-slot: calc(0.45 * (100vw + var(--hero-cutout-bleed) - var(--hero-gutter-x)));
+  --hero-figure-ar-max: 1;      /* the crop box is never wider than it is tall; lower this
+                                   (0.85, 0.75) if the die-cut lands too high on the torso */
+  --hero-figure-w-max: 610px;   /* resolution ceiling: 1048 source px / 610 = 1.72x */
+  --hero-figure-w: clamp(
+    400px,
+    min(var(--hero-figure-slot), calc(var(--hero-row-h) * var(--hero-figure-ar-max))),
+    var(--hero-figure-w-max)
+  );
+  --hero-figure-h: min(var(--hero-row-h), calc(var(--hero-figure-w) * 1798 / 1048));
+  --hero-figure-gap: var(--space-8);   /* designed gutter, text column -> figure */
+  --hero-figure-reserve: max(
+    0px,
+    calc(var(--hero-figure-w) - var(--hero-cutout-bleed) - var(--hero-gutter-x))
+  );
+  --hero-text-max: 720px;              /* keeps the §6.1 headline-fill band valid >=1500px */
+
+  --hero-cutout-h-md: clamp(380px, 52svh, 560px);  /* 768-1023px, figure height */
+  --hero-cutout-h-sm: clamp(300px, 44svh, 420px);  /* <768px, figure height */
+  --hero-cutout-ar: 1048 / 1798;                   /* measured subject alpha box.
+                                                      Used <1024px only since (d). */
   --hero-cutout-bleed: 24px;                       /* past the right viewport edge */
   --hero-cutout-filter: grayscale(1) contrast(1.04) sepia(0.22) saturate(1.15) brightness(0.98); /* historical only — not applied */
   --hero-rule-h: clamp(40px, 6vw, 72px);           /* the SHORT in-column rule, <1024px ONLY.
