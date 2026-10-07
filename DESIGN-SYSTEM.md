@@ -129,6 +129,21 @@ only while the hero headline is 1–2 words. The guard rail and the fallback are
 - 12 columns, gap `24px` (desktop) / `16px` (mobile < 768px, collapses to 4 columns).
 - Breakpoints: `sm 640`, `md 768`, `lg 1024`, `xl 1280`.
 - Layout is **asymmetric**: headings typically span cols 1–7, side notes sit in cols 9–12.
+- **One shared left/right content edge, added 2026-10-07 (c).** Every section's
+  primary content — nav links, hero headline/stats, section headings, card
+  grids, footer links — reads from the exact same `Container` left/right edge
+  down the whole page. A `<section>` wrapper MUST NOT add its own
+  `padding-left`/`padding-right` alongside a centered `Container` child: doing
+  so makes the `Container`'s `margin: auto` centering math asymmetric (the
+  parent's content box is no longer symmetric around the viewport center), and
+  the two edges silently drift out of alignment with every other section —
+  exactly the bug fixed in the hero (§6.1): `.hero { padding-left:
+  var(--space-7) }` shifted the hero's text column 24px right of the nav/
+  footer/section-heading line, while contributing nothing the container's own
+  gutter didn't already have room for. If an element needs to sit *outside*
+  the shared content edge (like the hero's rotated rail), position it
+  `absolute`/`fixed` within that gutter space — never widen the gutter itself
+  by padding the section.
 
 ### 5.3 Radius (hierarchical, not one value everywhere)
 
@@ -209,6 +224,19 @@ Client-directed, with an actual reference screenshot supplied for the first time
 `Documents\project\Portfolio Kemal\References\Hero-Banner.png`). Client's words:
 *"please make our layout hero banner like the reference [image] and use the
 ui/ux skills for improving your website development output."*
+
+*2026-10-07 (c) — margin-alignment bugfix, found during a general "add proper
+margins" request.* Not a design change — a CSS bug introduced by revision (b)'s
+own `.hero { padding-left: var(--space-7) }`. That rule sat on the `<section>`
+wrapping a centered `Container`, which made the container's `margin: auto`
+centering asymmetric: measured live, the hero's text column (stats/headline/
+lead) rendered 24px right of the nav logo, the section headings, and the
+footer links — every other section's content shares one left edge; the hero
+alone had drifted off it. The rail never needed the extra space: `left:
+var(--space-3)` (12px) already fits inside the container's own gutter, which
+never drops below 20px even at the narrowest desktop width. Fix: delete the
+`padding-left` rule, nothing else changes. See §5.2's new shared-edge rule —
+this bug is the reason that rule now exists, so it doesn't recur elsewhere.
 
 Revision (a) got the figure to ~72svh and ~378px wide at 1440×900. Measured
 against the reference screenshot, that is still roughly 15% short in height and,
@@ -860,7 +888,6 @@ token must change with it.
 | `--hero-cutout-bleed` 24/16/12px | The larger figure improves the overflow ratio to 4.0–5.4%; no change needed |
 | `--hero-cutout-h-md` / `-sm` | Reference gives no mobile guidance; current values already read as dominant in a stacked layout |
 | `.hero { padding-top: var(--space-8) }` | 64px vs the reference's ~50px equivalent; within tolerance, and it is now load-bearing in the `--hero-cutout-h` formula |
-| `.hero { padding-left: var(--space-7) }` at ≥1024px | Still exactly what clears the rail |
 | `.hero { overflow: hidden }` | Still what crops the bleed |
 | `.hero-portrait` `margin-right` breakout math | Correct as built; only the `min()` cap beside it was wrong |
 | Lead line directly under the headline, `40ch` / `48ch` | Matches the reference's tagline placement and measure |
