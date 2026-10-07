@@ -1,11 +1,11 @@
 # Handover — Kemal Portfolio Website
 
-**Last updated:** 2026-10-07 — §6.1 hero respecced a 4th time against the client's actual reference screenshot ("Finox"). Spec only, no `src/` changes.
+**Last updated:** 2026-10-07 — §6.1 hero revision (b) (the "Finox" reference) implemented in code. `Hero.astro` and `tokens.css` now match the spec below.
 
 **State:**
 - Astro + TypeScript + Tailwind v4 site. `DESIGN-SYSTEM.md` (repo root) is the source of truth for all visual decisions; `PRD.md` is product scope.
 - Phase 1 (Foundation) complete. Phase 2 (Home) in progress: Hero + SystemMap + Stack built.
-- **`src/components/sections/Hero.astro` currently implements the 2026-10-07 (a) spec. The 2026-10-07 (b) revision below is specced but NOT built.**
+- **`src/components/sections/Hero.astro` now implements the 2026-10-07 (b) spec** (left rail, dominant-figure `--hero-cutout-h`, `--text-display-xl` headline, corrected `.hero-portrait` width guard). `src/styles/tokens.css` has `--nav-h`, `--text-display-xl`, the re-valued `--hero-cutout-h`, and `--hero-rule-h` scoped `<1024px` only. `src/styles/global.css` gained a `.text-display-xl` utility (same weight/line-height/tracking as `.text-display`, new token). Verified: `astro check` 0 errors, `npm run build` succeeds, dev server rendered the expected markup (`hero-content` wrapper, `hero-rail` with its three children, `hero-headline text-display-xl`). Manually recomputed the formula against the spec's worked examples (1440×900 → 764×445, 1920×1080 → 944×550) — both match exactly. No headless-browser/screenshot tool was available in this environment, so the visual check at each breakpoint was done by formula recomputation + markup inspection, not a rendered screenshot — flag this if a stricter visual sign-off is needed.
 - `src/components/system/SystemMap.astro` — the signature animated element. Working, out of scope.
 - `src/data/site.ts` — hero copy is placeholder (`headline: "Hello"`, `lead: "I'm Kemal a Senior Growth Performance"`), already in the short-headline shape the new spec assumes.
 
@@ -20,7 +20,7 @@
 - Explicitly reviewed and UNCHANGED (table at the end of §6.1): cutout vs rectangle, no backdrop/frame/filter, no hero CTAs, crop-box technique + its 4 percentages, 7fr/5fr grid, `align-self: end`, bleed 24/16/12, `-md`/`-sm` heights, `.hero` padding.
 
 **Next steps:**
-1. **Implement §6.1 revision (b) in `Hero.astro` + `tokens.css`.** Follow the 8-point implementation-delta list at the end of §6.1 literally. Verify the 1024×1366 viewport (the only case where the width term binds) and re-measure LCP (the cutout is now certainly the LCP element — PRD §8).
+1. **Visually sign off revision (b) in a real browser** (this session had no screenshot tool) — confirm at 1440×900, 1920×1080 and ~375px by eye, and verify the 1024×1366 viewport specifically (the only case where the `.hero-portrait` width term binds, per §6.1's worked-examples table). Re-measure LCP (the cutout is now certainly the LCP element — PRD §8).
 2. Build the remaining home sections (Selected Work, About, Approach, Experience, Contact) in PRD §4 order.
 3. **Raise with the client:** §8.2 specifies the System Map's draw animation as running on page load, but the Map now starts exactly at the fold, so the animation may be spent before anyone sees it. An intersection trigger is the obvious fix — but §8 was out of scope for the hero work, so it was deliberately left alone. Flagged in §6.1 and PRD §4.1.
 4. **Asset request for Kemal:** a wider head-and-shoulders cutout (subject aspect nearer 1:1 than the current 0.583, cropped at the collarbone). Logged in §9. It is the only thing that closes the remaining ~230px gap between the headline and the figure; do not compensate for it in CSS.

@@ -16,6 +16,7 @@
 
   /* type */
   --font-sans: "Hanken Grotesk Variable", "Helvetica Neue", Arial, sans-serif;
+  --text-display-xl: clamp(4.5rem, 16vw, 15rem);   /* hero h1, SHORT headline only (§6.1) */
   --text-display: clamp(3rem, 7vw + 1rem, 8rem);
   --text-h1: clamp(2.5rem, 4vw + 1rem, 4.5rem);
   --text-h2: clamp(2rem, 2.5vw + 1rem, 3rem);
@@ -36,17 +37,26 @@
   --container-max: 1320px;
   --container-pad: clamp(1.25rem, 4vw, 3rem);
   --grid-gap: 24px;
+  --nav-h: 72px;                     /* the §7.5 nav height, tokenised 2026-10-07 (b)
+                                        because --hero-cutout-h is derived from it.
+                                        Nav styling itself is unchanged. */
 
-  /* hero (§6.1) — revised 2026-10-07.
-     NOTE: --hero-cutout-h now means the VISIBLE FIGURE height, not the canvas
-     height. The canvas is cropped to the subject's alpha box by .hero-portrait. */
-  --hero-cutout-h: clamp(480px, 72svh, 860px);     /* >=1024px */
+  /* hero (§6.1) — revised 2026-10-07 (b).
+     NOTE 1: --hero-cutout-h means the VISIBLE FIGURE height, not the canvas
+     height. The canvas is cropped to the subject's alpha box by .hero-portrait.
+     NOTE 2: the >=1024px value is DERIVED, not tuned — it is exactly the
+     distance from the bottom of the hero's top padding to the fold, so the
+     crown sits --space-8 below the nav and the die-cut hairline lands at 100svh.
+     Changing --nav-h or .hero's padding-top changes the figure. */
+  --hero-cutout-h: clamp(560px, calc(100svh - var(--nav-h) - var(--space-8)), 1040px); /* >=1024px */
   --hero-cutout-h-md: clamp(380px, 52svh, 560px);  /* 768-1023px */
   --hero-cutout-h-sm: clamp(300px, 44svh, 420px);  /* <768px */
   --hero-cutout-ar: 1048 / 1798;                   /* measured subject alpha box */
   --hero-cutout-bleed: 24px;                       /* past the right viewport edge */
   --hero-cutout-filter: grayscale(1) contrast(1.04) sepia(0.22) saturate(1.15) brightness(0.98); /* historical only — not applied */
-  --hero-rule-h: clamp(40px, 6vw, 72px);
+  --hero-rule-h: clamp(40px, 6vw, 72px);           /* the SHORT in-column rule, <1024px ONLY.
+                                                      At >=1024px the rule lives in the left
+                                                      rail and is sized by flex: 1 (§6.1). */
 
   /* stack (§7.8) */
   --stack-card-pad: var(--space-6);

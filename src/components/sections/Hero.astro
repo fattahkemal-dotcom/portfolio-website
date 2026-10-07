@@ -1,49 +1,61 @@
 ---
-// DESIGN-SYSTEM.md §6.1 (revised 2026-10-07 — the cutout is sized from the
-// subject's alpha box via a crop box, not the raw canvas; grid goes 7fr/5fr).
+// DESIGN-SYSTEM.md §6.1, revision 2026-10-07 (b) — figure fills the first
+// screen (--hero-cutout-h derived from the fold), the label/rule/year merge
+// into one left rail, and the headline jumps to --text-display-xl.
 import { Image } from "astro:assets";
 import Container from "../layout/Container.astro";
 import Metric from "../ui/Metric.astro";
 import SystemMap from "../system/SystemMap.astro";
 import kemalPortrait from "../../assets/images/kemal-portrait.png";
 import { hero, systemMapNodes } from "../../data/site";
+
+// Display headline token is a function of the copy, not a fixed choice
+// (DESIGN-SYSTEM.md §6.1 "Display headline" guard rail / §4.2 table).
+const headlineWords = hero.headline.trim().split(/\s+/).filter(Boolean);
+const isShortHeadline = headlineWords.length <= 2 && hero.headline.length <= 12;
 ---
 
 <section id="top" class="hero" data-surface="paper">
-  <div class="hero-edge-label" aria-hidden="true">
-    <span>{hero.rotatedLabel}</span>
+  <div class="hero-content">
+    <div class="hero-rail">
+      <span class="hero-rail-label">{hero.rotatedLabel}</span>
+      <div class="hero-rail-rule" aria-hidden="true"></div>
+      <span class="hero-rail-year">{hero.year}</span>
+    </div>
+
+    <Container class="hero-grid">
+      <div class="hero-text">
+        <div class="hero-top-stats">
+          {hero.topStats.map((stat) => <Metric value={stat.value} label={stat.label} />)}
+        </div>
+
+        <h1 class:list={["hero-headline", isShortHeadline ? "text-display-xl" : "text-display"]}>
+          {hero.headline}
+        </h1>
+
+        <p class="text-lead hero-lead">{hero.lead}</p>
+
+        <div class="hero-rule" aria-hidden="true"></div>
+
+        <div class="hero-footer-row">
+          <span class="text-caption tabular-nums hero-year">{hero.year}</span>
+          <span class="text-small hero-scroll-cue">{hero.scrollCue}</span>
+        </div>
+      </div>
+
+      <div class="hero-portrait">
+        <Image
+          class="hero-portrait-img"
+          src={kemalPortrait}
+          alt="Portrait of Kemal"
+          width={1440}
+          height={2560}
+          loading="eager"
+          decoding="async"
+        />
+      </div>
+    </Container>
   </div>
-
-  <Container class="hero-grid">
-    <div class="hero-text">
-      <div class="hero-top-stats">
-        {hero.topStats.map((stat) => <Metric value={stat.value} label={stat.label} />)}
-      </div>
-
-      <h1 class="text-display hero-headline">{hero.headline}</h1>
-
-      <p class="text-lead hero-lead">{hero.lead}</p>
-
-      <div class="hero-rule" aria-hidden="true"></div>
-
-      <div class="hero-footer-row">
-        <span class="text-caption tabular-nums hero-year">{hero.year}</span>
-        <span class="text-small hero-scroll-cue">{hero.scrollCue}</span>
-      </div>
-    </div>
-
-    <div class="hero-portrait">
-      <Image
-        class="hero-portrait-img"
-        src={kemalPortrait}
-        alt="Portrait of Kemal"
-        width={1440}
-        height={2560}
-        loading="eager"
-        decoding="async"
-      />
-    </div>
-  </Container>
 
   <div class="hero-map hairline-top">
     <Container>
@@ -63,7 +75,11 @@ import { hero, systemMapNodes } from "../../data/site";
     overflow: hidden;
   }
 
-  .hero-edge-label {
+  .hero-content {
+    position: relative;
+  }
+
+  .hero-rail {
     display: none;
   }
 
@@ -119,7 +135,7 @@ import { hero, systemMapNodes } from "../../data/site";
     align-self: end;
     width: min(
       calc(var(--hero-cutout-h-sm) * 1048 / 1798),
-      calc(100% + var(--hero-cutout-bleed))
+      calc(100% + var(--container-pad) + var(--hero-cutout-bleed))
     );
     margin-right: calc(-1 * var(--container-pad) - var(--hero-cutout-bleed));
   }
@@ -159,7 +175,7 @@ import { hero, systemMapNodes } from "../../data/site";
     .hero-portrait {
       width: min(
         calc(var(--hero-cutout-h-md) * 1048 / 1798),
-        calc(100% + var(--hero-cutout-bleed))
+        calc(100% + var(--container-pad) + var(--hero-cutout-bleed))
       );
     }
   }
@@ -169,22 +185,42 @@ import { hero, systemMapNodes } from "../../data/site";
       padding-left: var(--space-7);
     }
 
-    .hero-edge-label {
+    .hero-rail {
       display: flex;
       position: absolute;
+      inset-block: 0;
       left: var(--space-3);
-      top: var(--space-8);
-      bottom: 0;
-      align-items: flex-start;
+      flex-direction: column;
+      align-items: center;
+      padding-top: var(--space-5);
+      padding-bottom: var(--space-5);
     }
 
-    .hero-edge-label span {
+    .hero-rail-label,
+    .hero-rail-year {
       writing-mode: vertical-rl;
       transform: rotate(180deg);
       font-size: var(--text-caption);
       font-weight: 450;
       letter-spacing: 0.01em;
       color: var(--color-olive);
+      white-space: nowrap;
+    }
+
+    .hero-rail-year {
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    .hero-rail-rule {
+      flex: 1 1 auto;
+      width: 1px;
+      min-height: var(--space-8);
+      background: var(--color-line);
+      margin-block: var(--space-6) var(--space-4);
+    }
+
+    .hero-rule {
+      display: none;
     }
 
     :global(.hero-grid) {
@@ -194,18 +230,36 @@ import { hero, systemMapNodes } from "../../data/site";
       align-items: center;
     }
 
+    .hero-text {
+      padding-top: var(--space-8);
+      gap: 0;
+    }
+
+    .hero-top-stats {
+      margin-bottom: var(--space-8);
+    }
+
     .hero-headline {
       max-width: 11ch;
+      margin-bottom: var(--space-5);
     }
 
     .hero-lead {
       max-width: 40ch;
     }
 
+    .hero-footer-row {
+      justify-content: flex-start;
+    }
+
+    .hero-footer-row .hero-year {
+      display: none;
+    }
+
     .hero-portrait {
       width: min(
         calc(var(--hero-cutout-h) * 1048 / 1798),
-        calc(100% + var(--hero-cutout-bleed))
+        calc(100% + var(--container-pad) + var(--hero-cutout-bleed))
       );
       margin-right: calc(-1 * var(--container-pad) - var(--hero-cutout-bleed));
     }
@@ -213,6 +267,10 @@ import { hero, systemMapNodes } from "../../data/site";
 
   @media (min-width: 1320px) {
     .hero-portrait {
+      width: min(
+        calc(var(--hero-cutout-h) * 1048 / 1798),
+        calc(100% + 50vw - var(--container-max) / 2 + var(--hero-cutout-bleed))
+      );
       margin-right: calc(-50vw + var(--container-max) / 2 - var(--hero-cutout-bleed));
     }
   }

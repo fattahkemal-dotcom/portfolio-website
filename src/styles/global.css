@@ -111,6 +111,13 @@
     letter-spacing: -0.035em;
   }
 
+  .text-display-xl {
+    font-size: var(--text-display-xl);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+  }
+
   .text-h1 {
     font-size: var(--text-h1);
     font-weight: 300;
