@@ -1,11 +1,14 @@
 # Handover — Kemal Portfolio Website
 
-**Last updated:** 2026-10-07 — §6.1 hero revision **(d)** written to spec (horizontal sizing rebuilt). **Spec only — `Hero.astro` and `tokens.css` are still at revision (c) and must be updated.**
+**Last updated:** 2026-10-07 — §6.1 hero revision **(d) implemented and pushed** (commit `75df565`). `Hero.astro` and `tokens.css` now match the spec; measured correct in a real browser.
 
 **State:**
 - Astro + TypeScript + Tailwind v4 site. `DESIGN-SYSTEM.md` (repo root) is the source of truth for all visual decisions; `PRD.md` is product scope.
 - Phase 1 (Foundation) complete. Phase 2 (Home) in progress: Hero + SystemMap + Stack built.
-- `src/components/sections/Hero.astro` + `src/styles/tokens.css` implement §6.1 revision **(c)** (= (b) plus the margin-alignment fix). **Revision (d) is specified but NOT implemented.** The delta is enumerated in DESIGN-SYSTEM.md §6.1 "Implementation note" (9 items) and the full token block is in §13.
+- `src/components/sections/Hero.astro` + `src/styles/tokens.css` implement §6.1 revision **(d)** per the 9-item implementation note (commit `75df565`). The ≥1024px `.hero-portrait` is now absolutely positioned, width-driven (`--hero-figure-w`/`-h`/`-slot`/`-reserve` etc., all in `tokens.css`), and the ≥1320px override block is gone.
+- **Also fixed in the same commit, unplanned but required to hit the spec's literal 64px target:** `src/styles/global.css`'s `.container` class name collides with Tailwind v4's own built-in responsive `container` utility, which silently wins over `@layer components` regardless of source order (it was capping content width at 1280px/1024px instead of the intended `--container-max: 1320px` at the xl/lg breakpoints — a sitewide bug, not hero-specific). Fixed by redefining the utility itself via `@utility container { ... }` in `global.css`. Discovered only because this task required real-browser pixel verification instead of hand computation — worth remembering as a pattern for future Tailwind v4 work on this project: **never name a custom component class `container`, `prose`, or any other Tailwind-reserved utility name without checking for collision.**
+- Verified live (Playwright/headless Chromium) at 1440×722, 1440×900, 1024×1366: gap = 64px exactly at all three (was 84px before the `.container` fix), portrait right edge = viewport+24px, bottom flush with the System Map hairline. Screenshot confirmed crown uncropped, die-cut falls below the collarbone (not at chin/face). 375px and 800px checked for regressions — none, no horizontal overflow, `<1024px` layout untouched and working.
+- `npx astro check` → 0 errors. `npm run build` → succeeds.
 - `src/components/system/SystemMap.astro` — the signature animated element. Working, out of scope.
 - `src/data/site.ts` — hero copy is placeholder (`headline: "Hello"`, `lead: "I'm Kemal a Senior Growth Performance"`). No data change needed for (d).
 
@@ -20,15 +23,15 @@
 - Deliberately NOT touched: row height (`--hero-row-h` = (b)'s `--hero-cutout-h` value, renamed) and therefore crown-64px-below-nav, scroll cue on the fold, die-cut hairline at `100svh`, System Map position; the cutout/no-backdrop/no-filter decisions; the left rail; everything <1024px.
 
 **Next steps:**
-1. **Implement revision (d)** in `src/styles/tokens.css` + `src/components/sections/Hero.astro` per §6.1's 9-item implementation note. No markup change is required (`.container` sets no `position`, so the absolute portrait resolves against `.hero-content`). Then run §6.1's five acceptance checks in a real browser at **1440×722, 1440×900, 1024×1366** and ≥1920 — check 2 (64px gap) and check 4 (the die-cut must fall below the collarbone, never at the chin) are the ones that can fail.
-2. If check 4 fails, lower `--hero-figure-ar-max` (1 → 0.85 → 0.75) and nothing else; the 64px gap is unaffected by that token.
-3. Re-measure LCP (PRD §8) — the figure is wider now.
-4. Build the remaining home sections (Selected Work, About, Approach, Experience, Contact) in PRD §4 order.
-5. **Raise with the client:** §8.2's System Map draw animation runs on page load but the Map starts at the fold, so the animation may be spent unseen. An intersection trigger is the obvious fix; §8 was out of scope for all hero revisions.
-6. **Asset request for Kemal (changed):** no longer a wider crop — a **higher-resolution** re-export of the same shoot (subject alpha box ≥1800px wide vs today's 1048px). Nice-to-have, not a blocker.
-7. Delete `scratch-revert-note.txt` at the repo root — created in error on 2026-10-07, no content, nothing references it.
-8. When real case studies exist (Phase 3), wire `systemMapNodes[].href` to real project slugs.
-9. Ask Kemal for real tool logo assets; the Stack chip is designed so they drop in one at a time.
+1. ~~Implement revision (d)~~ — **done, commit `75df565`, verified live.** Check 4 (collarbone, not chin) passed on the first try at `--hero-figure-ar-max: 1`; no retuning needed.
+2. Re-measure LCP (PRD §8) — the figure is wider now.
+3. Build the remaining home sections (Selected Work, About, Approach, Experience, Contact) in PRD §4 order.
+4. **Raise with the client:** §8.2's System Map draw animation runs on page load but the Map starts at the fold, so the animation may be spent unseen. An intersection trigger is the obvious fix; §8 was out of scope for all hero revisions.
+5. **Asset request for Kemal (changed):** no longer a wider crop — a **higher-resolution** re-export of the same shoot (subject alpha box ≥1800px wide vs today's 1048px). Nice-to-have, not a blocker.
+6. Delete `scratch-revert-note.txt` at the repo root — created in error on 2026-10-07, no content, nothing references it.
+7. When real case studies exist (Phase 3), wire `systemMapNodes[].href` to real project slugs.
+8. Ask Kemal for real tool logo assets; the Stack chip is designed so they drop in one at a time.
+9. **Audit other `@layer components` classes for Tailwind utility-name collisions** (same class of bug as the `.container` fix above) — `.container` was the one that bit this task; others (e.g. anything named after a Tailwind utility) haven't been checked.
 
 **Decisions / gotchas:**
 - **The crop percentages depend on the box's WIDTH, not its aspect ratio.** Percentage margins resolve against the containing block's inline size, so a variable-height crop box is free. This is what unlocked revision (d) — and it means any future resize must only ever leave the *width* math intact.
@@ -40,6 +43,7 @@
 - **The hero is allowed to exceed the fold.** The System Map below the fold is intended; don't "fix" it by shrinking the photo.
 - **Hero CTAs are gone on purpose.** `cta_click` never fires with `cta_location: "hero"` — not a bug.
 - **No backdrop behind the cutout, ever**, and **no filter on it** (client override 2026-10-05, still in force). `mix-blend-mode` over alpha is banned (§9, §12).
+- **Tailwind v4 `container` utility-name collision (bit once, fixed 2026-10-07):** naming a custom `@layer components` class `.container` doesn't work as expected — Tailwind v4 always generates its own responsive `container` utility for any class named `container` it sees in the markup, and utility layers win over component layers regardless of CSS source order. It silently capped every section's content width at the Tailwind default breakpoint value (1280px at the xl breakpoint, 1024px at lg) instead of the project's `--container-max: 1320px`. Fixed by redefining the utility itself: `@utility container { ... }` in `global.css`, using our token values, instead of a plain `.container` class rule. Only discoverable via real-browser measurement, not formula — this is exactly why the hero (d) spec insisted on it.
 - **Astro scoped-CSS cross-component gotcha (bit twice):** a `<style>` block only reaches elements that component renders itself. Styling `.hero-grid` (a `Container` root class) needs `:global(...)`.
 - **Local build/dev flakiness specific to `.claude/worktrees/*` paths:** `npm run build` / `npm run dev` intermittently fail with `Tsconfig not found astro/tsconfigs/strict` plus a native `UV_HANDLE_CLOSING` crash. `tsconfig.json` inlines the `strict` preset as a workaround. Build/dev from the main checkout (`C:\Users\fatta\Projects\portfolio-website`). Don't re-debug.
 - Tailwind v4 cascade-layer / spacing-scale notes from Phase 1 still apply — direct `var(--token)` references in scoped `<style>`, not chained Tailwind utilities, for anything typography/spacing related.
