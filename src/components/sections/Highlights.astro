@@ -1,26 +1,17 @@
 ---
 // DESIGN-SYSTEM.md §6.1A — Highlights marquee. Client-directed §10 override
 // (dated, narrowed): auto-scroll is otherwise banned by this file's own
-// anti-slop rule. Pause control is required regardless of the reduced-motion
-// setting because WCAG 2.2.2 (Level A) requires a stop control on any
-// auto-playing motion longer than 5 seconds; prefers-reduced-motion also
-// stops the scroll outright and collapses to a static wrapped row.
+// anti-slop rule. Client also asked to ship with no pause control
+// (2026-10-19) — per §10's override note, that's a deliberate, written
+// deviation from WCAG 2.2.2 (auto-motion over 5s normally needs a stop
+// control), not an oversight. prefers-reduced-motion still stops the
+// scroll outright and collapses the row to a static wrapped layout.
 import { highlights } from "../../data/site";
 ---
 
 <section class="highlights" data-surface="ink" aria-label="Highlights">
   <div class="highlights-marquee">
-    <button
-      type="button"
-      class="highlights-toggle"
-      data-marquee-toggle
-      aria-pressed="false"
-      aria-label="Pause running text"
-    >
-      <span class="highlights-toggle-icon" aria-hidden="true"></span>
-    </button>
-
-    <div class="highlights-track" data-marquee-track>
+    <div class="highlights-track">
       <ul class="highlights-list">
         {
           highlights.map((item) => (
@@ -69,73 +60,11 @@ import { highlights } from "../../data/site";
     pointer-events: none;
   }
 
-  .highlights-toggle {
-    flex: 0 0 auto;
-    position: relative;
-    z-index: 1;
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    margin-inline-start: var(--space-5);
-    border: 1px solid var(--color-line-dark);
-    border-radius: var(--radius-pill);
-    background: transparent;
-    color: var(--color-paper);
-    cursor: pointer;
-    transition: border-color var(--dur-fast) ease-out;
-  }
-
-  .highlights-toggle:hover {
-    border-color: var(--color-ink-soft);
-  }
-
-  .highlights-toggle-icon {
-    position: relative;
-    width: 8px;
-    height: 10px;
-  }
-
-  .highlights-toggle-icon::before,
-  .highlights-toggle-icon::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    width: 3px;
-    height: 10px;
-    background: currentColor;
-  }
-
-  .highlights-toggle-icon::before {
-    left: 0;
-  }
-
-  .highlights-toggle-icon::after {
-    right: 0;
-  }
-
-  .highlights-toggle[aria-pressed="true"] .highlights-toggle-icon {
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 5px 0 5px 8px;
-    border-color: transparent transparent transparent currentColor;
-  }
-
-  .highlights-toggle[aria-pressed="true"] .highlights-toggle-icon::before,
-  .highlights-toggle[aria-pressed="true"] .highlights-toggle-icon::after {
-    display: none;
-  }
-
   .highlights-track {
     display: flex;
     width: max-content;
     padding-block: var(--space-5);
     animation: highlights-scroll 36s linear infinite;
-  }
-
-  .highlights-track.is-paused {
-    animation-play-state: paused;
   }
 
   .highlights-list {
@@ -183,26 +112,5 @@ import { highlights } from "../../data/site";
     .highlights-list[aria-hidden="true"] {
       display: none;
     }
-
-    .highlights-toggle {
-      display: none;
-    }
   }
 </style>
-
-<script>
-  const toggles = document.querySelectorAll<HTMLButtonElement>("[data-marquee-toggle]");
-
-  toggles.forEach((toggle) => {
-    const track = toggle
-      .closest(".highlights")
-      ?.querySelector<HTMLElement>("[data-marquee-track]");
-    if (!track) return;
-
-    toggle.addEventListener("click", () => {
-      const isPaused = track.classList.toggle("is-paused");
-      toggle.setAttribute("aria-pressed", String(isPaused));
-      toggle.setAttribute("aria-label", isPaused ? "Play running text" : "Pause running text");
-    });
-  });
-</script>

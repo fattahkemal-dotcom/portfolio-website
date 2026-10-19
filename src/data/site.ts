@@ -42,8 +42,8 @@ export const hero = {
 // Highlights marquee — DESIGN-SYSTEM.md §6.1A. Each `headline` is the bold,
 // quoted part; `description` is the plain-weight text after it.
 export const highlights = [
-  { headline: "6+", description: "Years of Experience" },
-  { headline: "12+", description: "Brands Managed" },
+  { headline: "6+ Years Of Experience", description: "Performance & Digital Marketing" },
+  { headline: "12+ Brands Managed", description: "Across multiple industries" },
   { headline: "Digital Ecosystem Architecture", description: "Tracking, CRM & marketing workflows" },
   { headline: "AI-Powered Marketing", description: "AI-assisted analysis and workflows" },
   { headline: "Growth Strategy", description: "Full-funnel optimization & acquisition efficiency" },

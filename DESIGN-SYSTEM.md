@@ -1185,12 +1185,12 @@ Do not "also fix" any of these.
 A single compact band directly below the hero, before any other section. Not a full `section-padding` section — deliberately thin.
 
 - **Surface:** `data-surface="ink"` (`--color-ink` background, `--color-paper` text) — same pairing as the Footer.
-- **Content:** one continuous row, looping. Each item is `"headline"` (bold, `--color-paper`) + a description (regular weight, `--color-ink-soft`), e.g. **6+** Years of Experience. The quoted part in the client's spec is always the bold headline; everything after it is the description — never the reverse.
-- **Five items, fixed order:** 6+ Years of Experience · 12+ Brands Managed · Digital Ecosystem Architecture (Tracking, CRM & marketing workflows) · AI-Powered Marketing (AI-assisted analysis and workflows) · Growth Strategy (Full-funnel optimization & acquisition efficiency).
+- **Content:** one continuous row, looping. Each item is `"headline"` (bold, `--color-paper`) + a description (regular weight, `--color-ink-soft`). The quoted part in the client's spec is always the bold headline, including when it's a full phrase like "6+ Years Of Experience" rather than just the number; everything after it is the description — never the reverse.
+- **Five items, fixed order (revised 2026-10-19):** 6+ Years Of Experience (Performance & Digital Marketing) · 12+ Brands Managed (Across multiple industries) · Digital Ecosystem Architecture (Tracking, CRM & marketing workflows) · AI-Powered Marketing (AI-assisted analysis and workflows) · Growth Strategy (Full-funnel optimization & acquisition efficiency).
 - **Type:** `--text-small`, not a display size — client asked for "no need to a big font but need some highlight," so the bold/regular weight pairing carries the emphasis, not size.
 - **Spacing:** `--space-8` gap between items so each reads as its own unit at a glance ("good space for each others... clean and professional").
 - **Motion:** 36s linear auto-scroll, duplicated list for a seamless loop, right-edge fade so the seam doesn't read as a clipped crop. This is the one section covered by the §10 marquee override — do not reuse this pattern elsewhere without the same explicit sign-off.
-- **Accessibility:** visible pause/play toggle (WCAG 2.2.2 — required for any auto-motion over 5s, independent of the OS reduced-motion setting). `prefers-reduced-motion: reduce` stops the scroll outright and the row wraps to a static layout instead (second, ARIA-hidden copy of the list is simply hidden).
+- **Accessibility:** no pause control, by client request (see §10's second 2026-10-19 note) — this knowingly falls short of WCAG 2.2.2. `prefers-reduced-motion: reduce` stops the scroll outright and the row wraps to a static layout instead (second, ARIA-hidden copy of the list is simply hidden).
 - **Component:** `src/components/sections/Highlights.astro`; copy lives in `highlights` in `src/data/site.ts`.
 
 ### 6.2 Section header
@@ -1506,7 +1506,9 @@ Runs once. Under `prefers-reduced-motion: reduce`, render the final state immedi
 
 **No** scroll-triggered reveals on sections, no parallax, no cursor followers, no marquee, no counters that tick up. The hero cutout does not animate, float, or parallax. Stack cards and logo chips have **no** hover state at all — nothing in that section is interactive.
 
-**2026-10-19 override (client-directed, narrowed):** the Highlights band (§6.1A) is an auto-scrolling marquee — the one exception to "no marquee" above. Client asked explicitly for "running text" between the hero and the rest of the page. Scope of the override is limited to that single section: 36s linear loop, pauses on `prefers-reduced-motion: reduce` (collapses to a static wrapped row instead), and carries a visible pause/play control per WCAG 2.2.2 (auto-motion over 5s needs a stop control regardless of the reduced-motion setting). No other section gets this treatment without the same explicit, written override.
+**2026-10-19 override (client-directed, narrowed):** the Highlights band (§6.1A) is an auto-scrolling marquee — the one exception to "no marquee" above. Client asked explicitly for "running text" between the hero and the rest of the page. Scope of the override is limited to that single section: 36s linear loop, pauses on `prefers-reduced-motion: reduce` (collapses to a static wrapped row instead). No other section gets this treatment without the same explicit, written override.
+
+**2026-10-19, same day — no pause control (client-directed):** client asked to ship without a pause/play toggle. Flagged and acknowledged: WCAG 2.2.2 (Level A) normally requires a visible stop control on any auto-playing motion lasting over 5 seconds, independent of the reduced-motion setting. This section intentionally does not meet that criterion. `prefers-reduced-motion: reduce` is the only way a visitor can stop the scroll.
 
 ---
 
