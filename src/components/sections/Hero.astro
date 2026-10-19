@@ -5,9 +5,8 @@
 import { Image } from "astro:assets";
 import Container from "../layout/Container.astro";
 import Metric from "../ui/Metric.astro";
-import SystemMap from "../system/SystemMap.astro";
 import kemalPortrait from "../../assets/images/kemal-portrait.png";
-import { hero, systemMapNodes } from "../../data/site";
+import { hero } from "../../data/site";
 
 // Display headline token is a function of the copy, not a fixed choice
 // (DESIGN-SYSTEM.md §6.1 "Display headline" guard rail / §4.2 table).
@@ -53,15 +52,6 @@ const isShortHeadline = headlineWords.length <= 2 && hero.headline.length <= 12;
           loading="eager"
           decoding="async"
         />
-      </div>
-    </Container>
-  </div>
-
-  <div class="hero-map hairline-top">
-    <Container>
-      <SystemMap nodes={systemMapNodes} />
-      <div class="hero-impact-row">
-        {hero.impactStats.map((stat) => <Metric value={stat.value} label={stat.label} />)}
       </div>
     </Container>
   </div>
@@ -152,26 +142,7 @@ const isShortHeadline = headlineWords.length <= 2 && hero.headline.length <= 12;
     margin-top: -72.71%;
   }
 
-  .hero-map {
-    margin-top: 0;
-  }
-
-  .hero-map :global(.system-map) {
-    padding-block: var(--space-7);
-  }
-
-  .hero-impact-row {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-5);
-    padding-bottom: var(--space-8);
-  }
-
   @media (min-width: 768px) {
-    .hero-impact-row {
-      grid-template-columns: repeat(4, 1fr);
-    }
-
     .hero-portrait {
       width: min(
         calc(var(--hero-cutout-h-md) * 1048 / 1798),
