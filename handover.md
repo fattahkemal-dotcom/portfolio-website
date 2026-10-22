@@ -1,6 +1,17 @@
 # Handover — Kemal Portfolio Website
 
-**Last updated:** 2026-10-07 — §6.1 hero revision **(d) implemented and pushed** (commit `75df565`). `Hero.astro` and `tokens.css` now match the spec; measured correct in a real browser.
+**Last updated:** 2026-10-22 — new "Selected work" accordion section built (dummy copy), branch `worktree-portfolio-work-features`, commit `bcd88d0`, pushed to origin (PR not opened yet).
+
+**State (2026-10-22):**
+- New `src/components/sections/WorkFeatures.astro`, wired into `src/pages/index.astro` as home-page section 3 (after Hero, Highlights). Dropdown/accordion feature list per client reference (Awesomic "How it works" screenshot in `Documents\project\Portfolio Kemal\References\Section 2 references 2.png`): left column shows titles, one item open at a time with description + "View project" CTA; a right-side mockup stage crossfades to match the open item at ≥1024px (`position: sticky`, absolute-stacked panels, opacity transition); below 1024px each item's own mockup sits inline right under its CTA instead (per client's explicit mobile instruction), the shared desktop stage is hidden.
+- Mockups are **CSS-only placeholders** (no real screenshots) — a small "browser bar" + skeleton rows/grid, tinted via `data-accent` (`ink`/`olive`/`bone`, cycling through existing tokens only, no new hex). Swap-in point for real screenshots not yet built (would need an `image` field added to `workFeatures` + an `<Image>` branch in the component, mirroring the optional-`logo` pattern already used in `src/data/stack.ts`).
+- Content lives in `workFeatures` array in `src/data/site.ts` — 4 dummy projects mirroring the About section's 3 capability pillars (§4.3) plus a landing-page/build one. All copy and the `cta.href: "#"` placeholders need Kemal's real project data.
+- Deliberately **no eyebrow label** above the heading (just `h2` + side note + hairline) — DESIGN-SYSTEM.md §4.2 explicitly bans eyebrows sitewide; the client's reference image has one ("HOW IT WORKS") but that's the reference's own brand, not a new instruction to add eyebrows here.
+- `npx astro check` → 0 errors/warnings. `npm run build` → succeeds, 3 pages.
+- Verified structurally only (build + typecheck) — **not yet checked in a real browser** for the crossfade/accordion interaction or mobile layout. Chrome automation was deliberately skipped per this session's tooling policy; a human should open it once and confirm the hover/dropdown/crossfade feel "professional," especially the sticky stage height (`min(520px, 60svh)`, arbitrary guess) against real (eventually non-placeholder) mockup content.
+- This section is a **deviation from PRD.md §4.2 / DESIGN-SYSTEM.md §6.3**, which specs "Selected work" as "not a uniform card grid: one large lead project, then a list" — the client gave a new, different layout instruction (accordion + synced mockup) in this session. PRD/DESIGN-SYSTEM.md have **not been updated** to reflect this; do that before starting the next task that touches this section, per this project's own pattern of keeping those docs as the literal source of truth.
+
+**Earlier state (2026-10-07):** §6.1 hero revision **(d) implemented and pushed** (commit `75df565`). `Hero.astro` and `tokens.css` now match the spec; measured correct in a real browser.
 
 **State:**
 - Astro + TypeScript + Tailwind v4 site. `DESIGN-SYSTEM.md` (repo root) is the source of truth for all visual decisions; `PRD.md` is product scope.
@@ -23,9 +34,10 @@
 - Deliberately NOT touched: row height (`--hero-row-h` = (b)'s `--hero-cutout-h` value, renamed) and therefore crown-64px-below-nav, scroll cue on the fold, die-cut hairline at `100svh`, System Map position; the cutout/no-backdrop/no-filter decisions; the left rail; everything <1024px.
 
 **Next steps:**
+0. **New, 2026-10-22:** merge or open a PR from `worktree-portfolio-work-features` (pushed, not yet a PR) into the branch Kemal is actually building on — confirm which branch is "main" for this repo first. Then: (a) view the new Selected-work accordion in a real browser, both desktop crossfade and mobile inline-mockup behavior; (b) replace the 4 dummy `workFeatures` entries + `cta.href` with real projects; (c) swap the CSS placeholder mockups for real screenshots once Kemal supplies them (needs a small code change — see "State" above); (d) decide whether to update PRD.md §4.2 / DESIGN-SYSTEM.md §6.3 to document the accordion layout as the new spec, since it replaces the old card-grid spec.
 1. ~~Implement revision (d)~~ — **done, commit `75df565`, verified live.** Check 4 (collarbone, not chin) passed on the first try at `--hero-figure-ar-max: 1`; no retuning needed.
 2. Re-measure LCP (PRD §8) — the figure is wider now.
-3. Build the remaining home sections (Selected Work, About, Approach, Experience, Contact) in PRD §4 order.
+3. Build the remaining home sections (About, Approach, Experience, Contact) in PRD §4 order — Selected Work is now built (see §0 above), though as a different layout than PRD originally specified.
 4. **Raise with the client:** §8.2's System Map draw animation runs on page load but the Map starts at the fold, so the animation may be spent unseen. An intersection trigger is the obvious fix; §8 was out of scope for all hero revisions.
 5. **Asset request for Kemal (changed):** no longer a wider crop — a **higher-resolution** re-export of the same shoot (subject alpha box ≥1800px wide vs today's 1048px). Nice-to-have, not a blocker.
 6. Delete `scratch-revert-note.txt` at the repo root — created in error on 2026-10-07, no content, nothing references it.
