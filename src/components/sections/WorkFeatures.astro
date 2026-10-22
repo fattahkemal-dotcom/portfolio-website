@@ -1,0 +1,431 @@
+---
+// Selected work — accordion/dropdown feature list with a synced mockup
+// preview, per client reference (Awesomic-style "How it works"). Dummy copy
+// + CSS-built placeholder mockups for now; `workFeatures` in src/data/site.ts
+// is the single edit point once real projects/screenshots exist.
+import Section from "../layout/Section.astro";
+import Container from "../layout/Container.astro";
+import Button from "../ui/Button.astro";
+import { workFeatures } from "../../data/site";
+
+const slugify = (value: string) =>
+  value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+---
+
+<Section id="work" background="paper">
+  <Container>
+    <div class="work-header">
+      <h2 class="text-h2">Selected work</h2>
+      <p class="text-small work-note">
+        A closer look at how the systems above come together, end to end.
+      </p>
+    </div>
+    <div class="work-header-rule hairline-bottom" aria-hidden="true"></div>
+
+    <div class="work-features">
+      <ul class="feature-list">
+        {
+          workFeatures.map((feature, index) => {
+            const slug = slugify(feature.title);
+            const triggerId = `feature-trigger-${slug}`;
+            const panelId = `feature-panel-${slug}`;
+            const isOpen = index === 0;
+            return (
+              <li
+                class="feature-item"
+                data-feature-item
+                data-index={index}
+                data-open={isOpen ? "true" : "false"}
+              >
+                <h3 class="feature-heading">
+                  <button
+                    type="button"
+                    id={triggerId}
+                    class="feature-trigger"
+                    aria-expanded={isOpen ? "true" : "false"}
+                    aria-controls={panelId}
+                    data-feature-trigger
+                  >
+                    <span class="feature-index tabular-nums" aria-hidden="true">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span class="feature-title">{feature.title}</span>
+                    <svg
+                      class="feature-chevron"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M4 6l4 4 4-4"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </h3>
+
+                <div
+                  id={panelId}
+                  class="feature-panel"
+                  role="region"
+                  aria-labelledby={triggerId}
+                >
+                  <div class="feature-panel-inner">
+                    <p class="text-small feature-description">{feature.description}</p>
+                    <Button href={feature.cta.href} variant="text" class="feature-cta">
+                      {feature.cta.label}
+                    </Button>
+
+                    {/* Mobile-only: mockup rendered below each open dropdown. */}
+                    <div class="feature-mock feature-mock-mobile" data-accent={feature.accent}>
+                      <div class="feature-mock-bar" aria-hidden="true">
+                        <span />
+                        <span />
+                        <span />
+                      </div>
+                      <div class="feature-mock-body" aria-hidden="true">
+                        <div class="feature-mock-row feature-mock-row-wide" />
+                        <div class="feature-mock-row" />
+                        <div class="feature-mock-grid">
+                          <div />
+                          <div />
+                          <div />
+                        </div>
+                        <div class="feature-mock-row feature-mock-row-short" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            );
+          })
+        }
+      </ul>
+
+      {/* Desktop-only: single stage, crossfades to the open item's mockup. */}
+      <div class="feature-stage" aria-hidden="true">
+        {
+          workFeatures.map((feature, index) => (
+            <div
+              class="feature-mock feature-mock-desktop"
+              data-stage-mock
+              data-index={index}
+              data-accent={feature.accent}
+              data-active={index === 0 ? "true" : "false"}
+            >
+              <div class="feature-mock-bar">
+                <span />
+                <span />
+                <span />
+              </div>
+              <div class="feature-mock-body">
+                <div class="feature-mock-row feature-mock-row-wide" />
+                <div class="feature-mock-row" />
+                <div class="feature-mock-grid">
+                  <div />
+                  <div />
+                  <div />
+                </div>
+                <div class="feature-mock-row feature-mock-row-short" />
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </Container>
+</Section>
+
+<style>
+  .work-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+  }
+
+  .work-note {
+    max-width: 320px;
+    color: var(--color-olive);
+  }
+
+  .work-header-rule {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-8);
+  }
+
+  .work-features {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  /* Accordion list */
+
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .feature-item {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .feature-item:last-child {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .feature-heading {
+    font: inherit;
+  }
+
+  .feature-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding-block: var(--space-5);
+    text-align: left;
+    color: var(--color-ink);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .feature-trigger:hover {
+    color: var(--color-olive);
+  }
+
+  .feature-index {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-line);
+    font-size: var(--text-caption);
+    color: var(--color-ink-soft);
+    transition: border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+
+  .feature-item[data-open="true"] .feature-index {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .feature-title {
+    flex: 1 1 auto;
+    font-size: var(--text-h3);
+    font-weight: 450;
+  }
+
+  .feature-chevron {
+    flex: 0 0 auto;
+    color: var(--color-ink-soft);
+    transition: transform var(--dur-base) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+
+  .feature-item[data-open="true"] .feature-chevron {
+    color: var(--color-ink);
+    transform: rotate(180deg);
+  }
+
+  .feature-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-base) var(--ease-out);
+  }
+
+  .feature-item[data-open="true"] .feature-panel {
+    grid-template-rows: 1fr;
+  }
+
+  .feature-panel-inner {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .feature-description {
+    max-width: 52ch;
+    color: var(--color-olive);
+    padding-bottom: var(--space-4);
+  }
+
+  .feature-cta {
+    margin-bottom: var(--space-6);
+  }
+
+  /* Mockup (shared skeleton, tinted per accent) */
+
+  .feature-mock {
+    --mock-fg: var(--color-ink);
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    background: var(--color-paper-2);
+  }
+
+  .feature-mock[data-accent="ink"] {
+    background: var(--color-ink);
+    --mock-fg: var(--color-paper);
+  }
+
+  .feature-mock[data-accent="olive"] {
+    background: var(--color-olive);
+    --mock-fg: var(--color-paper);
+  }
+
+  .feature-mock[data-accent="bone"] {
+    background: var(--color-bone);
+    --mock-fg: var(--color-ink);
+  }
+
+  .feature-mock-bar {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .feature-mock-bar span {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--mock-fg) 30%, transparent);
+  }
+
+  .feature-mock-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .feature-mock-row {
+    height: 14px;
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--mock-fg) 14%, transparent);
+    width: 60%;
+  }
+
+  .feature-mock-row-wide {
+    width: 85%;
+    height: 20px;
+  }
+
+  .feature-mock-row-short {
+    width: 40%;
+  }
+
+  .feature-mock-grid {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+
+  .feature-mock-grid div {
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--mock-fg) 10%, transparent);
+  }
+
+  /* Mobile mockup: inline below each open item's CTA, hidden on desktop. */
+  .feature-mock-mobile {
+    margin-top: var(--space-2);
+  }
+
+  /* Desktop stage: hidden on mobile, crossfades between items. */
+  .feature-stage {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .work-features {
+      grid-template-columns: minmax(360px, 420px) 1fr;
+      gap: var(--space-9);
+    }
+
+    .feature-trigger {
+      padding-block: var(--space-6);
+    }
+
+    .feature-mock-mobile {
+      display: none;
+    }
+
+    .feature-stage {
+      display: block;
+      position: sticky;
+      top: calc(var(--nav-h) + var(--space-6));
+      /* fixed stack height so the absolutely-positioned mocks below have a box to fill */
+      height: min(520px, 60svh);
+    }
+
+    .feature-mock-desktop {
+      aspect-ratio: auto;
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--dur-base) var(--ease-out);
+    }
+
+    .feature-mock-desktop[data-active="true"] {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .feature-panel,
+    .feature-chevron,
+    .feature-mock-desktop {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  // Accordion: exactly one item open at a time (default: the first). The
+  // desktop stage mirrors the open item via data-active so the mockup
+  // crossfades instead of jumping; mobile ignores the stage entirely and
+  // shows each item's own mockup inline (CSS only, no JS needed there).
+  document.querySelectorAll<HTMLElement>(".work-features").forEach((root) => {
+    const items = Array.from(root.querySelectorAll<HTMLElement>("[data-feature-item]"));
+    const stage = root.querySelector<HTMLElement>(".feature-stage");
+
+    root.addEventListener("click", (event) => {
+      const trigger = (event.target as HTMLElement).closest<HTMLButtonElement>(
+        "[data-feature-trigger]"
+      );
+      if (!trigger) return;
+
+      const item = trigger.closest<HTMLElement>("[data-feature-item]");
+      if (!item || item.dataset.open === "true") return;
+
+      items.forEach((candidate) => {
+        const open = candidate === item;
+        candidate.dataset.open = open ? "true" : "false";
+        candidate.querySelector("[data-feature-trigger]")?.setAttribute(
+          "aria-expanded",
+          open ? "true" : "false"
+        );
+      });
+
+      const index = item.dataset.index;
+      stage?.querySelectorAll<HTMLElement>("[data-stage-mock]").forEach((mock) => {
+        mock.dataset.active = mock.dataset.index === index ? "true" : "false";
+      });
+    });
+  });
+</script>

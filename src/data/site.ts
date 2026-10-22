@@ -49,6 +49,41 @@ export const highlights = [
   { headline: "Growth Strategy", description: "Full-funnel optimization & acquisition efficiency" },
 ] as const;
 
+// Work features — accordion/dropdown section (dummy copy; Kemal to replace
+// with real projects + screenshots). `accent` keys a mockup tint, one of the
+// existing tokens only (no new hex values). `image` is left unset until real
+// screenshots exist, mirroring the optional-`logo` pattern in src/data/stack.ts.
+export const workFeatures = [
+  {
+    title: "Performance growth campaign",
+    description:
+      "Meta and Google Ads scaled across 12+ brands with full-funnel budget reallocation, cutting cost per lead while volume grew.",
+    cta: { label: "View project", href: "#" },
+    accent: "ink",
+  },
+  {
+    title: "Digital tracking architecture",
+    description:
+      "GA4, GTM and Conversions API rebuilt from zero to give sales and marketing one shared source of truth for every funnel stage.",
+    cta: { label: "View project", href: "#" },
+    accent: "olive",
+  },
+  {
+    title: "CRM and automation system",
+    description:
+      "Lead routing, scoring and WhatsApp automation that turned manual handoffs into a closed-loop pipeline from click to close.",
+    cta: { label: "View project", href: "#" },
+    accent: "bone",
+  },
+  {
+    title: "Landing page and web build",
+    description:
+      "A conversion-focused landing page shipped end-to-end with an AI coding agent, from wireframe to launch in days, not sprints.",
+    cta: { label: "View project", href: "#" },
+    accent: "ink",
+  },
+] as const;
+
 // Growth System Map (DESIGN-SYSTEM.md §8) — hero's fixed 5 nodes.
 // `href` left undefined until Phase 3 case studies exist to link to.
 export const systemMapNodes = [
