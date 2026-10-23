@@ -1,0 +1,404 @@
+---
+// Generic multi-series line chart for case-study trend data. Deliberately
+// monochrome (ink / olive / ink-soft + stroke style, no categorical hues):
+// this site's whole palette is ink/olive/bone/paper with zero color accents
+// anywhere else, so identity here comes from stroke style + weight + direct
+// labels, never from hue — sidesteps the categorical-palette CVD question
+// entirely rather than importing colors that would clash with the brand.
+// A null value in `values` renders as a lighter "not disclosed" segment
+// instead of a fabricated data point (see gentem-growth-strategy.ts).
+interface Series {
+  label: string;
+  values: (number | null)[];
+  weight?: "emphasis" | "normal" | "muted";
+  pointLabels?: boolean;
+}
+
+interface ReferenceLine {
+  value: number;
+  label: string;
+}
+
+interface Props {
+  months: string[];
+  series: Series[];
+  yMin?: number;
+  yMax: number;
+  yTicks: number[];
+  yFormat: (value: number) => string;
+  referenceLine?: ReferenceLine;
+  caption: string;
+}
+
+const {
+  months,
+  series,
+  yMin = 0,
+  yMax,
+  yTicks,
+  yFormat,
+  referenceLine,
+  caption,
+} = Astro.props;
+
+const W = 640;
+const H = 320;
+const padL = 56;
+const padR = 24;
+const padT = 20;
+const padB = 36;
+const plotW = W - padL - padR;
+const plotH = H - padT - padB;
+
+const xAt = (i: number) => padL + (months.length === 1 ? plotW / 2 : (i / (months.length - 1)) * plotW);
+const yAt = (v: number) => padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+
+function segments(values: (number | null)[]) {
+  // Splits into runs of consecutive known points; a run of length 2 that
+  // skips an in-between null month is rendered "interpolated" (dashed).
+  const runs: { points: { i: number; v: number }[]; interpolated: boolean }[] = [];
+  let current: { i: number; v: number }[] = [];
+  values.forEach((v, i) => {
+    if (v === null) {
+      if (current.length) {
+        runs.push({ points: current, interpolated: false });
+        current = [];
+      }
+      return;
+    }
+    current.push({ i, v });
+  });
+  if (current.length) runs.push({ points: current, interpolated: false });
+
+  // Bridge single-gap runs (exactly one null between two known points) with
+  // a dashed "interpolated" connector instead of leaving a visual break.
+  const bridged: typeof runs = [];
+  for (let r = 0; r < runs.length; r++) {
+    bridged.push(runs[r]);
+    const next = runs[r + 1];
+    if (next) {
+      const lastPoint = runs[r].points[runs[r].points.length - 1];
+      const nextPoint = next.points[0];
+      if (nextPoint.i - lastPoint.i === 2) {
+        bridged.push({ points: [lastPoint, nextPoint], interpolated: true });
+      }
+    }
+  }
+  return bridged;
+}
+
+const chartId = `trend-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<div class="trend-chart" data-trend-chart>
+  <div class="trend-svg-wrap">
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-labelledby={`${chartId}-title`}
+      class="trend-svg"
+    >
+      <title id={`${chartId}-title`}>{caption}</title>
+
+      {/* gridlines + y-axis labels */}
+      {
+        yTicks.map((tick) => (
+          <g>
+            <line
+              x1={padL}
+              x2={W - padR}
+              y1={yAt(tick)}
+              y2={yAt(tick)}
+              class="trend-grid"
+            />
+            <text x={padL - 10} y={yAt(tick)} class="trend-axis-label" text-anchor="end" dy="0.32em">
+              {yFormat(tick)}
+            </text>
+          </g>
+        ))
+      }
+
+      {/* x-axis month labels */}
+      {
+        months.map((m, i) => (
+          <text x={xAt(i)} y={H - 12} class="trend-axis-label" text-anchor="middle">
+            {m}
+          </text>
+        ))
+      }
+
+      {/* reference/target line */}
+      {
+        referenceLine && (
+          <g>
+            <line
+              x1={padL}
+              x2={W - padR}
+              y1={yAt(referenceLine.value)}
+              y2={yAt(referenceLine.value)}
+              class="trend-reference"
+            />
+            <text x={W - padR} y={yAt(referenceLine.value) - 6} class="trend-reference-label" text-anchor="end">
+              {referenceLine.label}
+            </text>
+          </g>
+        )
+      }
+
+      {/* series lines */}
+      {
+        series.map((s) => {
+          const runs = segments(s.values);
+          return (
+            <g class={`trend-series trend-series-${s.weight ?? "normal"}`}>
+              {runs.map((run) => {
+                const d = run.points
+                  .map((p, idx) => `${idx === 0 ? "M" : "L"}${xAt(p.i)},${yAt(p.v)}`)
+                  .join(" ");
+                return <path d={d} class:list={["trend-line", run.interpolated && "trend-line-interpolated"]} />;
+              })}
+              {s.values.map((v, i) =>
+                v === null ? null : (
+                  <circle cx={xAt(i)} cy={yAt(v)} r={s.weight === "emphasis" ? 4.5 : 3} class="trend-point" />
+                )
+              )}
+              {s.pointLabels &&
+                s.values.map((v, i) =>
+                  v === null ? null : (
+                    <text x={xAt(i)} y={yAt(v) - 12} class="trend-point-label" text-anchor="middle">
+                      {yFormat(v)}
+                    </text>
+                  )
+                )}
+              {/* end-of-line label (always, for identity without relying on color) */}
+              {(() => {
+                const lastKnown = [...s.values].reverse().find((v) => v !== null);
+                const lastIndex = s.values.lastIndexOf(lastKnown ?? null);
+                if (lastKnown === undefined || lastKnown === null) return null;
+                return (
+                  <text
+                    x={xAt(lastIndex) + 8}
+                    y={yAt(lastKnown)}
+                    class="trend-end-label"
+                    dy="0.32em"
+                  >
+                    {s.label}
+                  </text>
+                );
+              })()}
+            </g>
+          );
+        })
+      }
+    </svg>
+
+    <div class="trend-tooltip" data-trend-tooltip hidden>
+      <p class="trend-tooltip-month" data-trend-tooltip-month></p>
+      <dl class="trend-tooltip-rows" data-trend-tooltip-rows></dl>
+    </div>
+  </div>
+
+  <script
+    type="application/json"
+    data-trend-data
+    set:html={JSON.stringify({
+      months,
+      series: series.map((s) => ({
+        label: s.label,
+        formatted: s.values.map((v) => (v === null ? null : yFormat(v))),
+      })),
+    })}
+  />
+</div>
+
+<style>
+  .trend-chart {
+    position: relative;
+  }
+
+  .trend-svg-wrap {
+    position: relative;
+  }
+
+  .trend-svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .trend-grid {
+    stroke: var(--color-line);
+    stroke-width: 1;
+  }
+
+  .trend-axis-label {
+    font-size: 11px;
+    fill: var(--color-ink-soft);
+  }
+
+  .trend-reference {
+    stroke: var(--color-ink-soft);
+    stroke-width: 1;
+    stroke-dasharray: 2 4;
+  }
+
+  .trend-reference-label {
+    font-size: 11px;
+    fill: var(--color-ink-soft);
+  }
+
+  .trend-line {
+    fill: none;
+    stroke: var(--color-olive);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .trend-line-interpolated {
+    stroke-dasharray: 3 4;
+    opacity: 0.6;
+  }
+
+  .trend-series-emphasis .trend-line {
+    stroke: var(--color-ink);
+    stroke-width: 2.5;
+  }
+
+  .trend-series-muted .trend-line {
+    stroke: var(--color-ink-soft);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 4;
+  }
+
+  .trend-point {
+    fill: var(--color-paper);
+    stroke: var(--color-olive);
+    stroke-width: 1.5;
+  }
+
+  .trend-series-emphasis .trend-point {
+    stroke: var(--color-ink);
+    fill: var(--color-ink);
+  }
+
+  .trend-series-muted .trend-point {
+    stroke: var(--color-ink-soft);
+  }
+
+  .trend-point-label {
+    font-size: 11px;
+    font-weight: 500;
+    fill: var(--color-ink);
+  }
+
+  .trend-end-label {
+    font-size: 11px;
+    fill: var(--color-ink);
+  }
+
+  .trend-series-muted .trend-end-label {
+    fill: var(--color-ink-soft);
+  }
+
+  .trend-tooltip {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    background: var(--color-ink);
+    color: var(--color-paper);
+    border-radius: var(--radius-sm);
+    padding: var(--space-3) var(--space-4);
+    pointer-events: none;
+    min-width: 160px;
+  }
+
+  .trend-tooltip-month {
+    font-size: var(--text-caption);
+    font-weight: 500;
+    color: var(--color-paper);
+    margin-bottom: var(--space-2);
+  }
+
+  .trend-tooltip-rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .trend-tooltip-rows div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    font-size: var(--text-caption);
+  }
+
+  .trend-tooltip-rows dt {
+    color: var(--color-ink-soft);
+  }
+
+  .trend-tooltip-rows dd {
+    color: var(--color-paper);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 640px) {
+    .trend-point-label,
+    .trend-end-label {
+      font-size: 10px;
+    }
+  }
+</style>
+
+<script>
+  // Hover crosshair + tooltip, snapped to the nearest month column.
+  // Values/format come from the number formatter baked into point labels'
+  // text content already in the DOM, so the tooltip reads the rendered
+  // text rather than re-formatting raw numbers.
+  document.querySelectorAll<HTMLElement>("[data-trend-chart]").forEach((root) => {
+    const svg = root.querySelector("svg");
+    const dataEl = root.querySelector<HTMLScriptElement>("[data-trend-data]");
+    const tooltip = root.querySelector<HTMLElement>("[data-trend-tooltip]");
+    const monthEl = root.querySelector<HTMLElement>("[data-trend-tooltip-month]");
+    const rowsEl = root.querySelector<HTMLElement>("[data-trend-tooltip-rows]");
+    if (!svg || !dataEl || !tooltip || !monthEl || !rowsEl) return;
+
+    const data = JSON.parse(dataEl.textContent || "{}") as {
+      months: string[];
+      series: { label: string; formatted: (string | null)[] }[];
+    };
+
+    const show = (clientX: number) => {
+      const rect = svg.getBoundingClientRect();
+      const relX = (clientX - rect.left) / rect.width;
+      const index = Math.round(relX * (data.months.length - 1));
+      const clamped = Math.max(0, Math.min(data.months.length - 1, index));
+
+      monthEl.textContent = data.months[clamped];
+      rowsEl.innerHTML = "";
+      data.series.forEach((s) => {
+        const v = s.formatted[clamped];
+        const row = document.createElement("div");
+        const dt = document.createElement("dt");
+        dt.textContent = s.label;
+        const dd = document.createElement("dd");
+        dd.textContent = v === null ? "not disclosed" : v;
+        row.append(dt, dd);
+        rowsEl.appendChild(row);
+      });
+
+      tooltip.hidden = false;
+      tooltip.style.left = `${relX * 100}%`;
+    };
+
+    root.addEventListener("mousemove", (e) => show(e.clientX));
+    root.addEventListener("mouseleave", () => {
+      tooltip.hidden = true;
+    });
+    root.addEventListener("touchstart", (e) => {
+      const t = e.touches[0];
+      if (t) show(t.clientX);
+    });
+  });
+</script>

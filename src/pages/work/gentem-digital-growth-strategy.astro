@@ -1,0 +1,538 @@
+---
+// Case study page — "Turning Funnel Data into Acquisition Growth" (Gentem
+// Indonesia). Built directly from the client's numbers-first brief rather
+// than through the MDX content-collection pipeline PRD.md §6 describes
+// (that pipeline — content.config.ts, @astrojs/mdx — doesn't exist in this
+// repo yet); see handover.md for the note on reconciling the two later.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Section from "../../components/layout/Section.astro";
+import Container from "../../components/layout/Container.astro";
+import Metric from "../../components/ui/Metric.astro";
+import Tag from "../../components/ui/Tag.astro";
+import Button from "../../components/ui/Button.astro";
+import TrendChart from "../../components/case-study/TrendChart.astro";
+import AcquisitionFunnel from "../../components/case-study/AcquisitionFunnel.astro";
+import { caseStudy } from "../../data/case-studies/gentem-growth-strategy";
+
+const { header, sidebar, glossary, overview, funnel, costPerFpdp, channels, closing } = caseStudy;
+
+const pct = (v: number) => `${v.toFixed(1)}%`;
+const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
+---
+
+<BaseLayout title={caseStudy.meta.title} description={caseStudy.meta.description}>
+  <Section id="case-study-header" background="paper" class="cs-header">
+    <Container>
+      <p class="text-caption cs-kicker">{header.kicker}</p>
+      <h1 class="text-h1 cs-title">{header.title}</h1>
+      <p class="text-lead cs-meta-line">
+        {header.client} · {header.role} · {header.duration}
+      </p>
+      <p class="text-body cs-intro">{header.intro}</p>
+
+      <div class="cs-stats">
+        {header.stats.map((stat) => <Metric value={stat.value} label={stat.label} />)}
+      </div>
+      <p class="text-caption cs-footnote">{header.statsFootnote}</p>
+    </Container>
+  </Section>
+
+  <Section id="overview" background="paper">
+    <Container>
+      <div class="cs-body-grid">
+        <div class="cs-body">
+          <section class="cs-block">
+            <h2 class="text-h3">The Challenge</h2>
+            <p class="text-body cs-block-text">{overview.challenge}</p>
+          </section>
+
+          <section class="cs-block">
+            <h2 class="text-h3">The Strategy</h2>
+            <ul class="cs-list">
+              {overview.strategy.map((line) => <li class="text-body">{line}</li>)}
+            </ul>
+          </section>
+
+          <section class="cs-block">
+            <h2 class="text-h3">The Outcome</h2>
+            <p class="text-body cs-block-text">{overview.outcome}</p>
+          </section>
+        </div>
+
+        <aside class="cs-sidebar hairline-top">
+          <dl class="cs-sidebar-list">
+            <div>
+              <dt class="text-caption">Client</dt>
+              <dd class="text-small">{sidebar.client}</dd>
+            </div>
+            <div>
+              <dt class="text-caption">Industry</dt>
+              <dd class="text-small">{sidebar.industry}</dd>
+            </div>
+            <div>
+              <dt class="text-caption">Role</dt>
+              <dd class="text-small">{sidebar.role}</dd>
+            </div>
+            <div>
+              <dt class="text-caption">Duration</dt>
+              <dd class="text-small">{sidebar.duration}</dd>
+            </div>
+            <div>
+              <dt class="text-caption">Stack</dt>
+              <dd class="cs-sidebar-tags">
+                {sidebar.stack.map((tool) => <Tag>{tool}</Tag>)}
+              </dd>
+            </div>
+          </dl>
+        </aside>
+      </div>
+    </Container>
+  </Section>
+
+  <Section id="funnel-performance" background="paper-2">
+    <Container>
+      <div class="cs-section-header">
+        <h2 class="text-h2">{funnel.heading}</h2>
+        <p class="text-small cs-section-note">{funnel.subheading}</p>
+      </div>
+
+      <TrendChart
+        months={[...funnel.months]}
+        series={funnel.rows.map((r) => ({ label: r.label, values: [...r.values], weight: r.weight, pointLabels: r.weight === "emphasis" }))}
+        yMax={funnel.yMax}
+        yTicks={[...funnel.yTicks]}
+        yFormat={pct}
+        referenceLine={funnel.referenceLine}
+        caption={funnel.caption}
+      />
+      <p class="text-caption cs-chart-caption">{funnel.caption}</p>
+
+      <div class="cs-table-wrap">
+        <table class="cs-table">
+          <caption class="text-caption">Target Achievement (%) by funnel stage</caption>
+          <thead>
+            <tr>
+              <th scope="col">Funnel stage</th>
+              {funnel.months.map((m) => <th scope="col">{m}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {
+              funnel.rows.map((row) => (
+                <tr>
+                  <th scope="row">{row.label}</th>
+                  {row.values.map((v) => <td class="tabular-nums">{pct(v)}</td>)}
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <p class="text-small cs-takeaway">
+        <strong>Key takeaway.</strong> {funnel.takeaway}
+      </p>
+    </Container>
+  </Section>
+
+  <Section id="cost-per-fpdp" background="paper-2">
+    <Container>
+      <div class="cs-section-header">
+        <h2 class="text-h2">{costPerFpdp.heading}</h2>
+        <p class="text-small cs-section-note">{costPerFpdp.subheading}</p>
+      </div>
+      <p class="text-caption cs-glossary">{glossary.fpdp}</p>
+
+      <TrendChart
+        months={[...costPerFpdp.months]}
+        series={[
+          { label: "Actual cost / FPDP", values: [...costPerFpdp.actual], weight: "emphasis", pointLabels: true },
+        ]}
+        yMax={costPerFpdp.yMax}
+        yTicks={[...costPerFpdp.yTicks]}
+        yFormat={idrM}
+        referenceLine={{ value: costPerFpdp.referenceValue, label: "Target cost (derived)" }}
+        caption={costPerFpdp.subheading}
+      />
+      <p class="text-caption cs-chart-caption">{costPerFpdp.referenceNote}</p>
+
+      <div class="cs-callouts">
+        {
+          costPerFpdp.callouts.map((c) => (
+            <div class="cs-callout">
+              <p class="text-caption cs-callout-month">{c.month}</p>
+              <p class="text-metric cs-callout-value tabular-nums">{c.value}</p>
+              <p class="text-small cs-callout-delta">{c.delta}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <p class="text-small cs-takeaway">
+        <strong>Key takeaway.</strong> {costPerFpdp.takeaway}
+      </p>
+    </Container>
+  </Section>
+
+  {
+    channels.map((channel) => (
+      <Section id={channel.id} background="paper">
+        <Container>
+          <p class="text-caption cs-kicker">{channel.eyebrow}</p>
+          <h2 class="text-h1 cs-channel-title">{channel.title}</h2>
+          <p class="text-body cs-intro">{channel.intro}</p>
+
+          <div class="cs-stats">
+            {channel.stats.map((stat) => (
+              <Metric value={stat.value} label={stat.label} />
+            ))}
+          </div>
+
+          <div class="cs-channel-grid">
+            <div>
+              <h3 class="text-h3 cs-subheading">{channel.architectureHeading}</h3>
+              <ol class="cs-steps">
+                {channel.architecture.map((step) => (
+                  <li class="cs-step">
+                    <span class="text-caption cs-step-index tabular-nums">{step.step}</span>
+                    <span class="text-h3 cs-step-stage">{step.stage}</span>
+                    <span class="text-caption cs-step-group">{step.group}</span>
+                    <span class="text-small cs-step-note">{step.note}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div>
+              <h3 class="text-h3 cs-subheading">Optimization Priorities</h3>
+              <ul class="cs-list">
+                {channel.priorities.map((p) => (
+                  <li class="text-body">{p}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div class="cs-funnel-wrap hairline-top">
+            <AcquisitionFunnel
+              title={channel.funnel.title}
+              stages={[...channel.funnel.stages]}
+              note={channel.funnel.note}
+            />
+          </div>
+        </Container>
+      </Section>
+    ))
+  }
+
+  <Section id="closing" background="ink">
+    <Container>
+      <h2 class="text-h2 cs-closing-heading">{closing.heading}</h2>
+      <div class="cs-closing-grid">
+        {
+          closing.takeaways.map((t) => (
+            <div class="cs-closing-item hairline-top">
+              <h3 class="text-h3 cs-closing-title">{t.title}</h3>
+              <p class="text-small cs-closing-note">{t.note}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="cs-closing-cta">
+        <Button href="/#contact" variant="primary-ink">Book a call</Button>
+        <Button href="/#work" variant="text-ink">Back to selected work</Button>
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>
+
+<style>
+  .cs-kicker {
+    color: var(--color-ink-soft);
+    margin-bottom: var(--space-4);
+  }
+
+  .cs-title {
+    max-width: 16ch;
+  }
+
+  .cs-channel-title {
+    max-width: 14ch;
+  }
+
+  .cs-meta-line {
+    margin-top: var(--space-4);
+    color: var(--color-olive);
+  }
+
+  .cs-intro {
+    margin-top: var(--space-5);
+    max-width: 62ch;
+    color: var(--color-olive);
+  }
+
+  .cs-stats {
+    margin-top: var(--space-8);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6);
+  }
+
+  .cs-footnote {
+    margin-top: var(--space-4);
+    color: var(--color-ink-soft);
+  }
+
+  .cs-body-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  .cs-block + .cs-block {
+    margin-top: var(--space-7);
+  }
+
+  .cs-block-text {
+    margin-top: var(--space-3);
+    max-width: 62ch;
+    color: var(--color-olive);
+  }
+
+  .cs-list {
+    margin-top: var(--space-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding-left: var(--space-5);
+    color: var(--color-olive);
+  }
+
+  .cs-list li {
+    list-style: disc;
+  }
+
+  .cs-sidebar {
+    padding-top: var(--space-5);
+    align-self: start;
+  }
+
+  .cs-sidebar-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  .cs-sidebar-list dt {
+    color: var(--color-ink-soft);
+    margin-bottom: var(--space-1);
+  }
+
+  .cs-sidebar-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+
+  .cs-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  .cs-section-note {
+    color: var(--color-olive);
+    max-width: 320px;
+  }
+
+  .cs-glossary {
+    color: var(--color-ink-soft);
+    margin-bottom: var(--space-5);
+  }
+
+  .cs-chart-caption {
+    margin-top: var(--space-3);
+    color: var(--color-ink-soft);
+  }
+
+  .cs-table-wrap {
+    margin-top: var(--space-7);
+    overflow-x: auto;
+  }
+
+  .cs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-small);
+  }
+
+  .cs-table caption {
+    text-align: left;
+    color: var(--color-ink-soft);
+    margin-bottom: var(--space-3);
+  }
+
+  .cs-table th,
+  .cs-table td {
+    text-align: right;
+    padding: var(--space-3) var(--space-2);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .cs-table th[scope="row"] {
+    text-align: left;
+    color: var(--color-ink);
+    font-weight: 450;
+  }
+
+  .cs-table thead th {
+    color: var(--color-ink-soft);
+    font-weight: 450;
+    border-bottom: 1px solid var(--color-ink);
+  }
+
+  .cs-takeaway {
+    margin-top: var(--space-6);
+    color: var(--color-ink);
+    max-width: 62ch;
+  }
+
+  .cs-callouts {
+    margin-top: var(--space-6);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+
+  .cs-callout {
+    background: var(--color-paper);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+  }
+
+  .cs-callout-month {
+    color: var(--color-ink-soft);
+  }
+
+  .cs-callout-value {
+    margin-top: var(--space-2);
+    font-size: clamp(1.75rem, 2vw + 1rem, 2.5rem);
+  }
+
+  .cs-callout-delta {
+    margin-top: var(--space-1);
+    color: var(--color-olive);
+  }
+
+  .cs-channel-grid {
+    margin-top: var(--space-8);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-7);
+  }
+
+  .cs-subheading {
+    margin-bottom: var(--space-5);
+  }
+
+  .cs-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  .cs-step {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    column-gap: var(--space-4);
+    row-gap: var(--space-1);
+  }
+
+  .cs-step-index {
+    color: var(--color-ink-soft);
+  }
+
+  .cs-step-stage {
+    grid-column: 2;
+  }
+
+  .cs-step-group {
+    grid-column: 2;
+    color: var(--color-olive);
+  }
+
+  .cs-step-note {
+    grid-column: 2;
+    color: var(--color-ink-soft);
+    max-width: 48ch;
+  }
+
+  .cs-funnel-wrap {
+    margin-top: var(--space-8);
+    padding-top: var(--space-7);
+  }
+
+  .cs-closing-heading {
+    color: var(--color-paper);
+  }
+
+  .cs-closing-grid {
+    margin-top: var(--space-7);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .cs-closing-item {
+    padding-top: var(--space-4);
+  }
+
+  .cs-closing-title {
+    color: var(--color-paper);
+  }
+
+  .cs-closing-note {
+    margin-top: var(--space-2);
+    color: var(--color-ink-soft);
+    max-width: 40ch;
+  }
+
+  .cs-closing-cta {
+    margin-top: var(--space-9);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+  }
+
+  @media (min-width: 768px) {
+    .cs-stats {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .cs-channel-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cs-closing-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .cs-body-grid {
+      grid-template-columns: 7fr 4fr;
+      gap: var(--space-9);
+    }
+
+    .cs-sidebar {
+      position: sticky;
+      top: calc(var(--nav-h) + var(--space-6));
+    }
+  }
+</style>

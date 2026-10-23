@@ -1,0 +1,101 @@
+---
+// Horizontal proportional-bar funnel. Per the client brief: bar width is
+// always relative to the first stage (total contacts), never stage-to-stage —
+// that note is rendered as the caption so the chart can't be misread as a
+// conversion-rate funnel.
+interface Stage {
+  label: string;
+  value: number;
+}
+
+interface Props {
+  title: string;
+  stages: Stage[];
+  note: string;
+}
+
+const { title, stages, note } = Astro.props;
+const max = stages[0]?.value ?? 1;
+---
+
+<div class="acq-funnel">
+  <p class="text-caption acq-funnel-title">{title}</p>
+  <ul class="acq-funnel-list">
+    {
+      stages.map((stage, i) => (
+        <li class="acq-funnel-row">
+          <span class="text-small acq-funnel-label">{stage.label}</span>
+          <span class="acq-funnel-bar-track">
+            <span
+              class:list={["acq-funnel-bar", i === stages.length - 1 && "acq-funnel-bar-final"]}
+              style={`width:${Math.max(4, (stage.value / max) * 100)}%`}
+            />
+          </span>
+          <span class="text-h3 acq-funnel-value tabular-nums">{stage.value.toLocaleString("en-US")}</span>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="text-caption acq-funnel-note">{note}</p>
+</div>
+
+<style>
+  .acq-funnel-title {
+    color: var(--color-olive);
+    margin-bottom: var(--space-4);
+  }
+
+  .acq-funnel-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .acq-funnel-row {
+    display: grid;
+    grid-template-columns: 112px 1fr 88px;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .acq-funnel-label {
+    color: var(--color-ink);
+  }
+
+  .acq-funnel-bar-track {
+    display: block;
+    height: 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper-2);
+    overflow: hidden;
+  }
+
+  .acq-funnel-bar {
+    display: block;
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: var(--color-olive);
+  }
+
+  .acq-funnel-bar-final {
+    background: var(--color-ink);
+  }
+
+  .acq-funnel-value {
+    text-align: right;
+    font-weight: 400;
+  }
+
+  .acq-funnel-note {
+    margin-top: var(--space-4);
+    color: var(--color-ink-soft);
+  }
+
+  @media (max-width: 480px) {
+    .acq-funnel-row {
+      grid-template-columns: 88px 1fr 64px;
+      gap: var(--space-3);
+    }
+  }
+</style>
