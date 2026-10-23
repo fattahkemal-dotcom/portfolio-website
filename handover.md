@@ -1,6 +1,17 @@
 # Handover — Kemal Portfolio Website
 
-**Last updated:** 2026-10-23 — first real case study page built: `/work/gentem-digital-growth-strategy` (commit `ce0f255`), same branch `worktree-portfolio-work-features`, pushed to origin (PR not opened yet).
+**Last updated:** 2026-10-23 — second real case study page built: `/work/taiwan-nsc-organic-growth-strategy` (commit `3f5e631`), same branch `worktree-portfolio-work-features`, pushed to origin (PR not opened yet).
+
+**State (2026-10-23) — Taiwan NSC organic growth case study:**
+- New page `src/pages/work/taiwan-nsc-organic-growth-strategy.astro`, same pattern as the Gentem case study (standalone `.astro` page, not the MDX pipeline). Content in `src/data/case-studies/taiwan-nsc-organic-growth.ts` — real client data (Taiwan New South Center Indonesia, Jul–Sep).
+- New shared component `src/components/case-study/BarChart.astro` — single-series vertical bar chart (used for "new followers gained per month," the one series where all 3 months were actually disclosed). Reused `TrendChart` and its existing null→"not disclosed" gap handling for the reach and engagement-rate charts (both missing August).
+- **Two reconciliations against the client's brief** (the brief itself asked to double-check numbers before publishing): (a) the "51,070 highest reach" stat was labeled August in the brief's overview section but July in its own Results section — relabeled to July, the more specific source; (b) "1,450 new followers (513+441+496)" doesn't arithmetically match the disclosed "+724 net growth" — kept both, now explicitly labeled gross (follows gained) vs. net (post-churn), not conflated as the same number. Both reconciliations are commented inline at the top of the data file.
+- **Figures intentionally left off the page**: everything from the brief's own "doesn't have a clear metric label" list (38.6K/35.9K/33.2K, 364/506/695, 5/16/2, 691, 144) — a one-line note at the bottom of the page (`dataNote`) explains why, without listing the numbers publicly.
+- The causation caveat the client opened with in Indonesian ("belum cukup untuk membuktikan... sepenuhnya disebabkan oleh strategi konten") is carried through on-page in the Results takeaway and as an explicit caveat line under the third Impact item — not softened into an unqualified inquiry/trust claim.
+- `npx astro check` → 0 errors/warnings. `npm run build` → succeeds, 5 pages. Verified via `curl` that the built page renders the corrected July attribution and real headline figures — **not yet checked in a real browser**.
+- **CSS duplication note:** this page and the Gentem case study duplicate a fair amount of near-identical `.cs-*` styling (header stats, section headers, step lists, callout cards, closing CTA band). Worth extracting into a shared `CaseStudyLayout`/partial once a third case study is built — not done yet, kept each page self-contained for now per the project's "surgical changes" convention.
+
+**Earlier state (2026-10-23):** first real case study page, `/work/gentem-digital-growth-strategy`, commit `ce0f255`.
 
 **State (2026-10-23) — Gentem growth-strategy case study:**
 - New page `src/pages/work/gentem-digital-growth-strategy.astro`, built directly from a client-supplied numbers-first brief (real data, not dummy): header stats, Challenge/Strategy/Outcome, a 4-series funnel-target-achievement trend chart + table, a cost-per-FPDP chart, Google Ads + Meta Ads channel sections (each with its own stats, a 3-step architecture list, and a proportional acquisition-funnel bar chart), and a closing 3-takeaway section + contact CTA.
