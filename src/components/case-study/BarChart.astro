@@ -1,0 +1,64 @@
+---
+// Simple single-series vertical bar chart (e.g. "new followers per month").
+// Every bar carries a direct value label, so — unlike TrendChart — this
+// doesn't need a separate data table or hover layer to stay accessible.
+interface Props {
+  months: string[];
+  values: number[];
+  valueFormat: (value: number) => string;
+  caption: string;
+}
+
+const { months, values, valueFormat, caption } = Astro.props;
+const max = Math.max(...values);
+---
+
+<div class="bar-chart" role="img" aria-label={caption}>
+  <div class="bar-chart-track">
+    {
+      values.map((v, i) => (
+        <div class="bar-chart-col">
+          <span class="text-small bar-chart-value tabular-nums">{valueFormat(v)}</span>
+          <span class="bar-chart-bar" style={`height:${Math.max(6, (v / max) * 100)}%`} />
+          <span class="text-caption bar-chart-month">{months[i]}</span>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .bar-chart-track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: end;
+    gap: var(--space-6);
+    height: 200px;
+  }
+
+  .bar-chart-col {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    justify-items: center;
+    height: 100%;
+    gap: var(--space-2);
+  }
+
+  .bar-chart-value {
+    color: var(--color-ink);
+    font-weight: 500;
+  }
+
+  .bar-chart-bar {
+    width: 100%;
+    max-width: 72px;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    background: var(--color-olive);
+    align-self: end;
+  }
+
+  .bar-chart-month {
+    color: var(--color-ink-soft);
+  }
+</style>

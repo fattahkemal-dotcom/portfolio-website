@@ -1,0 +1,432 @@
+---
+// Case study page — "From Information Gaps to Organic Growth" (Taiwan New
+// South Center Indonesia). Same approach as the Gentem case study: a
+// standalone .astro page built from the client's brief rather than the
+// (not-yet-built) MDX content-collection pipeline in PRD.md §6.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Section from "../../components/layout/Section.astro";
+import Container from "../../components/layout/Container.astro";
+import Metric from "../../components/ui/Metric.astro";
+import Button from "../../components/ui/Button.astro";
+import TrendChart from "../../components/case-study/TrendChart.astro";
+import BarChart from "../../components/case-study/BarChart.astro";
+import { caseStudy } from "../../data/case-studies/taiwan-nsc-organic-growth";
+
+const { header, problem, strategy, results, impact, dataNote } = caseStudy;
+
+const reachFormat = (v: number) => `${Math.round(v / 1000)}K`;
+const pctFormat = (v: number) => `${v.toFixed(2)}%`;
+---
+
+<BaseLayout title={caseStudy.meta.title} description={caseStudy.meta.description}>
+  <Section id="case-study-header" background="paper">
+    <Container>
+      <p class="text-caption cs-kicker">{header.kicker}</p>
+      <h1 class="text-h1 cs-title">{header.title}</h1>
+      <p class="text-lead cs-meta-line">
+        {header.client} · {header.role} · {header.duration}
+      </p>
+      <p class="text-body cs-intro">{header.intro}</p>
+
+      <div class="cs-stats">
+        {header.stats.map((stat) => <Metric value={stat.value} label={stat.label} />)}
+      </div>
+    </Container>
+  </Section>
+
+  <Section id="problem" background="paper-2">
+    <Container>
+      <div class="cs-section-header">
+        <h2 class="text-h2">{problem.heading}</h2>
+        <p class="text-small cs-section-note">{problem.subheading}</p>
+      </div>
+
+      <div class="cs-gap-grid">
+        <div class="cs-gap-card">
+          <h3 class="text-h3">{problem.audienceGap.title}</h3>
+          <p class="text-small cs-gap-intro">{problem.audienceGap.intro}</p>
+          <ul class="cs-list">
+            {problem.audienceGap.items.map((item) => <li class="text-body">{item}</li>)}
+          </ul>
+        </div>
+        <div class="cs-gap-card">
+          <h3 class="text-h3">{problem.companyGap.title}</h3>
+          <p class="text-small cs-gap-intro">{problem.companyGap.intro}</p>
+          <ul class="cs-list">
+            {problem.companyGap.items.map((item) => <li class="text-body">{item}</li>)}
+          </ul>
+        </div>
+      </div>
+
+      <div class="cs-opportunity">
+        <p class="text-caption cs-opportunity-label">{problem.opportunity.label}</p>
+        <p class="text-lead cs-opportunity-text">{problem.opportunity.text}</p>
+      </div>
+    </Container>
+  </Section>
+
+  <Section id="strategy" background="paper">
+    <Container>
+      <div class="cs-section-header">
+        <h2 class="text-h2">{strategy.heading}</h2>
+        <p class="text-small cs-section-note">{strategy.subheading}</p>
+      </div>
+      <p class="text-body cs-intro">{strategy.intro}</p>
+
+      <ol class="cs-steps">
+        {
+          strategy.steps.map((step) => (
+            <li class="cs-step">
+              <span class="text-caption cs-step-index tabular-nums">{step.step}</span>
+              <span class="text-h3 cs-step-stage">{step.title}</span>
+              <span class="text-small cs-step-note">{step.note}</span>
+            </li>
+          ))
+        }
+      </ol>
+
+      <p class="text-lead cs-principle">{strategy.principle}</p>
+    </Container>
+  </Section>
+
+  <Section id="results" background="paper-2">
+    <Container>
+      <div class="cs-section-header">
+        <h2 class="text-h2">{results.heading}</h2>
+        <p class="text-small cs-section-note">{results.subheading}</p>
+      </div>
+
+      <div class="cs-chart-stack">
+        <div>
+          <h3 class="text-h3 cs-chart-title">{results.reach.title}</h3>
+          <TrendChart
+            months={[...results.months]}
+            series={[{ label: "Reach", values: [...results.reach.values], weight: "emphasis", pointLabels: true }]}
+            yMax={results.reach.yMax}
+            yTicks={[...results.reach.yTicks]}
+            yFormat={reachFormat}
+            caption={results.reach.caption}
+          />
+          <p class="text-caption cs-chart-caption">{results.reach.caption}</p>
+        </div>
+
+        <div>
+          <h3 class="text-h3 cs-chart-title">{results.newFollowers.title}</h3>
+          <BarChart
+            months={[...results.months]}
+            values={[...results.newFollowers.values]}
+            valueFormat={(v) => `+${v}`}
+            caption={results.newFollowers.caption}
+          />
+          <p class="text-caption cs-chart-caption">{results.newFollowers.caption}</p>
+        </div>
+
+        <div>
+          <h3 class="text-h3 cs-chart-title">{results.engagement.title}</h3>
+          <TrendChart
+            months={[...results.months]}
+            series={[{ label: "Engagement rate", values: [...results.engagement.values], weight: "emphasis", pointLabels: true }]}
+            yMax={results.engagement.yMax}
+            yTicks={[...results.engagement.yTicks]}
+            yFormat={pctFormat}
+            caption={results.engagement.caption}
+          />
+          <p class="text-caption cs-chart-caption">{results.engagement.caption}</p>
+        </div>
+      </div>
+
+      <div class="cs-callouts cs-callouts-4">
+        {
+          results.callouts.map((c) => (
+            <div class="cs-callout">
+              <p class="text-caption cs-callout-month">{c.label}</p>
+              <p class="text-metric cs-callout-value tabular-nums">{c.value}</p>
+              <p class="text-small cs-callout-delta">{c.note}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <p class="text-small cs-takeaway">
+        <strong>Key takeaway.</strong> {results.takeaway}
+      </p>
+    </Container>
+  </Section>
+
+  <Section id="impact" background="ink">
+    <Container>
+      <h2 class="text-h2 cs-closing-heading">{impact.heading}</h2>
+      <div class="cs-closing-grid">
+        {
+          impact.items.map((item) => (
+            <div class="cs-closing-item hairline-top">
+              <h3 class="text-h3 cs-closing-title">{item.title}</h3>
+              <p class="text-small cs-closing-note">{item.note}</p>
+              {"caveat" in item && item.caveat && (
+                <p class="text-caption cs-closing-caveat">{item.caveat}</p>
+              )}
+            </div>
+          ))
+        }
+      </div>
+
+      <p class="text-caption cs-data-note">{dataNote}</p>
+
+      <div class="cs-closing-cta">
+        <Button href="/#contact" variant="primary-ink">Book a call</Button>
+        <Button href="/#work" variant="text-ink">Back to selected work</Button>
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>
+
+<style>
+  .cs-kicker {
+    color: var(--color-ink-soft);
+    margin-bottom: var(--space-4);
+  }
+
+  .cs-title {
+    max-width: 18ch;
+  }
+
+  .cs-meta-line {
+    margin-top: var(--space-4);
+    color: var(--color-olive);
+  }
+
+  .cs-intro {
+    margin-top: var(--space-5);
+    max-width: 62ch;
+    color: var(--color-olive);
+  }
+
+  .cs-stats {
+    margin-top: var(--space-8);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6);
+  }
+
+  .cs-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  .cs-section-note {
+    color: var(--color-olive);
+    max-width: 320px;
+  }
+
+  .cs-gap-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  .cs-gap-card {
+    background: var(--color-paper);
+    border-radius: var(--radius-md);
+    padding: var(--space-6);
+  }
+
+  .cs-gap-intro {
+    margin-top: var(--space-3);
+    color: var(--color-olive);
+  }
+
+  .cs-list {
+    margin-top: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding-left: var(--space-5);
+    color: var(--color-olive);
+  }
+
+  .cs-list li {
+    list-style: disc;
+  }
+
+  .cs-opportunity {
+    margin-top: var(--space-6);
+    background: var(--color-ink);
+    border-radius: var(--radius-md);
+    padding: var(--space-6);
+  }
+
+  .cs-opportunity-label {
+    color: var(--color-ink-soft);
+    margin-bottom: var(--space-3);
+  }
+
+  .cs-opportunity-text {
+    color: var(--color-paper);
+    max-width: 56ch;
+  }
+
+  .cs-steps {
+    margin-top: var(--space-8);
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  .cs-step {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    column-gap: var(--space-4);
+    row-gap: var(--space-1);
+  }
+
+  .cs-step-index {
+    color: var(--color-ink-soft);
+  }
+
+  .cs-step-stage {
+    grid-column: 2;
+  }
+
+  .cs-step-note {
+    grid-column: 2;
+    color: var(--color-ink-soft);
+    max-width: 52ch;
+  }
+
+  .cs-principle {
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-line);
+    max-width: 48ch;
+    color: var(--color-ink);
+  }
+
+  .cs-chart-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-9);
+  }
+
+  .cs-chart-title {
+    margin-bottom: var(--space-5);
+  }
+
+  .cs-chart-caption {
+    margin-top: var(--space-3);
+    color: var(--color-ink-soft);
+  }
+
+  .cs-callouts {
+    margin-top: var(--space-8);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+
+  .cs-callout {
+    background: var(--color-paper);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+  }
+
+  .cs-callout-month {
+    color: var(--color-ink-soft);
+  }
+
+  .cs-callout-value {
+    margin-top: var(--space-2);
+    font-size: clamp(1.75rem, 2vw + 1rem, 2.5rem);
+  }
+
+  .cs-callout-delta {
+    margin-top: var(--space-1);
+    color: var(--color-olive);
+  }
+
+  .cs-takeaway {
+    margin-top: var(--space-6);
+    color: var(--color-ink);
+    max-width: 62ch;
+  }
+
+  .cs-closing-heading {
+    color: var(--color-paper);
+  }
+
+  .cs-closing-grid {
+    margin-top: var(--space-7);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .cs-closing-item {
+    padding-top: var(--space-4);
+  }
+
+  .cs-closing-title {
+    color: var(--color-paper);
+  }
+
+  .cs-closing-note {
+    margin-top: var(--space-2);
+    color: var(--color-ink-soft);
+    max-width: 42ch;
+  }
+
+  .cs-closing-caveat {
+    margin-top: var(--space-3);
+    color: var(--color-ink-soft);
+    opacity: 0.8;
+    max-width: 42ch;
+  }
+
+  .cs-data-note {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-line-dark);
+    color: var(--color-ink-soft);
+    max-width: 60ch;
+  }
+
+  .cs-closing-cta {
+    margin-top: var(--space-8);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+  }
+
+  @media (min-width: 768px) {
+    .cs-stats {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .cs-gap-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cs-closing-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .cs-chart-stack {
+      flex-direction: row;
+    }
+
+    .cs-chart-stack > div {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .cs-callouts-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>
