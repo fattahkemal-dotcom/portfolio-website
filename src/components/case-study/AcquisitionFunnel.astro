@@ -12,13 +12,14 @@ interface Props {
   title: string;
   stages: Stage[];
   note: string;
+  surface?: "paper" | "ink";
 }
 
-const { title, stages, note } = Astro.props;
+const { title, stages, note, surface = "paper" } = Astro.props;
 const max = stages[0]?.value ?? 1;
 ---
 
-<div class="acq-funnel">
+<div class:list={["acq-funnel", surface === "ink" && "acq-funnel-ink"]}>
   <p class="text-caption acq-funnel-title">{title}</p>
   <ul class="acq-funnel-list">
     {
@@ -46,6 +47,13 @@ const max = stages[0]?.value ?? 1;
   .acq-funnel-title {
     color: var(--color-olive);
     margin-bottom: var(--space-4);
+  }
+
+  .acq-funnel-ink .acq-funnel-title {
+    /* olive on ink is borderline-low-contrast (~3.2:1, under the 4.5:1
+       text minimum) — ink-soft is the color already used for secondary
+       text on ink sections elsewhere on this page and passes ~5.4:1. */
+    color: var(--color-ink-soft);
   }
 
   .acq-funnel-list {
@@ -98,11 +106,44 @@ const max = stages[0]?.value ?? 1;
   .acq-funnel-value {
     text-align: right;
     font-weight: 400;
+    color: var(--color-ink);
+    transition: color var(--dur-fast) var(--ease-out);
   }
 
   .acq-funnel-note {
     margin-top: var(--space-4);
     color: var(--color-ink-soft);
+  }
+
+  /* Dark-surface variant (used on the Meta Ads / ink-background channel
+     section). Without this, labels/value stayed the default ink color
+     and the final bar's fill was literally var(--color-ink) — both
+     invisible against an ink section background. Bug report: "black
+     text on black background... you need to switch this." */
+  .acq-funnel-ink .acq-funnel-label {
+    color: var(--color-paper);
+  }
+
+  .acq-funnel-ink .acq-funnel-value {
+    color: var(--color-paper);
+  }
+
+  .acq-funnel-ink .acq-funnel-bar-track {
+    /* A dark grey, not paper-2 — visibly distinct from the ink section
+       background behind it without looking like a mismatched light chip. */
+    background: var(--color-line-dark);
+  }
+
+  .acq-funnel-ink .acq-funnel-bar-final {
+    background: var(--color-bone);
+  }
+
+  .acq-funnel-ink .acq-funnel-row:hover .acq-funnel-bar {
+    background: var(--color-bone);
+  }
+
+  .acq-funnel-ink .acq-funnel-row:hover .acq-funnel-bar-final {
+    background: var(--color-olive);
   }
 
   @media (max-width: 480px) {
