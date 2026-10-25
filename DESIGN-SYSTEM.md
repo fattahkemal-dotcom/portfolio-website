@@ -1510,6 +1510,8 @@ Runs once. Under `prefers-reduced-motion: reduce`, render the final state immedi
 
 **2026-10-19, same day — no pause control (client-directed):** client asked to ship without a pause/play toggle. Flagged and acknowledged: WCAG 2.2.2 (Level A) normally requires a visible stop control on any auto-playing motion lasting over 5 seconds, independent of the reduced-motion setting. This section intentionally does not meet that criterion. `prefers-reduced-motion: reduce` is the only way a visitor can stop the scroll.
 
+**2026-10-25 override (client-directed, narrowed, second instance):** `/work/landing-page-design`'s running-text band is a second marquee, requested directly by Kemal for that page. Same mechanism and same scope rule as the 2026-10-19 override above: limited to that one band (32s linear loop, `prefers-reduced-motion: reduce` collapses it to a static wrapped row), not a blanket license to add marquees elsewhere. A third page wanting this should get its own dated entry here, not silently reuse this one as precedent. This instance also keeps sentence-case item text (no all-caps) and plain spaced list items (no middle-dot-joined strings), to stay inside the §12 bans that the 2026-10-19 Highlights band predates in this file.
+
 ---
 
 ## 11. Voice & copy
