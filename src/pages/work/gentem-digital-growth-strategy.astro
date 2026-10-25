@@ -4,6 +4,14 @@
 // than through the MDX content-collection pipeline PRD.md §6 describes
 // (that pipeline — content.config.ts, @astrojs/mdx — doesn't exist in this
 // repo yet); see handover.md for the note on reconciling the two later.
+//
+// 2026-10-25 revision: visual upgrade translating a client-supplied
+// editorial-style reference (bold display type, oversized stats, scroll
+// reveals) into THIS site's strict token set — Hanken Grotesk only (no
+// serif/mono fonts), ink/olive/bone/paper palette only (no neon accent),
+// no eyebrow labels above headings per DESIGN-SYSTEM.md §4.2. Reused
+// --text-display / --text-display-xl, already defined for exactly this
+// "oversized, short text" job, instead of inventing new sizes.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Section from "../../components/layout/Section.astro";
 import Container from "../../components/layout/Container.astro";
@@ -23,12 +31,27 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
 <BaseLayout title={caseStudy.meta.title} description={caseStudy.meta.description}>
   <Section id="case-study-header" background="paper" class="cs-header">
     <Container>
-      <p class="text-caption cs-kicker">{header.kicker}</p>
-      <h1 class="text-h1 cs-title">{header.title}</h1>
-      <p class="text-lead cs-meta-line">
-        {header.client} · {header.role} · {header.duration}
-      </p>
-      <p class="text-body cs-intro">{header.intro}</p>
+      <div class="cs-hero-grid">
+        <div class="cs-hero-copy">
+          <p class="text-caption cs-kicker">{header.kicker}</p>
+          <h1 class="text-display cs-title">{header.title}</h1>
+          <p class="text-lead cs-meta-line">
+            {header.client} · {header.role} · {header.duration}
+          </p>
+          <p class="text-body cs-intro">{header.intro}</p>
+        </div>
+
+        <div class="cs-hero-figure" aria-hidden="true">
+          <span class="cs-hero-ring cs-hero-ring-outer"></span>
+          <span class="cs-hero-ring cs-hero-ring-mid"></span>
+          <span class="cs-hero-ring cs-hero-ring-dashed"></span>
+          <div class="cs-hero-figure-center">
+            <p class="text-caption cs-hero-figure-label">January / performance</p>
+            <p class="text-display-xl cs-hero-figure-value tabular-nums">{header.stats[0].value}</p>
+            <p class="text-caption cs-hero-figure-sub">{header.stats[0].label}</p>
+          </div>
+        </div>
+      </div>
 
       <div class="cs-stats">
         {header.stats.map((stat) => <Metric value={stat.value} label={stat.label} />)}
@@ -39,27 +62,37 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
 
   <Section id="overview" background="paper">
     <Container>
+      <div class="cs-section-head hairline-top reveal">
+        <h2 class="text-display cs-brief-display">The challenge wasn't<br />more traffic.</h2>
+        <p class="text-caption cs-section-tag">01 / The brief</p>
+      </div>
+
       <div class="cs-body-grid">
         <div class="cs-body">
-          <section class="cs-block">
-            <h2 class="text-h3">The Challenge</h2>
+          <section class="cs-block reveal">
+            <h3 class="text-h3">The Challenge</h3>
             <p class="text-body cs-block-text">{overview.challenge}</p>
           </section>
 
-          <section class="cs-block">
-            <h2 class="text-h3">The Strategy</h2>
-            <ul class="cs-list">
-              {overview.strategy.map((line) => <li class="text-body">{line}</li>)}
-            </ul>
+          <section class="cs-block reveal">
+            <h3 class="text-h3">The Strategy</h3>
+            <ol class="cs-approach-list">
+              {overview.strategy.map((line, i) => (
+                <li class="cs-approach-row">
+                  <span class="text-h3 cs-approach-index tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                  <p class="text-body cs-approach-text">{line}</p>
+                </li>
+              ))}
+            </ol>
           </section>
 
-          <section class="cs-block">
-            <h2 class="text-h3">The Outcome</h2>
+          <section class="cs-block reveal">
+            <h3 class="text-h3">The Outcome</h3>
             <p class="text-body cs-block-text">{overview.outcome}</p>
           </section>
         </div>
 
-        <aside class="cs-sidebar hairline-top">
+        <aside class="cs-sidebar hairline-top reveal">
           <dl class="cs-sidebar-list">
             <div>
               <dt class="text-caption">Client</dt>
@@ -91,147 +124,174 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
 
   <Section id="funnel-performance" background="paper-2">
     <Container>
-      <div class="cs-section-header">
-        <h2 class="text-h2">{funnel.heading}</h2>
-        <p class="text-small cs-section-note">{funnel.subheading}</p>
+      <div class="cs-section-head hairline-top reveal">
+        <h2 class="text-display">{funnel.heading}</h2>
+        <p class="text-caption cs-section-tag">02 / The evidence</p>
+      </div>
+      <p class="text-small cs-section-note reveal">{funnel.subheading}</p>
+
+      <div class="cs-chart-stage reveal">
+        <span class="cs-chart-stage-corner" aria-hidden="true"></span>
+        <TrendChart
+          months={[...funnel.months]}
+          series={funnel.rows.map((r) => ({ label: r.label, values: [...r.values], weight: r.weight, pointLabels: r.weight === "emphasis" }))}
+          yMax={funnel.yMax}
+          yTicks={[...funnel.yTicks]}
+          yFormat={pct}
+          referenceLine={funnel.referenceLine}
+          caption={funnel.caption}
+        />
+        <p class="text-caption cs-chart-caption">{funnel.caption}</p>
+
+        <div class="cs-table-wrap">
+          <table class="cs-table">
+            <caption class="text-caption">Target Achievement (%) by funnel stage</caption>
+            <thead>
+              <tr>
+                <th scope="col">Funnel stage</th>
+                {funnel.months.map((m) => <th scope="col">{m}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {
+                funnel.rows.map((row) => (
+                  <tr>
+                    <th scope="row">{row.label}</th>
+                    {row.values.map((v) => <td class="tabular-nums">{pct(v)}</td>)}
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <TrendChart
-        months={[...funnel.months]}
-        series={funnel.rows.map((r) => ({ label: r.label, values: [...r.values], weight: r.weight, pointLabels: r.weight === "emphasis" }))}
-        yMax={funnel.yMax}
-        yTicks={[...funnel.yTicks]}
-        yFormat={pct}
-        referenceLine={funnel.referenceLine}
-        caption={funnel.caption}
-      />
-      <p class="text-caption cs-chart-caption">{funnel.caption}</p>
-
-      <div class="cs-table-wrap">
-        <table class="cs-table">
-          <caption class="text-caption">Target Achievement (%) by funnel stage</caption>
-          <thead>
-            <tr>
-              <th scope="col">Funnel stage</th>
-              {funnel.months.map((m) => <th scope="col">{m}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {
-              funnel.rows.map((row) => (
-                <tr>
-                  <th scope="row">{row.label}</th>
-                  {row.values.map((v) => <td class="tabular-nums">{pct(v)}</td>)}
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
+      <div class="cs-insight reveal">
+        <p class="text-display-xl cs-insight-figure tabular-nums">{pct(funnel.rows[3].values[2])}</p>
+        <div class="cs-insight-copy">
+          <p class="text-caption cs-section-tag">The important nuance</p>
+          <p class="text-small cs-takeaway">{funnel.takeaway}</p>
+        </div>
       </div>
-
-      <p class="text-small cs-takeaway">
-        <strong>Key takeaway.</strong> {funnel.takeaway}
-      </p>
     </Container>
   </Section>
 
-  <Section id="cost-per-fpdp" background="paper-2">
+  <Section id="cost-per-fpdp" background="paper">
     <Container>
-      <div class="cs-section-header">
-        <h2 class="text-h2">{costPerFpdp.heading}</h2>
-        <p class="text-small cs-section-note">{costPerFpdp.subheading}</p>
-      </div>
-      <p class="text-caption cs-glossary">{glossary.fpdp}</p>
-
-      <TrendChart
-        months={[...costPerFpdp.months]}
-        series={[
-          { label: "Actual cost / FPDP", values: [...costPerFpdp.actual], weight: "emphasis", pointLabels: true },
-        ]}
-        yMax={costPerFpdp.yMax}
-        yTicks={[...costPerFpdp.yTicks]}
-        yFormat={idrM}
-        referenceLine={{ value: costPerFpdp.referenceValue, label: "Target cost (derived)" }}
-        caption={costPerFpdp.subheading}
-      />
-      <p class="text-caption cs-chart-caption">{costPerFpdp.referenceNote}</p>
-
-      <div class="cs-callouts">
-        {
-          costPerFpdp.callouts.map((c) => (
-            <div class="cs-callout">
-              <p class="text-caption cs-callout-month">{c.month}</p>
-              <p class="text-metric cs-callout-value tabular-nums">{c.value}</p>
-              <p class="text-small cs-callout-delta">{c.delta}</p>
-            </div>
-          ))
-        }
+      <div class="cs-section-head hairline-top reveal">
+        <h2 class="text-display">Efficient growth,<br />not just growth.</h2>
+        <p class="text-caption cs-section-tag">03 / Cost efficiency</p>
       </div>
 
-      <p class="text-small cs-takeaway">
-        <strong>Key takeaway.</strong> {costPerFpdp.takeaway}
-      </p>
+      <div class="cs-efficiency-grid">
+        <div class="reveal">
+          <p class="text-body cs-block-text">{costPerFpdp.subheading}</p>
+          <p class="text-caption cs-glossary">{glossary.fpdp}</p>
+          <p class="text-display-xl cs-efficiency-figure tabular-nums">{header.stats[1].value}</p>
+          <p class="text-caption cs-efficiency-label">Cost per FPDP, Nov → Jan</p>
+          <p class="text-small cs-takeaway">{costPerFpdp.takeaway}</p>
+        </div>
+
+        <div class="cs-chart-stage reveal">
+          <span class="cs-chart-stage-corner" aria-hidden="true"></span>
+          <TrendChart
+            months={[...costPerFpdp.months]}
+            series={[
+              { label: "Actual cost / FPDP", values: [...costPerFpdp.actual], weight: "emphasis", pointLabels: true },
+            ]}
+            yMax={costPerFpdp.yMax}
+            yTicks={[...costPerFpdp.yTicks]}
+            yFormat={idrM}
+            referenceLine={{ value: costPerFpdp.referenceValue, label: "Target cost (derived)" }}
+            caption={costPerFpdp.subheading}
+          />
+          <p class="text-caption cs-chart-caption">{costPerFpdp.referenceNote}</p>
+
+          <div class="cs-callouts">
+            {
+              costPerFpdp.callouts.map((c) => (
+                <div class="cs-callout">
+                  <p class="text-caption cs-callout-month">{c.month}</p>
+                  <p class="text-metric cs-callout-value tabular-nums">{c.value}</p>
+                  <p class="text-small cs-callout-delta">{c.delta}</p>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
     </Container>
   </Section>
 
   {
-    channels.map((channel) => (
-      <Section id={channel.id} background="paper">
-        <Container>
-          <p class="text-caption cs-kicker">{channel.eyebrow}</p>
-          <h2 class="text-h1 cs-channel-title">{channel.title}</h2>
-          <p class="text-body cs-intro">{channel.intro}</p>
+    channels.map((channel, i) => {
+      const isDark = i === 1;
+      return (
+        <Section id={channel.id} background={isDark ? "ink" : "paper-2"}>
+          <Container>
+            <div class="cs-section-head hairline-top reveal" class:list={[isDark && "cs-on-ink"]}>
+              <h2 class="text-display cs-channel-title" class:list={[isDark && "cs-on-ink"]}>{channel.title}</h2>
+              <p class="text-caption cs-section-tag" class:list={[isDark && "cs-on-ink-soft"]}>
+                {String(i + 4).padStart(2, "0")} / The channels
+              </p>
+            </div>
+            <p class="text-body cs-intro reveal" class:list={[isDark && "cs-on-ink-soft"]}>{channel.intro}</p>
 
-          <div class="cs-stats">
-            {channel.stats.map((stat) => (
-              <Metric value={stat.value} label={stat.label} />
-            ))}
-          </div>
-
-          <div class="cs-channel-grid">
-            <div>
-              <h3 class="text-h3 cs-subheading">{channel.architectureHeading}</h3>
-              <ol class="cs-steps">
-                {channel.architecture.map((step) => (
-                  <li class="cs-step">
-                    <span class="text-caption cs-step-index tabular-nums">{step.step}</span>
-                    <span class="text-h3 cs-step-stage">{step.stage}</span>
-                    <span class="text-caption cs-step-group">{step.group}</span>
-                    <span class="text-small cs-step-note">{step.note}</span>
-                  </li>
-                ))}
-              </ol>
+            <div class="cs-stats reveal">
+              {channel.stats.map((stat) => (
+                <Metric value={stat.value} label={stat.label} surface={isDark ? "ink" : "paper"} />
+              ))}
             </div>
 
-            <div>
-              <h3 class="text-h3 cs-subheading">Optimization Priorities</h3>
-              <ul class="cs-list">
-                {channel.priorities.map((p) => (
-                  <li class="text-body">{p}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
+            <div class="cs-channel-grid">
+              <div class="reveal">
+                <h3 class="text-h3 cs-subheading" class:list={[isDark && "cs-on-ink"]}>{channel.architectureHeading}</h3>
+                <ol class="cs-steps">
+                  {channel.architecture.map((step) => (
+                    <li class="cs-step">
+                      <span class="text-caption cs-step-index tabular-nums" class:list={[isDark && "cs-on-ink-soft"]}>{step.step}</span>
+                      <span class="text-h3 cs-step-stage" class:list={[isDark && "cs-on-ink"]}>{step.stage}</span>
+                      <span class="text-caption cs-step-group" class:list={[isDark && "cs-on-ink-soft"]}>{step.group}</span>
+                      <span class="text-small cs-step-note" class:list={[isDark && "cs-on-ink-soft"]}>{step.note}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
 
-          <div class="cs-funnel-wrap hairline-top">
-            <AcquisitionFunnel
-              title={channel.funnel.title}
-              stages={[...channel.funnel.stages]}
-              note={channel.funnel.note}
-            />
-          </div>
-        </Container>
-      </Section>
-    ))
+              <div class="reveal">
+                <h3 class="text-h3 cs-subheading" class:list={[isDark && "cs-on-ink"]}>Optimization Priorities</h3>
+                <ul class="cs-list" class:list={[isDark && "cs-on-ink-soft"]}>
+                  {channel.priorities.map((p) => (
+                    <li class="text-body">{p}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div class="cs-funnel-wrap hairline-top reveal" class:list={[isDark && "cs-on-ink"]}>
+              <AcquisitionFunnel
+                title={channel.funnel.title}
+                stages={[...channel.funnel.stages]}
+                note={channel.funnel.note}
+              />
+            </div>
+          </Container>
+        </Section>
+      );
+    })
   }
 
   <Section id="closing" background="ink">
     <Container>
-      <h2 class="text-h2 cs-closing-heading">{closing.heading}</h2>
+      <div class="cs-section-head reveal">
+        <h2 class="text-display cs-closing-heading">{closing.heading}</h2>
+        <p class="text-caption cs-section-tag cs-on-ink-soft">07 / The lessons</p>
+      </div>
       <div class="cs-closing-grid">
         {
-          closing.takeaways.map((t) => (
-            <div class="cs-closing-item hairline-top">
+          closing.takeaways.map((t, i) => (
+            <div class="cs-closing-item hairline-top reveal">
+              <p class="text-caption cs-closing-index tabular-nums">{String(i + 1).padStart(2, "0")}</p>
               <h3 class="text-h3 cs-closing-title">{t.title}</h3>
               <p class="text-small cs-closing-note">{t.note}</p>
             </div>
@@ -239,18 +299,38 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
         }
       </div>
 
-      <div class="cs-closing-cta">
+      <div class="cs-closing-cta reveal">
         <Button href="/#contact" variant="primary-ink">Book a call</Button>
         <Button href="/#work" variant="text-ink">Back to selected work</Button>
       </div>
     </Container>
   </Section>
+
+  <noscript>
+    <style>
+      .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    </style>
+  </noscript>
 </BaseLayout>
 
 <style>
   .cs-kicker {
     color: var(--color-ink-soft);
     margin-bottom: var(--space-4);
+  }
+
+  .cs-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+    align-items: center;
+  }
+
+  .cs-hero-copy {
+    min-width: 0;
   }
 
   .cs-title {
@@ -272,6 +352,65 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
     color: var(--color-olive);
   }
 
+  /* Hero centerpiece — monochrome ring, no neon: ink/olive/bone only. */
+  .cs-hero-figure {
+    position: relative;
+    width: min(320px, 72vw);
+    aspect-ratio: 1;
+    margin-inline: auto;
+    display: grid;
+    place-items: center;
+  }
+
+  .cs-hero-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-line);
+  }
+
+  .cs-hero-ring-mid {
+    inset: 10%;
+    border-color: var(--color-bone);
+  }
+
+  .cs-hero-ring-dashed {
+    inset: -8%;
+    border-style: dashed;
+    border-color: var(--color-line);
+    animation: cs-spin 70s linear infinite;
+  }
+
+  @keyframes cs-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .cs-hero-figure-center {
+    text-align: center;
+    padding: var(--space-4);
+  }
+
+  .cs-hero-figure-label {
+    color: var(--color-ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .cs-hero-figure-value {
+    margin-top: var(--space-2);
+    font-size: clamp(2.75rem, 6vw + 1rem, 5.5rem);
+    color: var(--color-ink);
+  }
+
+  .cs-hero-figure-sub {
+    margin-top: var(--space-2);
+    color: var(--color-olive);
+    max-width: 18ch;
+    margin-inline: auto;
+  }
+
   .cs-stats {
     margin-top: var(--space-8);
     display: grid;
@@ -282,6 +421,35 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
   .cs-footnote {
     margin-top: var(--space-4);
     color: var(--color-ink-soft);
+  }
+
+  /* Shared section-head: heading + side note to the right, per
+     DESIGN-SYSTEM.md §4.2 — never a label ABOVE the heading. */
+  .cs-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    padding-top: var(--space-5);
+    margin-bottom: var(--space-7);
+  }
+
+  .cs-section-tag {
+    color: var(--color-ink-soft);
+    white-space: nowrap;
+  }
+
+  .cs-on-ink {
+    color: var(--color-paper) !important;
+  }
+
+  .cs-on-ink-soft {
+    color: var(--color-ink-soft) !important;
+  }
+
+  .cs-brief-display {
+    max-width: 14ch;
   }
 
   .cs-body-grid {
@@ -313,6 +481,34 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
     list-style: disc;
   }
 
+  .cs-approach-list {
+    margin-top: var(--space-4);
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cs-approach-row {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: var(--space-4);
+    padding: var(--space-5) 0;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .cs-approach-row:last-child {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .cs-approach-index {
+    color: var(--color-ink-soft);
+  }
+
+  .cs-approach-text {
+    color: var(--color-ink);
+    max-width: 58ch;
+  }
+
   .cs-sidebar {
     padding-top: var(--space-5);
     align-self: start;
@@ -336,23 +532,34 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
     margin-top: var(--space-2);
   }
 
-  .cs-section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: var(--space-4);
-    margin-bottom: var(--space-6);
-  }
-
   .cs-section-note {
     color: var(--color-olive);
     max-width: 320px;
+    margin-top: calc(var(--space-7) * -1 + var(--space-3));
+    margin-bottom: var(--space-6);
+  }
+
+  .cs-chart-stage {
+    position: relative;
+    border: 1px solid var(--color-line);
+    background: var(--color-paper);
+    padding: clamp(var(--space-5), 4vw, var(--space-8));
+  }
+
+  .cs-chart-stage-corner {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    width: 56px;
+    height: 56px;
+    border-top: 1px solid var(--color-ink);
+    border-right: 1px solid var(--color-ink);
+    pointer-events: none;
   }
 
   .cs-glossary {
     color: var(--color-ink-soft);
-    margin-bottom: var(--space-5);
+    margin: var(--space-4) 0;
   }
 
   .cs-chart-caption {
@@ -397,9 +604,48 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
   }
 
   .cs-takeaway {
-    margin-top: var(--space-6);
+    margin-top: var(--space-3);
     color: var(--color-ink);
     max-width: 62ch;
+  }
+
+  .cs-insight {
+    margin-top: var(--space-9);
+    padding-top: var(--space-7);
+    border-top: 1px solid var(--color-line);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+    align-items: center;
+  }
+
+  .cs-insight-figure {
+    color: var(--color-ink);
+    line-height: 0.9;
+  }
+
+  .cs-insight-copy {
+    max-width: 52ch;
+  }
+
+  .cs-efficiency-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+    align-items: start;
+  }
+
+  .cs-efficiency-figure {
+    margin-top: var(--space-6);
+    color: var(--color-ink);
+    line-height: 0.9;
+  }
+
+  .cs-efficiency-label {
+    margin-top: var(--space-2);
+    color: var(--color-olive);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .cs-callouts {
@@ -410,7 +656,7 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
   }
 
   .cs-callout {
-    background: var(--color-paper);
+    background: var(--color-paper-2);
     border-radius: var(--radius-md);
     padding: var(--space-5);
   }
@@ -480,6 +726,7 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
 
   .cs-closing-heading {
     color: var(--color-paper);
+    max-width: 18ch;
   }
 
   .cs-closing-grid {
@@ -493,7 +740,12 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
     padding-top: var(--space-4);
   }
 
+  .cs-closing-index {
+    color: var(--color-ink-soft);
+  }
+
   .cs-closing-title {
+    margin-top: var(--space-5);
     color: var(--color-paper);
   }
 
@@ -510,6 +762,32 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
     gap: var(--space-5);
   }
 
+  /* Scroll reveal — progressive enhancement only. JS adds .is-visible;
+     without JS the <noscript> override above forces full visibility, so
+     content is never stuck hidden. Durations come from tokens.css, which
+     already zero themselves under prefers-reduced-motion. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+    }
+
+    .cs-hero-ring-dashed {
+      animation: none;
+    }
+  }
+
   @media (min-width: 768px) {
     .cs-stats {
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -522,9 +800,22 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
     .cs-closing-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+
+    .cs-insight {
+      grid-template-columns: minmax(0, 0.55fr) minmax(0, 1fr);
+    }
+
+    .cs-efficiency-grid {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+    }
   }
 
   @media (min-width: 1024px) {
+    .cs-hero-grid {
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.8fr);
+      gap: var(--space-9);
+    }
+
     .cs-body-grid {
       grid-template-columns: 7fr 4fr;
       gap: var(--space-9);
@@ -536,3 +827,26 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
     }
   }
 </style>
+
+<script>
+  // Progressive-enhancement scroll reveal, scoped to this page.
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const targets = document.querySelectorAll<HTMLElement>(".reveal");
+
+  if (reduced || !("IntersectionObserver" in window)) {
+    targets.forEach((el) => el.classList.add("is-visible"));
+  } else {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+    targets.forEach((el) => observer.observe(el));
+  }
+</script>

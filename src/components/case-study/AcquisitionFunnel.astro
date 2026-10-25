@@ -28,6 +28,7 @@ const max = stages[0]?.value ?? 1;
           <span class="acq-funnel-bar-track">
             <span
               class:list={["acq-funnel-bar", i === stages.length - 1 && "acq-funnel-bar-final"]}
+              data-acq-fill
               style={`width:${Math.max(4, (stage.value / max) * 100)}%`}
             />
           </span>
@@ -76,6 +77,7 @@ const max = stages[0]?.value ?? 1;
     height: 100%;
     border-radius: var(--radius-pill);
     background: var(--color-olive);
+    transition: width var(--dur-draw) var(--ease-out);
   }
 
   .acq-funnel-bar-final {
@@ -99,3 +101,27 @@ const max = stages[0]?.value ?? 1;
     }
   }
 </style>
+
+<script>
+  // Progressive-enhancement reveal: bars render at full width without JS
+  // (via the inline `style` set above). With JS, zero them out and grow
+  // to that width once scrolled into view, for the "bar fills in" feel.
+  // tokens.css already zeroes --dur-draw under prefers-reduced-motion, so
+  // the transition becomes instant there rather than needing a branch.
+  document.querySelectorAll<HTMLElement>("[data-acq-fill]").forEach((bar) => {
+    const target = bar.style.width;
+    bar.style.width = "0%";
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            bar.style.width = target;
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(bar);
+  });
+</script>
