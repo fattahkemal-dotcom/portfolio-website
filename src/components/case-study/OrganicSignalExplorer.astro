@@ -1,0 +1,410 @@
+---
+// Tab-driven explorer across heterogeneous series (some are line charts
+// with a possible disclosed-data gap, one is a bar chart) — the reference
+// design's "select a signal" pattern. Rather than redrawing SVG paths of
+// different kinds dynamically (fragile, a lot of branching JS), every
+// view is pre-rendered server-side and tab clicks just toggle visibility
+// + swap the readout text. Simpler, and every view still works with
+// JS disabled (first series shows, others are visually hidden via CSS
+// only — nothing depends on the script to render correctly).
+interface LineSeries {
+  id: string;
+  kind: "line";
+  label: string;
+  title: string;
+  months: string[];
+  values: (number | null)[];
+  yMax: number;
+  yTicks: number[];
+  format: (value: number) => string;
+  readoutLabel: string;
+  readoutValue: string;
+  readoutNote: string;
+}
+
+interface BarSeries {
+  id: string;
+  kind: "bar";
+  label: string;
+  title: string;
+  months: string[];
+  values: number[];
+  format: (value: number) => string;
+  readoutLabel: string;
+  readoutValue: string;
+  readoutNote: string;
+}
+
+type Series = LineSeries | BarSeries;
+
+interface Props {
+  series: Series[];
+  defaultSeriesId?: string;
+}
+
+const { series, defaultSeriesId } = Astro.props;
+const initialId = defaultSeriesId ?? series[0]?.id;
+
+const W = 820;
+const H = 360;
+const padL = 56;
+const padR = 24;
+const padT = 28;
+const padB = 40;
+const plotW = W - padL - padR;
+const plotH = H - padT - padB;
+
+function segments(values: (number | null)[]) {
+  const runs: { points: { i: number; v: number }[]; interpolated: boolean }[] = [];
+  let current: { i: number; v: number }[] = [];
+  values.forEach((v, i) => {
+    if (v === null) {
+      if (current.length) {
+        runs.push({ points: current, interpolated: false });
+        current = [];
+      }
+      return;
+    }
+    current.push({ i, v });
+  });
+  if (current.length) runs.push({ points: current, interpolated: false });
+
+  const bridged: typeof runs = [];
+  for (let r = 0; r < runs.length; r++) {
+    bridged.push(runs[r]);
+    const next = runs[r + 1];
+    if (next) {
+      const lastPoint = runs[r].points[runs[r].points.length - 1];
+      const nextPoint = next.points[0];
+      if (nextPoint.i - lastPoint.i === 2) {
+        bridged.push({ points: [lastPoint, nextPoint], interpolated: true });
+      }
+    }
+  }
+  return bridged;
+}
+---
+
+<div class="ose" data-ose>
+  <div class="ose-tabs" role="tablist" aria-label="Select a performance signal">
+    {
+      series.map((s, i) => (
+        <button
+          type="button"
+          role="tab"
+          class="ose-tab"
+          data-series-id={s.id}
+          aria-selected={s.id === initialId ? "true" : "false"}
+        >
+          {String(i + 1).padStart(2, "0")} / {s.label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="ose-stage">
+    <span class="ose-stage-corner" aria-hidden="true"></span>
+    <h3 class="text-h3 ose-result-title" data-ose-title>{series.find((s) => s.id === initialId)?.title}</h3>
+
+    <div class="ose-views">
+      {
+        series.map((s) => {
+          const xAt = (i: number) => padL + (s.months.length === 1 ? plotW / 2 : (i / (s.months.length - 1)) * plotW);
+          return (
+            <div class="ose-view" data-ose-view={s.id} hidden={s.id !== initialId}>
+              {s.kind === "line" ? (
+                <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={s.readoutLabel} class="ose-svg">
+                  {s.yTicks.map((tick) => {
+                    const y = padT + plotH - (tick / s.yMax) * plotH;
+                    return (
+                      <g>
+                        <line x1={padL} x2={W - padR} y1={y} y2={y} class="ose-grid" />
+                        <text x={padL - 10} y={y} class="ose-axis-label" text-anchor="end" dy="0.32em">
+                          {s.format(tick)}
+                        </text>
+                      </g>
+                    );
+                  })}
+                  {s.months.map((m, i) => (
+                    <text x={xAt(i)} y={H - 12} class="ose-axis-label" text-anchor="middle">
+                      {m}
+                    </text>
+                  ))}
+                  {segments(s.values).map((run) => {
+                    const yAt = (v: number) => padT + plotH - (v / s.yMax) * plotH;
+                    const d = run.points.map((p, idx) => `${idx === 0 ? "M" : "L"}${xAt(p.i)},${yAt(p.v)}`).join(" ");
+                    return <path d={d} class:list={["ose-line", run.interpolated && "ose-line-interpolated"]} />;
+                  })}
+                  {s.values.map((v, i) => {
+                    if (v === null) return null;
+                    const yAt2 = (val: number) => padT + plotH - (val / s.yMax) * plotH;
+                    return (
+                      <g>
+                        <circle cx={xAt(i)} cy={yAt2(v)} r={6} class="ose-point" />
+                        <text x={xAt(i)} y={yAt2(v) - 16} class="ose-point-label" text-anchor="middle">
+                          {s.format(v)}
+                        </text>
+                      </g>
+                    );
+                  })}
+                </svg>
+              ) : (
+                <div class="ose-bars" role="img" aria-label={s.readoutLabel}>
+                  {s.values.map((v, i) => (
+                    <div class="ose-bar-col">
+                      <span class="text-small ose-bar-value">{s.format(v)}</span>
+                      <span
+                        class="ose-bar"
+                        style={`height:${Math.max(6, (v / Math.max(...s.values)) * 100)}%`}
+                      />
+                      <span class="text-caption ose-bar-month">{s.months[i]}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })
+      }
+    </div>
+
+    <div class="ose-readout">
+      <div>
+        <p class="text-caption ose-readout-label" data-ose-label>
+          {series.find((s) => s.id === initialId)?.readoutLabel}
+        </p>
+        <p class="text-small ose-readout-note" data-ose-note>
+          {series.find((s) => s.id === initialId)?.readoutNote}
+        </p>
+      </div>
+      <p class="text-display-xl ose-readout-value tabular-nums" data-ose-value>
+        {series.find((s) => s.id === initialId)?.readoutValue}
+      </p>
+    </div>
+  </div>
+
+  <script
+    type="application/json"
+    data-ose-data
+    set:html={JSON.stringify(
+      series.map((s) => ({
+        id: s.id,
+        title: s.title,
+        readoutLabel: s.readoutLabel,
+        readoutValue: s.readoutValue,
+        readoutNote: s.readoutNote,
+      }))
+    )}
+  />
+</div>
+
+<style>
+  .ose {
+    position: relative;
+  }
+
+  .ose-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+  }
+
+  .ose-tab {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-line);
+    background: transparent;
+    color: var(--color-olive);
+    font-size: var(--text-caption);
+    font-weight: 450;
+    letter-spacing: 0.01em;
+    transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .ose-tab:hover {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .ose-tab[aria-selected="true"] {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .ose-stage {
+    position: relative;
+    border: 1px solid var(--color-line);
+    background: var(--color-paper);
+    padding: clamp(var(--space-5), 4vw, var(--space-8));
+  }
+
+  .ose-stage-corner {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    width: 56px;
+    height: 56px;
+    border-top: 1px solid var(--color-ink);
+    border-right: 1px solid var(--color-ink);
+    pointer-events: none;
+  }
+
+  .ose-result-title {
+    margin-bottom: var(--space-6);
+  }
+
+  .ose-svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .ose-grid {
+    stroke: var(--color-line);
+    stroke-width: 1;
+  }
+
+  .ose-axis-label {
+    font-size: 12px;
+    fill: var(--color-ink-soft);
+  }
+
+  .ose-line {
+    fill: none;
+    stroke: var(--color-ink);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .ose-line-interpolated {
+    stroke-dasharray: 4 6;
+    opacity: 0.55;
+  }
+
+  .ose-point {
+    fill: var(--color-paper);
+    stroke: var(--color-ink);
+    stroke-width: 2.5;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .ose-point:hover {
+    transform: scale(1.4);
+    fill: var(--color-olive);
+  }
+
+  .ose-point-label {
+    font-size: 14px;
+    font-weight: 500;
+    fill: var(--color-ink);
+  }
+
+  .ose-bars {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: end;
+    gap: var(--space-6);
+    height: 280px;
+  }
+
+  .ose-bar-col {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    justify-items: center;
+    height: 100%;
+    gap: var(--space-2);
+  }
+
+  .ose-bar-value {
+    color: var(--color-ink);
+    font-weight: 500;
+  }
+
+  .ose-bar {
+    width: 100%;
+    max-width: 96px;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    background: var(--color-olive);
+    align-self: end;
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .ose-bar-col:hover .ose-bar {
+    background: var(--color-ink);
+  }
+
+  .ose-bar-month {
+    color: var(--color-ink-soft);
+  }
+
+  .ose-readout {
+    margin-top: var(--space-6);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-line);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-5);
+    flex-wrap: wrap;
+  }
+
+  .ose-readout-label {
+    color: var(--color-ink-soft);
+  }
+
+  .ose-readout-note {
+    margin-top: var(--space-2);
+    color: var(--color-ink);
+    max-width: 56ch;
+  }
+
+  .ose-readout-value {
+    color: var(--color-ink);
+    line-height: 0.9;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ose]").forEach((root) => {
+    const dataEl = root.querySelector<HTMLScriptElement>("[data-ose-data]");
+    const titleEl = root.querySelector<HTMLElement>("[data-ose-title]");
+    const labelEl = root.querySelector<HTMLElement>("[data-ose-label]");
+    const noteEl = root.querySelector<HTMLElement>("[data-ose-note]");
+    const valueEl = root.querySelector<HTMLElement>("[data-ose-value]");
+    if (!dataEl || !labelEl || !noteEl || !valueEl) return;
+
+    const entries = JSON.parse(dataEl.textContent || "[]") as {
+      id: string;
+      title: string;
+      readoutLabel: string;
+      readoutValue: string;
+      readoutNote: string;
+    }[];
+
+    root.querySelectorAll<HTMLButtonElement>("[data-series-id]").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const id = tab.dataset.seriesId;
+        const entry = entries.find((e) => e.id === id);
+        if (!entry) return;
+
+        root.querySelectorAll<HTMLElement>("[data-ose-view]").forEach((view) => {
+          view.hidden = view.dataset.oseView !== id;
+        });
+        root.querySelectorAll<HTMLButtonElement>("[data-series-id]").forEach((b) => {
+          b.setAttribute("aria-selected", String(b === tab));
+        });
+
+        if (titleEl) titleEl.textContent = entry.title;
+        labelEl.textContent = entry.readoutLabel;
+        noteEl.textContent = entry.readoutNote;
+        valueEl.textContent = entry.readoutValue;
+      });
+    });
+  });
+</script>
