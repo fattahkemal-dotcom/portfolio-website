@@ -54,14 +54,14 @@ const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"}${xAt(i)},${yAt(p.valu
 
     {
       points.map((p, i) => (
-        <g>
+        <g class="cdc-point-group">
           <circle cx={xAt(i)} cy={yAt(p.value)} r={7} class="cdc-dot" />
           <text x={xAt(i)} y={H - padB + 32} class="cdc-month" text-anchor="middle">
             {p.label}
           </text>
           <g transform={`translate(${xAt(i)}, ${yAt(p.value) - (i === 0 ? 44 : 40)})`}>
             <rect x={-54} y={-26} width={108} height={36} class="cdc-value-box" />
-            <text x={0} y={-3} class="cdc-value-text" text-anchor="middle">
+            <text x={0} y={-3} class="cdc-value-text" text-anchor="middle" data-count={p.formatted}>
               {p.formatted}
             </text>
           </g>
@@ -106,6 +106,21 @@ const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"}${xAt(i)},${yAt(p.valu
     fill: var(--color-paper);
     stroke: var(--color-ink);
     stroke-width: 2.5;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .cdc-point-group:hover .cdc-dot {
+    transform: scale(1.4);
+  }
+
+  .cdc-value-box {
+    transition: fill var(--dur-fast) var(--ease-out);
+  }
+
+  .cdc-point-group:hover .cdc-value-box {
+    fill: var(--color-olive);
   }
 
   .cdc-month {

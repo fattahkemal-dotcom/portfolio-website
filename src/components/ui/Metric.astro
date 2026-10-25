@@ -10,7 +10,7 @@ const { value, label, surface = "paper" } = Astro.props;
 ---
 
 <div class:list={["metric", surface === "ink" && "metric-ink"]}>
-  <p class="metric-value tabular-nums">{value}</p>
+  <p class="metric-value tabular-nums" data-count={value}>{value}</p>
   <p class="metric-label">{label}</p>
 </div>
 
@@ -19,6 +19,26 @@ const { value, label, surface = "paper" } = Astro.props;
     border-top: 1px solid var(--color-line);
     padding-top: var(--space-4);
     text-align: left;
+    transition: border-top-color var(--dur-fast) var(--ease-out);
+  }
+
+  /* Color/border-only hover affordance — no layout shift, no shadow
+     (DESIGN-SYSTEM.md §5.4), so safe to apply everywhere this component
+     is used, including on pages without any other hover treatment. */
+  .metric:hover {
+    border-top-color: var(--color-ink);
+  }
+
+  .metric:hover .metric-label {
+    color: var(--color-ink);
+  }
+
+  .metric-ink:hover {
+    border-top-color: var(--color-bone);
+  }
+
+  .metric-ink:hover .metric-label {
+    color: var(--color-bone);
   }
 
   .metric-ink {

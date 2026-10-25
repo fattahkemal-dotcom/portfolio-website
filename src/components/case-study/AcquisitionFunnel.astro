@@ -32,7 +32,9 @@ const max = stages[0]?.value ?? 1;
               style={`width:${Math.max(4, (stage.value / max) * 100)}%`}
             />
           </span>
-          <span class="text-h3 acq-funnel-value tabular-nums">{stage.value.toLocaleString("en-US")}</span>
+          <span class="text-h3 acq-funnel-value tabular-nums" data-count={stage.value.toLocaleString("en-US")}>
+            {stage.value.toLocaleString("en-US")}
+          </span>
         </li>
       ))
     }
@@ -60,8 +62,17 @@ const max = stages[0]?.value ?? 1;
     gap: var(--space-4);
   }
 
+  .acq-funnel-row:hover .acq-funnel-bar {
+    background: var(--color-ink);
+  }
+
+  .acq-funnel-row:hover .acq-funnel-bar-final {
+    background: var(--color-olive);
+  }
+
   .acq-funnel-label {
     color: var(--color-ink);
+    transition: color var(--dur-fast) var(--ease-out);
   }
 
   .acq-funnel-bar-track {
@@ -77,7 +88,7 @@ const max = stages[0]?.value ?? 1;
     height: 100%;
     border-radius: var(--radius-pill);
     background: var(--color-olive);
-    transition: width var(--dur-draw) var(--ease-out);
+    transition: width var(--dur-draw) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
   }
 
   .acq-funnel-bar-final {

@@ -232,7 +232,14 @@ const initialId = defaultSeriesId ?? series[0]?.id;
     fill: var(--color-paper);
     stroke: var(--color-ink);
     stroke-width: 2.5;
-    transition: cy var(--dur-draw) var(--ease-out);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: cy var(--dur-draw) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  }
+
+  :global(.ifc-point:hover) {
+    transform: scale(1.5);
+    fill: var(--color-olive);
   }
 
   :global(.ifc-point-value) {
@@ -273,6 +280,50 @@ const initialId = defaultSeriesId ?? series[0]?.id;
 </style>
 
 <script>
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Animates the readout number from its current displayed value to a new
+  // one on tab switch (not from 0 — this is a value CHANGE, not a reveal).
+  // Same leading-number-parse approach as the page-level count-up, kept
+  // local since this component ships standalone.
+  function animateValueTo(el: HTMLElement, nextRaw: string) {
+    if (reducedMotion) {
+      el.textContent = nextRaw;
+      return;
+    }
+    const parse = (raw: string) => {
+      const match = raw.match(/[-−]?\d[\d,]*\.?\d*/);
+      if (!match) return null;
+      const numStr = match[0];
+      return {
+        value: parseFloat(numStr.replace("−", "-").replace(/,/g, "")),
+        decimals: (numStr.split(".")[1] || "").length,
+        prefix: raw.slice(0, match.index),
+        suffix: raw.slice((match.index ?? 0) + numStr.length),
+      };
+    };
+    const from = parse(el.textContent || "");
+    const to = parse(nextRaw);
+    if (!from || !to || Number.isNaN(from.value) || Number.isNaN(to.value)) {
+      el.textContent = nextRaw;
+      return;
+    }
+    const duration = 500;
+    const start = performance.now();
+    function frame(now: number) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const current = from!.value + (to!.value - from!.value) * eased;
+      el.textContent = `${to!.prefix}${current.toLocaleString("en-US", {
+        minimumFractionDigits: to!.decimals,
+        maximumFractionDigits: to!.decimals,
+      })}${to!.suffix}`;
+      if (t < 1) requestAnimationFrame(frame);
+      else el.textContent = nextRaw;
+    }
+    requestAnimationFrame(frame);
+  }
+
   document.querySelectorAll<HTMLElement>("[data-ifc]").forEach((root) => {
     const dataEl = root.querySelector<HTMLScriptElement>("[data-ifc-data]");
     const svg = root.querySelector<SVGSVGElement>("[data-ifc-svg]");
@@ -342,7 +393,7 @@ const initialId = defaultSeriesId ?? series[0]?.id;
       });
 
       headline.textContent = s.description;
-      current.textContent = s.current;
+      animateValueTo(current, s.current);
       svgEl.setAttribute("aria-label", `${s.label}: ${s.values.map((v) => v.toFixed(1) + " percent").join(", ")}`);
 
       root.querySelectorAll<HTMLButtonElement>("[data-series-id]").forEach((btn) => {

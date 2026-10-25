@@ -59,7 +59,9 @@ const costPoints = costPerFpdp.months
           <span class="cs-hero-ring cs-hero-ring-dashed"></span>
           <div class="cs-hero-figure-center">
             <p class="text-caption cs-hero-figure-label">January / performance</p>
-            <p class="text-display-xl cs-hero-figure-value tabular-nums">{header.stats[0].value}</p>
+            <p class="text-display-xl cs-hero-figure-value tabular-nums reveal" data-count={header.stats[0].value}>
+              {header.stats[0].value}
+            </p>
             <p class="text-caption cs-hero-figure-sub">{header.stats[0].label}</p>
           </div>
         </div>
@@ -77,7 +79,9 @@ const costPoints = costPerFpdp.months
         {
           header.stats.map((stat) => (
             <div class="cs-proof-item">
-              <p class="text-metric cs-proof-figure tabular-nums">{stat.value}</p>
+              <p class="text-metric cs-proof-figure tabular-nums" data-count={stat.value}>
+                {stat.value}
+              </p>
               <p class="text-caption cs-proof-label">{stat.label}</p>
             </div>
           ))
@@ -196,7 +200,9 @@ const costPoints = costPerFpdp.months
       </div>
 
       <div class="cs-insight reveal">
-        <p class="cs-insight-figure tabular-nums">{pct(funnel.rows[3].values[2])}</p>
+        <p class="cs-insight-figure tabular-nums" data-count={pct(funnel.rows[3].values[2])}>
+          {pct(funnel.rows[3].values[2])}
+        </p>
         <div class="cs-insight-copy">
           <p class="text-caption cs-section-tag">The important nuance</p>
           <p class="text-small cs-takeaway">{funnel.takeaway}</p>
@@ -216,7 +222,9 @@ const costPoints = costPerFpdp.months
         <div class="reveal">
           <p class="text-body cs-block-text">{costPerFpdp.subheading}</p>
           <p class="text-caption cs-glossary">{glossary.fpdp}</p>
-          <p class="cs-efficiency-figure tabular-nums">{header.stats[1].value}</p>
+          <p class="cs-efficiency-figure tabular-nums" data-count={header.stats[1].value}>
+            {header.stats[1].value}
+          </p>
           <p class="text-caption cs-efficiency-label">Cost per FPDP, Nov → Jan</p>
           <p class="text-small cs-takeaway">{costPerFpdp.takeaway}</p>
         </div>
@@ -350,6 +358,17 @@ const costPoints = costPerFpdp.months
     grid-template-columns: 1fr;
     gap: var(--space-8);
     align-items: center;
+    /* The dashed ring below rotates via CSS transform. A rotated square
+       element's axis-aligned bounding box grows past its own layout box
+       (up to ~41% wider at a 45deg angle) even though it only ever PAINTS
+       as a circle — this was intermittently causing real horizontal page
+       overflow depending on which angle the animation had reached when
+       measured. Confirmed via a Playwright sweep that caught it at
+       1100px/390px but not 1440px/834px (angle-dependent, not viewport-
+       dependent). Clipping here only ever trims that rotation artifact —
+       there's enough margin in this grid for the ring's intended (static)
+       size already. */
+    overflow: clip;
   }
 
   .cs-hero-copy {
@@ -488,6 +507,11 @@ const costPoints = costPerFpdp.months
   .cs-proof-figure {
     font-size: clamp(2rem, 4vw + 0.5rem, 3.5rem);
     white-space: nowrap;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .cs-proof-item:hover .cs-proof-figure {
+    color: var(--color-olive);
   }
 
   .cs-proof-label {
@@ -567,6 +591,11 @@ const costPoints = costPerFpdp.months
     gap: var(--space-4);
     padding: var(--space-5) 0;
     border-top: 1px solid var(--color-line);
+    transition: padding-left var(--dur-fast) var(--ease-out);
+  }
+
+  .cs-approach-row:hover {
+    padding-left: var(--space-3);
   }
 
   .cs-approach-row:last-child {
@@ -575,6 +604,11 @@ const costPoints = costPerFpdp.months
 
   .cs-approach-index {
     color: var(--color-ink-soft);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .cs-approach-row:hover .cs-approach-index {
+    color: var(--color-ink);
   }
 
   .cs-approach-text {
@@ -793,6 +827,16 @@ const costPoints = costPerFpdp.months
     grid-template-columns: 32px 1fr;
     column-gap: var(--space-4);
     row-gap: var(--space-1);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  /* translateX, not a color swap: this list renders on both light and
+     dark channel sections (text colors there are set with !important —
+     see the isDark conditional classes below — so a plain hover color
+     rule would only work on one of the two themes). A transform works
+     identically in both. */
+  .cs-step:hover {
+    transform: translateX(var(--space-2));
   }
 
   .cs-step-index {
@@ -947,5 +991,55 @@ const costPoints = costPerFpdp.months
       { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
     targets.forEach((el) => observer.observe(el));
+  }
+
+  // Count-up for headline numbers: parses the leading numeric portion of
+  // whatever text is already there (so a server-rendered fallback always
+  // exists — this only enhances it) and animates 0 -> that value, keeping
+  // any prefix/suffix text (currency, %, M, +) untouched. Works on plain
+  // elements and SVG <text> alike since both just expose textContent.
+  function animateCount(el: Element) {
+    const raw = el.getAttribute("data-count") ?? el.textContent ?? "";
+    const match = raw.match(/[-−]?\d[\d,]*\.?\d*/);
+    if (!match) return;
+    const numStr = match[0];
+    const target = parseFloat(numStr.replace("−", "-").replace(/,/g, ""));
+    if (Number.isNaN(target)) return;
+    const decimals = (numStr.split(".")[1] || "").length;
+    const prefix = raw.slice(0, match.index);
+    const suffix = raw.slice((match.index ?? 0) + numStr.length);
+    const duration = 900; // matches --dur-draw in tokens.css
+
+    const start = performance.now();
+    function frame(now: number) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const current = target * eased;
+      el.textContent = `${prefix}${current.toLocaleString("en-US", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      })}${suffix}`;
+      if (t < 1) requestAnimationFrame(frame);
+      else el.textContent = raw;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const countTargets = document.querySelectorAll<HTMLElement>("[data-count]");
+  if (reduced || !("IntersectionObserver" in window)) {
+    // Leave the server-rendered final values as-is — nothing to animate to.
+  } else {
+    const countObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateCount(entry.target);
+            countObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    countTargets.forEach((el) => countObserver.observe(el));
   }
 </script>
