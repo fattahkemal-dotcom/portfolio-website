@@ -18,11 +18,15 @@
 // translateX(-50%), prefers-reduced-motion collapses it to a static
 // wrapped row). Record this in DESIGN-SYSTEM.md §10 before the next
 // session treats it as precedent for a third page.
+import { Image } from "astro:assets";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Section from "../../components/layout/Section.astro";
 import Container from "../../components/layout/Container.astro";
 import Tag from "../../components/ui/Tag.astro";
 import DeviceFrame from "../../components/showcase/DeviceFrame.astro";
+import heroDesktop from "../../assets/images/lp-showcase-desktop.png";
+import heroMobile from "../../assets/images/lp-showcase-mobile.png";
+import showcaseWall from "../../assets/images/lp-showcase-wall.png";
 
 const runningText = [
   "Built to explain the offer clearly",
@@ -45,7 +49,7 @@ const runningText = [
           <p class="text-body lp-intro">
             I design and build the pages that sit between an ad and a decision — clear enough to
             explain the offer, structured enough to earn trust, and built so the next step is
-            never in question. [Placeholder — real project screenshots and results go here.]
+            never in question. [Placeholder — project names and results go here.]
           </p>
           <div class="lp-hero-tags">
             <Tag>Design</Tag>
@@ -58,12 +62,37 @@ const runningText = [
         </div>
 
         <div class="lp-hero-frames">
-          <DeviceFrame type="desktop" label="Desktop screenshot" class="lp-frame-desktop" />
-          <DeviceFrame type="mobile" label="Mobile screenshot" class="lp-frame-mobile" />
+          <DeviceFrame
+            type="desktop"
+            src={heroDesktop}
+            alt="Taiwan New South Center Indonesia — Taiwan visa landing page, desktop view"
+            aspect="1920 / 1080"
+            class="lp-frame-desktop"
+          />
+          <DeviceFrame
+            type="mobile"
+            src={heroMobile}
+            alt="Wall Street English — #NaikLevel campaign landing page, mobile view"
+            aspect="750 / 1836"
+            class="lp-frame-mobile"
+          />
         </div>
       </div>
     </Container>
   </Section>
+
+  <section class="lp-wall" aria-label="Selected interfaces">
+    <Image
+      class="lp-wall-img"
+      src={showcaseWall}
+      alt="A wall of selected landing page and website designs across desktop and mobile — Wall Street English, Taiwan New South Center Indonesia, and other recent projects"
+      widths={[768, 1200, 1920, 2560]}
+      sizes="100vw"
+    />
+    <Container>
+      <p class="text-caption lp-wall-caption">Selected interfaces — desktop and mobile, 2025–2026</p>
+    </Container>
+  </section>
 
   <section class="lp-marquee" data-surface="ink" aria-label="What this work is built on">
     <div class="lp-marquee-viewport">
@@ -140,6 +169,28 @@ const runningText = [
     position: absolute;
     right: var(--space-5);
     bottom: 0;
+  }
+
+  /* Full-bleed showcase wall, directly below the hero. Deliberately
+     outside Container — full viewport width at every breakpoint, not
+     capped at --container-max, per Kemal's "full screen" request. The
+     image itself is responsive (Image widths/sizes above), so this is
+     still a normal <img> that scales down on small viewports rather
+     than a fixed-size background crop. */
+  .lp-wall {
+    background: var(--color-paper-2);
+    padding-block: var(--space-7) var(--space-6);
+  }
+
+  .lp-wall-img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .lp-wall-caption {
+    margin-top: var(--space-4);
+    color: var(--color-ink-soft);
   }
 
   /* Running text — DESIGN-SYSTEM.md §10 narrowed override, see page-top

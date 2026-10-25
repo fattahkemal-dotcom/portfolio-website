@@ -17,12 +17,24 @@ interface Props {
   alt?: string;
   label?: string;
   class?: string;
+  /** CSS aspect-ratio override — defaults to a generic 8/5 (desktop) or
+   * 9/19.5 (mobile) frame shape. Pass the real screenshot's own ratio
+   * when one is supplied, so `object-fit: cover` doesn't crop content
+   * that was never meant to be cropped. */
+  aspect?: string;
 }
 
-const { type, src, alt = "", label = type === "desktop" ? "Desktop screenshot" : "Mobile screenshot", class: className = "" } = Astro.props;
+const {
+  type,
+  src,
+  alt = "",
+  label = type === "desktop" ? "Desktop screenshot" : "Mobile screenshot",
+  class: className = "",
+  aspect,
+} = Astro.props;
 ---
 
-<div class:list={["frame", `frame-${type}`, className]}>
+<div class:list={["frame", `frame-${type}`, className]} style={aspect ? `aspect-ratio:${aspect}` : undefined}>
   <div class:list={["frame-chrome", `frame-chrome-${type}`]} aria-hidden="true">
     {
       type === "desktop" ? (
