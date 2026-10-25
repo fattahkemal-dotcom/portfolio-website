@@ -167,7 +167,7 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
       </div>
 
       <div class="cs-insight reveal">
-        <p class="text-display-xl cs-insight-figure tabular-nums">{pct(funnel.rows[3].values[2])}</p>
+        <p class="cs-insight-figure tabular-nums">{pct(funnel.rows[3].values[2])}</p>
         <div class="cs-insight-copy">
           <p class="text-caption cs-section-tag">The important nuance</p>
           <p class="text-small cs-takeaway">{funnel.takeaway}</p>
@@ -187,7 +187,7 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
         <div class="reveal">
           <p class="text-body cs-block-text">{costPerFpdp.subheading}</p>
           <p class="text-caption cs-glossary">{glossary.fpdp}</p>
-          <p class="text-display-xl cs-efficiency-figure tabular-nums">{header.stats[1].value}</p>
+          <p class="cs-efficiency-figure tabular-nums">{header.stats[1].value}</p>
           <p class="text-caption cs-efficiency-label">Cost per FPDP, Nov → Jan</p>
           <p class="text-small cs-takeaway">{costPerFpdp.takeaway}</p>
         </div>
@@ -620,6 +620,15 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
   }
 
   .cs-insight-figure {
+    /* Deliberately NOT .text-display-xl (that scale is sized for a
+       near-full-viewport hero, see tokens.css). This number sits in a
+       grid column as narrow as ~400px at the 1024px breakpoint, so its
+       cap is tuned to fit that column with margin — a bug previously let
+       this bleed into the sibling column at tablet widths (confirmed
+       visually at 834px before this fix). */
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 300;
+    letter-spacing: -0.03em;
     color: var(--color-ink);
     line-height: 0.9;
   }
@@ -636,7 +645,11 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
   }
 
   .cs-efficiency-figure {
+    /* See .cs-insight-figure above — same bounded-column reasoning. */
     margin-top: var(--space-6);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 300;
+    letter-spacing: -0.03em;
     color: var(--color-ink);
     line-height: 0.9;
   }
@@ -800,7 +813,12 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
     .cs-closing-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+  }
 
+  @media (min-width: 1024px) {
+    /* The giant figures only get a side-by-side column at this width —
+       below it their column would be too narrow to fit the number
+       (see .cs-insight-figure / .cs-efficiency-figure comments). */
     .cs-insight {
       grid-template-columns: minmax(0, 0.55fr) minmax(0, 1fr);
     }
@@ -808,9 +826,7 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
     .cs-efficiency-grid {
       grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
     }
-  }
 
-  @media (min-width: 1024px) {
     .cs-hero-grid {
       grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.8fr);
       gap: var(--space-9);

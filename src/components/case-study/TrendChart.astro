@@ -170,8 +170,15 @@ const chartId = `trend-${Math.random().toString(36).slice(2, 9)}`;
                     </text>
                   )
                 )}
-              {/* end-of-line label (always, for identity without relying on color) */}
-              {(() => {
+              {/* End-of-line label, for identity without relying on color —
+                  only when there's more than one series to tell apart.
+                  A single-series chart's line is already unambiguous (and
+                  the chart heading/caption name it), and the label text
+                  can be long ("Actual cost / FPDP") — positioned past the
+                  last point, it has nowhere to go but off the edge of a
+                  narrow chart panel. Confirmed clipping at ~834px before
+                  this fix. */}
+              {series.length > 1 && (() => {
                 const lastKnown = [...s.values].reverse().find((v) => v !== null);
                 const lastIndex = s.values.lastIndexOf(lastKnown ?? null);
                 if (lastKnown === undefined || lastKnown === null) return null;
