@@ -89,7 +89,7 @@ export const caseStudy = {
     actual: [2.88, null, 2.36],
     referenceValue: 2.72,
     referenceNote:
-      "Target line derived from the two disclosed variance percentages below (not a separately disclosed target figure). December's actual cost was not included in the supplied data.",
+      "Target cost derived from the two disclosed variance percentages below (not a separately disclosed target figure). December's actual cost was not included in the supplied data.",
     callouts: [
       { month: "November", value: "IDR 2.88M", delta: "5.8% above target cost" },
       { month: "January", value: "IDR 2.36M", delta: "13.5% below target cost" },

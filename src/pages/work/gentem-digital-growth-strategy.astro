@@ -18,7 +18,8 @@ import Container from "../../components/layout/Container.astro";
 import Metric from "../../components/ui/Metric.astro";
 import Tag from "../../components/ui/Tag.astro";
 import Button from "../../components/ui/Button.astro";
-import TrendChart from "../../components/case-study/TrendChart.astro";
+import InteractiveFunnelChart from "../../components/case-study/InteractiveFunnelChart.astro";
+import CostDeltaChart from "../../components/case-study/CostDeltaChart.astro";
 import AcquisitionFunnel from "../../components/case-study/AcquisitionFunnel.astro";
 import { caseStudy } from "../../data/case-studies/gentem-growth-strategy";
 
@@ -26,6 +27,17 @@ const { header, sidebar, glossary, overview, funnel, costPerFpdp, channels, clos
 
 const pct = (v: number) => `${v.toFixed(1)}%`;
 const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
+
+const funnelSeries = funnel.rows.map((r) => ({
+  id: r.label.toLowerCase().replace(/\s+/g, "-"),
+  label: r.label,
+  values: [...r.values],
+}));
+
+const costPoints = costPerFpdp.months
+  .map((m, i) => ({ label: m as string, value: costPerFpdp.actual[i] as number | null }))
+  .filter((p): p is { label: string; value: number } => p.value !== null)
+  .map((p) => ({ ...p, formatted: idrM(p.value) }));
 ---
 
 <BaseLayout title={caseStudy.meta.title} description={caseStudy.meta.description}>
@@ -52,9 +64,24 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
           </div>
         </div>
       </div>
+    </Container>
+  </Section>
 
-      <div class="cs-stats">
-        {header.stats.map((stat) => <Metric value={stat.value} label={stat.label} />)}
+  <Section id="proof" background="bone" class="cs-proof">
+    <Container>
+      <div class="cs-proof-header">
+        <p class="text-caption">The numbers / at a glance</p>
+        <p class="text-caption">Outcomes, not just outputs</p>
+      </div>
+      <div class="cs-proof-grid">
+        {
+          header.stats.map((stat) => (
+            <div class="cs-proof-item">
+              <p class="text-metric cs-proof-figure tabular-nums">{stat.value}</p>
+              <p class="text-caption cs-proof-label">{stat.label}</p>
+            </div>
+          ))
+        }
       </div>
       <p class="text-caption cs-footnote">{header.statsFootnote}</p>
     </Container>
@@ -132,9 +159,11 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
 
       <div class="cs-chart-stage reveal">
         <span class="cs-chart-stage-corner" aria-hidden="true"></span>
-        <TrendChart
+        <p class="text-caption cs-chart-stage-hint">Interactive performance explorer — select a stage below</p>
+        <InteractiveFunnelChart
           months={[...funnel.months]}
-          series={funnel.rows.map((r) => ({ label: r.label, values: [...r.values], weight: r.weight, pointLabels: r.weight === "emphasis" }))}
+          series={funnelSeries}
+          defaultSeriesId="total-contract"
           yMax={funnel.yMax}
           yTicks={[...funnel.yTicks]}
           yFormat={pct}
@@ -192,18 +221,12 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
           <p class="text-small cs-takeaway">{costPerFpdp.takeaway}</p>
         </div>
 
-        <div class="cs-chart-stage reveal">
+        <div class="cs-chart-stage cs-chart-stage-tint reveal">
           <span class="cs-chart-stage-corner" aria-hidden="true"></span>
-          <TrendChart
-            months={[...costPerFpdp.months]}
-            series={[
-              { label: "Actual cost / FPDP", values: [...costPerFpdp.actual], weight: "emphasis", pointLabels: true },
-            ]}
-            yMax={costPerFpdp.yMax}
-            yTicks={[...costPerFpdp.yTicks]}
-            yFormat={idrM}
-            referenceLine={{ value: costPerFpdp.referenceValue, label: "Target cost (derived)" }}
-            caption={costPerFpdp.subheading}
+          <CostDeltaChart
+            points={costPoints}
+            unitLabel="Actual cost per FPDP, IDR millions"
+            verdict="Less cost. More discipline."
           />
           <p class="text-caption cs-chart-caption">{costPerFpdp.referenceNote}</p>
 
@@ -423,6 +446,56 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
     color: var(--color-ink-soft);
   }
 
+  /* Proof band — a full-width tinted strip right under the hero, the
+     reference design's "proof" section. Border-left dividers instead of
+     cards, numbers given real room to breathe. */
+  .cs-proof-header {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    color: var(--color-olive);
+    padding-bottom: var(--space-5);
+  }
+
+  .cs-proof-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cs-proof-item {
+    /* Not --color-line: it's literally the same hex as --color-bone, so
+       a divider in that color would be invisible on this section's bone
+       background. ink-soft actually shows up here. */
+    border-left: 1px solid var(--color-ink-soft);
+    padding: var(--space-4) var(--space-5) 0;
+  }
+
+  .cs-proof-item:first-child {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  /* Below 768px the grid is 2 columns, so every row-leading item (1st and
+     3rd) needs its divider reset, not just the very first — otherwise the
+     3rd item's left border reads as a stray line at its new row's start. */
+  @media (max-width: 767px) {
+    .cs-proof-item:nth-child(odd) {
+      border-left: 0;
+      padding-left: 0;
+    }
+  }
+
+  .cs-proof-figure {
+    font-size: clamp(2rem, 4vw + 0.5rem, 3.5rem);
+    white-space: nowrap;
+  }
+
+  .cs-proof-label {
+    margin-top: var(--space-3);
+    color: var(--color-olive);
+    max-width: 22ch;
+  }
+
   /* Shared section-head: heading + side note to the right, per
      DESIGN-SYSTEM.md §4.2 — never a label ABOVE the heading. */
   .cs-section-head {
@@ -555,6 +628,15 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
     border-top: 1px solid var(--color-ink);
     border-right: 1px solid var(--color-ink);
     pointer-events: none;
+  }
+
+  .cs-chart-stage-hint {
+    color: var(--color-ink-soft);
+    margin-bottom: var(--space-5);
+  }
+
+  .cs-chart-stage-tint {
+    background: var(--color-paper-2);
   }
 
   .cs-glossary {
@@ -802,7 +884,8 @@ const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
   }
 
   @media (min-width: 768px) {
-    .cs-stats {
+    .cs-stats,
+    .cs-proof-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 

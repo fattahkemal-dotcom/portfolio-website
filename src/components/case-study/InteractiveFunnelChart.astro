@@ -1,0 +1,360 @@
+---
+// Tab-driven single-line chart explorer — the reference design's
+// "interactive performance explorer" pattern (click a stage, the line/
+// readout swap), rebuilt in this site's tokens: flat ink/olive fill
+// under the curve instead of a gradient (DESIGN-SYSTEM.md §4.1 bans
+// gradients outright), no mono font for the tab labels.
+//
+// Per-series headlines are GENERATED from the numbers themselves
+// (first value -> last value, direction), never hand-written — this
+// component has no business inventing marketing copy, only describing
+// what the data already says.
+interface Series {
+  id: string;
+  label: string;
+  values: number[];
+}
+
+interface Props {
+  months: string[];
+  series: Series[];
+  yMax: number;
+  yTicks: number[];
+  yFormat: (value: number) => string;
+  referenceLine?: { value: number; label: string };
+  defaultSeriesId?: string;
+  caption: string;
+}
+
+const {
+  months,
+  series,
+  yMax,
+  yTicks,
+  yFormat,
+  referenceLine,
+  defaultSeriesId,
+  caption,
+} = Astro.props;
+
+const W = 1040;
+const H = 420;
+const padL = 64;
+const padR = 24;
+const padT = 28;
+const padB = 40;
+const plotW = W - padL - padR;
+const plotH = H - padT - padB;
+
+const xAt = (i: number) => padL + (months.length === 1 ? plotW / 2 : (i / (months.length - 1)) * plotW);
+const yAt = (v: number) => padT + plotH - (v / yMax) * plotH;
+
+function describe(label: string, values: number[]) {
+  const first = values[0];
+  const last = values[values.length - 1];
+  const delta = last - first;
+  const trend = Math.abs(delta) < 0.5 ? "stayed roughly stable" : delta > 0 ? "rose" : "declined";
+  const detail =
+    Math.abs(delta) < 0.5
+      ? `${label} achievement stayed close to ${first.toFixed(1)}% across the period.`
+      : `${label} achievement ${trend === "rose" ? "increased" : "decreased"} from ${first.toFixed(1)}% to ${last.toFixed(1)}%.`;
+  return detail;
+}
+
+const chartId = `ifc-${Math.random().toString(36).slice(2, 9)}`;
+const initialId = defaultSeriesId ?? series[0]?.id;
+---
+
+<div class="ifc" data-ifc>
+  <div class="ifc-tabs" role="group" aria-label="Select a funnel stage">
+    {
+      series.map((s) => (
+        <button
+          type="button"
+          class="ifc-tab"
+          data-series-id={s.id}
+          aria-pressed={s.id === initialId ? "true" : "false"}
+        >
+          {s.label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="ifc-svg-wrap">
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby={`${chartId}-title`} class="ifc-svg" data-ifc-svg>
+      <title id={`${chartId}-title`}>{caption}</title>
+      <defs>
+        <clipPath id={`${chartId}-area-clip`}>
+          <rect x={padL} y={padT} width={plotW} height={plotH} />
+        </clipPath>
+      </defs>
+
+      {
+        yTicks.map((tick) => (
+          <g>
+            <line x1={padL} x2={W - padR} y1={yAt(tick)} y2={yAt(tick)} class="ifc-grid" />
+            <text x={padL - 12} y={yAt(tick)} class="ifc-axis-label" text-anchor="end" dy="0.32em">
+              {yFormat(tick)}
+            </text>
+          </g>
+        ))
+      }
+
+      {
+        months.map((m, i) => (
+          <text x={xAt(i)} y={H - 14} class="ifc-axis-label" text-anchor="middle">
+            {m}
+          </text>
+        ))
+      }
+
+      {
+        referenceLine && (
+          <g>
+            <line x1={padL} x2={W - padR} y1={yAt(referenceLine.value)} y2={yAt(referenceLine.value)} class="ifc-reference" />
+            <text x={W - padR} y={yAt(referenceLine.value) - 8} class="ifc-reference-label" text-anchor="end">
+              {referenceLine.label}
+            </text>
+          </g>
+        )
+      }
+
+      <path id={`${chartId}-area`} class="ifc-area" clip-path={`url(#${chartId}-area-clip)`} />
+      <path id={`${chartId}-curve`} class="ifc-curve" />
+      <g id={`${chartId}-points`} />
+    </svg>
+
+    <div class="ifc-readout">
+      <div>
+        <p class="text-small ifc-readout-headline" data-ifc-headline>
+          {describe(series.find((s) => s.id === initialId)?.label ?? "", series.find((s) => s.id === initialId)?.values ?? [])}
+        </p>
+      </div>
+      <p class="ifc-readout-current tabular-nums" data-ifc-current>
+        {yFormat(series.find((s) => s.id === initialId)?.values.slice(-1)[0] ?? 0)}
+      </p>
+    </div>
+  </div>
+
+  <script
+    type="application/json"
+    data-ifc-data
+    set:html={JSON.stringify({
+      months,
+      yMax,
+      series: series.map((s) => ({ id: s.id, label: s.label, values: s.values, description: describe(s.label, s.values), current: yFormat(s.values[s.values.length - 1]) })),
+    })}
+  />
+</div>
+
+<style>
+  .ifc {
+    position: relative;
+  }
+
+  .ifc-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+  }
+
+  .ifc-tab {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-line);
+    background: transparent;
+    color: var(--color-olive);
+    font-size: var(--text-caption);
+    font-weight: 450;
+    letter-spacing: 0.01em;
+    transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .ifc-tab:hover {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .ifc-tab[aria-pressed="true"] {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .ifc-svg-wrap {
+    position: relative;
+  }
+
+  .ifc-svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .ifc-grid {
+    stroke: var(--color-line);
+    stroke-width: 1;
+  }
+
+  .ifc-axis-label {
+    font-size: 12px;
+    fill: var(--color-ink-soft);
+  }
+
+  .ifc-reference {
+    stroke: var(--color-ink-soft);
+    stroke-width: 1;
+    stroke-dasharray: 3 5;
+  }
+
+  .ifc-reference-label {
+    font-size: 11px;
+    fill: var(--color-ink-soft);
+  }
+
+  .ifc-area {
+    fill: var(--color-olive);
+    opacity: 0.14;
+    transition: d var(--dur-draw) var(--ease-out);
+  }
+
+  .ifc-curve {
+    fill: none;
+    stroke: var(--color-ink);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: d var(--dur-draw) var(--ease-out);
+  }
+
+  :global(.ifc-point) {
+    fill: var(--color-paper);
+    stroke: var(--color-ink);
+    stroke-width: 2.5;
+    transition: cy var(--dur-draw) var(--ease-out);
+  }
+
+  :global(.ifc-point-value) {
+    font-size: 15px;
+    font-weight: 500;
+    fill: var(--color-ink);
+  }
+
+  .ifc-readout {
+    margin-top: var(--space-6);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-line);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-5);
+    flex-wrap: wrap;
+  }
+
+  .ifc-readout-headline {
+    color: var(--color-ink);
+    max-width: 56ch;
+  }
+
+  .ifc-readout-current {
+    color: var(--color-ink);
+    line-height: 0.9;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ifc-area,
+    .ifc-curve,
+    :global(.ifc-point) {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ifc]").forEach((root) => {
+    const dataEl = root.querySelector<HTMLScriptElement>("[data-ifc-data]");
+    const svg = root.querySelector<SVGSVGElement>("[data-ifc-svg]");
+    const headlineEl = root.querySelector<HTMLElement>("[data-ifc-headline]");
+    const currentEl = root.querySelector<HTMLElement>("[data-ifc-current]");
+    if (!dataEl || !svg || !headlineEl || !currentEl) return;
+
+    const data = JSON.parse(dataEl.textContent || "{}") as {
+      months: string[];
+      yMax: number;
+      series: { id: string; label: string; values: number[]; description: string; current: string }[];
+    };
+
+    const areaPathEl = svg.querySelector("[id$='-area']") as SVGPathElement | null;
+    const curvePathEl = svg.querySelector("[id$='-curve']") as SVGPathElement | null;
+    const pointsGroupEl = svg.querySelector("[id$='-points']") as SVGGElement | null;
+    if (!areaPathEl || !curvePathEl || !pointsGroupEl) return;
+    // Re-bind as definitely non-null: TS control-flow narrowing from the
+    // guard above doesn't carry into the nested `render` closure below.
+    const areaPath: SVGPathElement = areaPathEl;
+    const curvePath: SVGPathElement = curvePathEl;
+    const pointsGroup: SVGGElement = pointsGroupEl;
+    const headline: HTMLElement = headlineEl;
+    const current: HTMLElement = currentEl;
+    const svgEl: SVGSVGElement = svg;
+
+    const viewBox = svg.viewBox.baseVal;
+    const W = viewBox.width || 1040;
+    const H = viewBox.height || 420;
+    const padL = 64;
+    const padR = 24;
+    const padT = 28;
+    const padB = 40;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    const xAt = (i: number) => padL + (data.months.length === 1 ? plotW / 2 : (i / (data.months.length - 1)) * plotW);
+    const yAt = (v: number) => padT + plotH - (v / data.yMax) * plotH;
+
+    const ns = "http://www.w3.org/2000/svg";
+    const el = (name: string, attrs: Record<string, string | number>) => {
+      const node = document.createElementNS(ns, name);
+      Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, String(v)));
+      return node;
+    };
+
+    function render(id: string) {
+      const s = data.series.find((x) => x.id === id);
+      if (!s) return;
+      const pts = s.values.map((v, i) => [xAt(i), yAt(v)] as const);
+      const lineD = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0]},${p[1]}`).join(" ");
+      const areaD = `${lineD} L ${pts[pts.length - 1][0]},${padT + plotH} L ${pts[0][0]},${padT + plotH} Z`;
+      curvePath.setAttribute("d", lineD);
+      areaPath.setAttribute("d", areaD);
+
+      pointsGroup.replaceChildren();
+      pts.forEach(([x, y], i) => {
+        pointsGroup.appendChild(el("circle", { cx: x, cy: y, r: 6, class: "ifc-point" }));
+        const label = el("text", {
+          x,
+          y: y - 16,
+          "text-anchor": i === 0 ? "start" : i === pts.length - 1 ? "end" : "middle",
+          class: "ifc-point-value",
+        });
+        label.textContent = `${s.values[i].toFixed(1)}%`;
+        pointsGroup.appendChild(label);
+      });
+
+      headline.textContent = s.description;
+      current.textContent = s.current;
+      svgEl.setAttribute("aria-label", `${s.label}: ${s.values.map((v) => v.toFixed(1) + " percent").join(", ")}`);
+
+      root.querySelectorAll<HTMLButtonElement>("[data-series-id]").forEach((btn) => {
+        btn.setAttribute("aria-pressed", String(btn.dataset.seriesId === id));
+      });
+    }
+
+    root.querySelectorAll<HTMLButtonElement>("[data-series-id]").forEach((btn) => {
+      btn.addEventListener("click", () => render(btn.dataset.seriesId as string));
+    });
+
+    const initial = root.querySelector<HTMLButtonElement>('[aria-pressed="true"]')?.dataset.seriesId;
+    if (initial) render(initial);
+  });
+</script>

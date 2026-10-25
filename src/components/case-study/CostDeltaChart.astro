@@ -1,0 +1,133 @@
+---
+// Two-point "before/after" chart — the reference design's efficiency
+// panel (connected points, boxed value labels, a short verdict line)
+// rebuilt in this site's tokens. Only ever plots points that actually
+// have a value (no invented in-between data); the caller is responsible
+// for only passing known points.
+interface Point {
+  label: string;
+  value: number;
+  formatted: string;
+}
+
+interface Props {
+  points: Point[];
+  unitLabel: string;
+  verdict: string;
+}
+
+const { points, unitLabel, verdict } = Astro.props;
+
+const W = 610;
+const H = 300;
+const padL = 50;
+const padR = 50;
+const padT = 70;
+const padB = 50;
+const plotW = W - padL - padR;
+const plotH = H - padT - padB;
+
+const values = points.map((p) => p.value);
+const vMax = Math.max(...values);
+const vMin = Math.min(...values);
+const span = vMax - vMin || 1;
+
+const xAt = (i: number) => padL + (points.length === 1 ? plotW / 2 : (i / (points.length - 1)) * plotW);
+// Lower is better for a cost metric — plot the higher (worse) value lower
+// on the chart and the lower (better) value higher, so the line visually
+// trends "up and to the right" like an improvement, not a decline.
+const yAt = (v: number) => padT + ((v - vMin) / span) * plotH;
+
+const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"}${xAt(i)},${yAt(p.value)}`).join(" ");
+---
+
+<div class="cdc">
+  <div class="cdc-label-row">
+    <span class="text-caption">{unitLabel}</span>
+  </div>
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${points.map((p) => `${p.label} ${p.formatted}`).join(", ")}`} class="cdc-svg">
+    <g class="cdc-gridlines">
+      {points.map((_, i) => i > 0 && <line x1={xAt(i)} x2={xAt(i)} y1={padT - 10} y2={H - padB + 10} class="cdc-gridline" />)}
+    </g>
+
+    <path d={pathD} class="cdc-line" />
+
+    {
+      points.map((p, i) => (
+        <g>
+          <circle cx={xAt(i)} cy={yAt(p.value)} r={7} class="cdc-dot" />
+          <text x={xAt(i)} y={H - padB + 32} class="cdc-month" text-anchor="middle">
+            {p.label}
+          </text>
+          <g transform={`translate(${xAt(i)}, ${yAt(p.value) - (i === 0 ? 44 : 40)})`}>
+            <rect x={-54} y={-26} width={108} height={36} class="cdc-value-box" />
+            <text x={0} y={-3} class="cdc-value-text" text-anchor="middle">
+              {p.formatted}
+            </text>
+          </g>
+        </g>
+      ))
+    }
+  </svg>
+  <p class="text-small cdc-verdict">{verdict}</p>
+</div>
+
+<style>
+  .cdc {
+    position: relative;
+  }
+
+  .cdc-label-row {
+    display: flex;
+    justify-content: flex-end;
+    color: var(--color-ink-soft);
+  }
+
+  .cdc-svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    margin-top: var(--space-4);
+  }
+
+  .cdc-gridline {
+    stroke: var(--color-line);
+    stroke-width: 1;
+    stroke-dasharray: 3 5;
+  }
+
+  .cdc-line {
+    fill: none;
+    stroke: var(--color-ink);
+    stroke-width: 2.5;
+  }
+
+  .cdc-dot {
+    fill: var(--color-paper);
+    stroke: var(--color-ink);
+    stroke-width: 2.5;
+  }
+
+  .cdc-month {
+    font-size: 12px;
+    fill: var(--color-ink-soft);
+  }
+
+  .cdc-value-box {
+    fill: var(--color-ink);
+  }
+
+  .cdc-value-text {
+    font-size: 17px;
+    font-weight: 500;
+    fill: var(--color-paper);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .cdc-verdict {
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-line);
+    color: var(--color-olive);
+  }
+</style>
