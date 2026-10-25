@@ -35,6 +35,7 @@ const signalSeries = [
     title: "Reach, July–September.",
     months: [...results.months],
     values: [...results.reach.values],
+    yMin: Math.min(...results.reach.yTicks),
     yMax: results.reach.yMax,
     yTicks: [...results.reach.yTicks],
     format: reachFull,
@@ -49,6 +50,7 @@ const signalSeries = [
     title: "Engagement rate, July–September.",
     months: [...results.months],
     values: [...results.engagement.values],
+    yMin: Math.min(...results.engagement.yTicks),
     yMax: results.engagement.yMax,
     yTicks: [...results.engagement.yTicks],
     format: pctFormat,
@@ -688,12 +690,16 @@ const signalSeries = [
   }
 
   .cs-highlight-value {
+    /* Was --color-olive — low contrast against the ink background
+       (reported as hard to read). --color-paper matches how other large
+       numbers read on ink elsewhere on this page (e.g. AcquisitionFunnel's
+       dark-surface fix on the Gentem page uses the same pairing). */
     position: relative;
     font-size: clamp(5rem, 14vw, 9rem);
     font-weight: 300;
     line-height: 0.9;
     letter-spacing: -0.03em;
-    color: var(--color-olive);
+    color: var(--color-paper);
   }
 
   .cs-highlight-sub {

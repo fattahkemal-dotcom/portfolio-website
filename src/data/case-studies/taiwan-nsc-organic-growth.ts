@@ -37,7 +37,7 @@ export const caseStudy = {
   },
   header: {
     kicker: "Project 02 / Organic Growth",
-    title: "From Information Gaps to Organic Growth",
+    title: "Organic Growth Strategy",
     client: "Taiwan New South Center Indonesia",
     role: "Education / Study Abroad Consulting",
     duration: "July – September",

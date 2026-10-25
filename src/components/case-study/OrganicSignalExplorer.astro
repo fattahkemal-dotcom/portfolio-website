@@ -14,6 +14,7 @@ interface LineSeries {
   title: string;
   months: string[];
   values: (number | null)[];
+  yMin?: number;
   yMax: number;
   yTicks: number[];
   format: (value: number) => string;
@@ -114,8 +115,14 @@ function segments(values: (number | null)[]) {
             <div class="ose-view" data-ose-view={s.id} hidden={s.id !== initialId}>
               {s.kind === "line" ? (
                 <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={s.readoutLabel} class="ose-svg">
+                  {/* Scale from yMin (default 0), not always 0 — a series
+                      like "reach" (~50,000) plotted against a 0-based axis
+                      crams all its real variation into the top sliver of
+                      the chart and leaves the rest empty. yMin lets the
+                      caller zoom to the data's actual range instead. */}
                   {s.yTicks.map((tick) => {
-                    const y = padT + plotH - (tick / s.yMax) * plotH;
+                    const yMin = s.yMin ?? 0;
+                    const y = padT + plotH - ((tick - yMin) / (s.yMax - yMin)) * plotH;
                     return (
                       <g>
                         <line x1={padL} x2={W - padR} y1={y} y2={y} class="ose-grid" />
@@ -131,17 +138,25 @@ function segments(values: (number | null)[]) {
                     </text>
                   ))}
                   {segments(s.values).map((run) => {
-                    const yAt = (v: number) => padT + plotH - (v / s.yMax) * plotH;
+                    const yMin = s.yMin ?? 0;
+                    const yAt = (v: number) => padT + plotH - ((v - yMin) / (s.yMax - yMin)) * plotH;
                     const d = run.points.map((p, idx) => `${idx === 0 ? "M" : "L"}${xAt(p.i)},${yAt(p.v)}`).join(" ");
                     return <path d={d} class:list={["ose-line", run.interpolated && "ose-line-interpolated"]} />;
                   })}
                   {s.values.map((v, i) => {
                     if (v === null) return null;
-                    const yAt2 = (val: number) => padT + plotH - (val / s.yMax) * plotH;
+                    const yMin = s.yMin ?? 0;
+                    const yAt2 = (val: number) => padT + plotH - ((val - yMin) / (s.yMax - yMin)) * plotH;
+                    // Anchor the first/last point labels outward (start/end)
+                    // instead of always centering — a centered label on the
+                    // first point sits right on top of the y-axis tick
+                    // labels (both near x=padL). Confirmed colliding before
+                    // this fix.
+                    const anchor = i === 0 ? "start" : i === s.values.length - 1 ? "end" : "middle";
                     return (
                       <g>
                         <circle cx={xAt(i)} cy={yAt2(v)} r={6} class="ose-point" />
-                        <text x={xAt(i)} y={yAt2(v) - 16} class="ose-point-label" text-anchor="middle">
+                        <text x={xAt(i)} y={yAt2(v) - 16} class="ose-point-label" text-anchor={anchor}>
                           {s.format(v)}
                         </text>
                       </g>
