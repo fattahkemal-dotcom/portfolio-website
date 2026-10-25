@@ -1,0 +1,149 @@
+---
+// Clickable node grid — the reference design's "conceptual system map"
+// (select a component, read what it does below). Plain bordered buttons
+// on an ink surface; no illustrated wiring/connectors (would read as a
+// fabricated architecture diagram rather than the honest "simplified
+// design map" the footnote already says this is).
+interface Node {
+  label: string;
+  sublabel: string;
+  title: string;
+  description: string;
+}
+
+interface Props {
+  nodes: Node[];
+  defaultIndex?: number;
+}
+
+const { nodes, defaultIndex = 0 } = Astro.props;
+const initial = nodes[defaultIndex];
+---
+
+<div class="snm" data-snm>
+  <div class="snm-grid">
+    {
+      nodes.map((n, i) => (
+        <button
+          type="button"
+          class="snm-node"
+          data-index={i}
+          aria-pressed={i === defaultIndex ? "true" : "false"}
+        >
+          <span class="text-small snm-node-label">{n.label}</span>
+          <span class="text-caption snm-node-sub">{n.sublabel}</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="snm-footnote">
+    <h3 class="text-h3 snm-title" data-snm-title>{initial.title}</h3>
+    <p class="text-small snm-description" data-snm-description>{initial.description}</p>
+  </div>
+
+  <script type="application/json" data-snm-data set:html={JSON.stringify(nodes)} />
+</div>
+
+<style>
+  .snm {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: clamp(var(--space-6), 4vw, var(--space-8));
+  }
+
+  .snm-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1px;
+    background: var(--color-line-dark);
+    border: 1px solid var(--color-line-dark);
+  }
+
+  .snm-node {
+    background: var(--color-ink);
+    border: 0;
+    padding: var(--space-6);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 120px;
+    transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  }
+
+  .snm-node:hover,
+  .snm-node[aria-pressed="true"] {
+    background: var(--color-ink-soft);
+    transform: translateY(-2px);
+  }
+
+  .snm-node-label {
+    color: var(--color-paper);
+    font-weight: 500;
+  }
+
+  .snm-node-sub {
+    color: var(--color-ink-soft);
+  }
+
+  .snm-node[aria-pressed="true"] .snm-node-sub {
+    color: var(--color-bone);
+  }
+
+  .snm-footnote {
+    margin-top: var(--space-7);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-line-dark);
+  }
+
+  .snm-title {
+    /* paper, not olive: text-h3 (24px, weight 450) sits right at the
+       large-text contrast threshold with olive-on-ink and no real
+       margin — same lesson as the Taiwan NSC "724" figure and
+       RuleExplorer's metric number. */
+    color: var(--color-paper);
+  }
+
+  .snm-description {
+    margin-top: var(--space-3);
+    color: var(--color-ink-soft);
+    max-width: 60ch;
+  }
+
+  @media (min-width: 768px) {
+    .snm-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .snm-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-snm]").forEach((root) => {
+    const dataEl = root.querySelector<HTMLScriptElement>("[data-snm-data]");
+    const titleEl = root.querySelector<HTMLElement>("[data-snm-title]");
+    const descEl = root.querySelector<HTMLElement>("[data-snm-description]");
+    if (!dataEl || !titleEl || !descEl) return;
+
+    const nodes = JSON.parse(dataEl.textContent || "[]") as { title: string; description: string }[];
+
+    root.querySelectorAll<HTMLButtonElement>("[data-index]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.dataset.index);
+        const node = nodes[idx];
+        if (!node) return;
+        root.querySelectorAll<HTMLButtonElement>("[data-index]").forEach((b) => {
+          b.setAttribute("aria-pressed", String(b === btn));
+        });
+        titleEl.textContent = node.title;
+        descEl.textContent = node.description;
+      });
+    });
+  });
+</script>

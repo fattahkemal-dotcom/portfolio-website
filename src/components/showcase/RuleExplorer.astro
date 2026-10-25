@@ -1,0 +1,258 @@
+---
+// Tab list + a swapping "big metric" stage — the reference design's
+// product-decisions pattern (select a rule, see its headline number).
+// Same tab mechanism as PillarExplorer, with a metric readout added.
+interface Rule {
+  kicker: string;
+  metric: string;
+  unit: string;
+  title: string;
+  description: string;
+}
+
+interface Props {
+  rules: Rule[];
+  defaultIndex?: number;
+}
+
+const { rules, defaultIndex = 0 } = Astro.props;
+const initial = rules[defaultIndex];
+---
+
+<div class="re" data-re>
+  <div class="re-nav" role="tablist" aria-label="Product decisions">
+    {
+      rules.map((r, i) => (
+        <button
+          type="button"
+          class="re-tab"
+          data-index={i}
+          aria-selected={i === defaultIndex ? "true" : "false"}
+        >
+          <span class="text-caption re-tab-index tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+          <span class="text-h3 re-tab-text">{r.title}</span>
+          <span class="re-tab-arrow" aria-hidden="true">↗</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="re-stage">
+    <p class="text-caption re-kicker" data-re-kicker>{initial.kicker}</p>
+    <p class="re-metric tabular-nums">
+      <span data-re-metric>{initial.metric}</span>
+      <span class="re-metric-unit" data-re-unit>{initial.unit}</span>
+    </p>
+    <div class="re-bottom">
+      <h3 class="text-h3 re-title" data-re-title>{initial.title}</h3>
+      <p class="text-small re-description" data-re-description>{initial.description}</p>
+    </div>
+  </div>
+
+  <script
+    type="application/json"
+    data-re-data
+    set:html={JSON.stringify(rules)}
+  />
+</div>
+
+<style>
+  .re {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-7);
+  }
+
+  .re-nav {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .re-tab {
+    display: grid;
+    grid-template-columns: 40px 1fr 24px;
+    gap: var(--space-4);
+    align-items: center;
+    text-align: left;
+    width: 100%;
+    padding: var(--space-5) 0;
+    background: none;
+    border: 0;
+    border-top: 1px solid var(--color-line);
+    color: var(--color-ink-soft);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .re-nav .re-tab:last-child {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .re-tab:hover,
+  .re-tab[aria-selected="true"] {
+    color: var(--color-ink);
+  }
+
+  .re-tab-index {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-pill);
+    color: var(--color-ink-soft);
+    transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .re-tab[aria-selected="true"] .re-tab-index {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .re-tab-arrow {
+    font-size: 1.1rem;
+    color: var(--color-olive);
+    opacity: 0.6;
+  }
+
+  .re-tab[aria-selected="true"] .re-tab-arrow {
+    opacity: 1;
+    color: var(--color-ink);
+  }
+
+  .re-stage {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: clamp(var(--space-6), 4vw, var(--space-8));
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 420px;
+    gap: var(--space-6);
+  }
+
+  .re-kicker {
+    color: var(--color-ink-soft);
+  }
+
+  .re-metric {
+    /* --color-paper for the number (the primary, most-prominent
+       element), --color-olive for the unit (secondary) — not the other
+       way around. Started as olive-on-ink here too and read exactly as
+       low-contrast as the Taiwan NSC "724" figure did before that fix. */
+    font-size: clamp(4.5rem, 12vw, 8rem);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-paper);
+  }
+
+  .re-metric-unit {
+    /* ink-soft, not olive: at this size (~25px) olive sits right at the
+       large-text contrast threshold with no margin — ink-soft (already
+       the established "secondary text on ink" color elsewhere on this
+       site, ~5.4:1) has real headroom. */
+    font-size: 0.35em;
+    color: var(--color-ink-soft);
+    margin-left: var(--space-3);
+  }
+
+  .re-bottom {
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-line-dark);
+  }
+
+  .re-title {
+    color: var(--color-paper);
+  }
+
+  .re-description {
+    margin-top: var(--space-3);
+    color: var(--color-ink-soft);
+    max-width: 48ch;
+  }
+
+  @media (min-width: 1024px) {
+    .re {
+      grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.15fr);
+      align-items: stretch;
+    }
+  }
+</style>
+
+<script>
+  function animateMetric(el: HTMLElement, nextRaw: string, reduced: boolean) {
+    if (reduced) {
+      el.textContent = nextRaw;
+      return;
+    }
+    const parse = (raw: string) => {
+      const match = raw.match(/[-−]?\d[\d,]*\.?\d*/);
+      if (!match) return null;
+      const numStr = match[0];
+      return {
+        value: parseFloat(numStr.replace(/,/g, "")),
+        decimals: (numStr.split(".")[1] || "").length,
+        prefix: raw.slice(0, match.index),
+        suffix: raw.slice((match.index ?? 0) + numStr.length),
+      };
+    };
+    const from = parse(el.textContent || "");
+    const to = parse(nextRaw);
+    if (!from || !to) {
+      el.textContent = nextRaw;
+      return;
+    }
+    const duration = 500;
+    const start = performance.now();
+    function frame(now: number) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const current = from!.value + (to!.value - from!.value) * eased;
+      el.textContent = `${to!.prefix}${current.toLocaleString("en-US", {
+        minimumFractionDigits: to!.decimals,
+        maximumFractionDigits: to!.decimals,
+      })}${to!.suffix}`;
+      if (t < 1) requestAnimationFrame(frame);
+      else el.textContent = nextRaw;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-re]").forEach((root) => {
+    const dataEl = root.querySelector<HTMLScriptElement>("[data-re-data]");
+    const kickerEl = root.querySelector<HTMLElement>("[data-re-kicker]");
+    const metricEl = root.querySelector<HTMLElement>("[data-re-metric]");
+    const unitEl = root.querySelector<HTMLElement>("[data-re-unit]");
+    const titleEl = root.querySelector<HTMLElement>("[data-re-title]");
+    const descEl = root.querySelector<HTMLElement>("[data-re-description]");
+    if (!dataEl || !kickerEl || !metricEl || !unitEl || !titleEl || !descEl) return;
+
+    const rules = JSON.parse(dataEl.textContent || "[]") as {
+      kicker: string;
+      metric: string;
+      unit: string;
+      title: string;
+      description: string;
+    }[];
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    root.querySelectorAll<HTMLButtonElement>("[data-index]").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const idx = Number(tab.dataset.index);
+        const rule = rules[idx];
+        if (!rule) return;
+
+        root.querySelectorAll<HTMLButtonElement>("[data-index]").forEach((t) => {
+          t.setAttribute("aria-selected", String(t === tab));
+        });
+
+        kickerEl.textContent = rule.kicker;
+        animateMetric(metricEl, rule.metric, reduced);
+        unitEl.textContent = rule.unit;
+        titleEl.textContent = rule.title;
+        descEl.textContent = rule.description;
+      });
+    });
+  });
+</script>
