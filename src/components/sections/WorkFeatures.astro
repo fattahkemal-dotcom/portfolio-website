@@ -1,20 +1,21 @@
 ---
 // Selected work — accordion/dropdown feature list with a synced mockup
 // preview, per client reference (Awesomic-style "How it works"). Each
-// feature links to its real /work/ case study; its mockup is either a real
-// screenshot of that project (two have one) or that project's own real
-// headline figure (the other two have no UI screenshot) — never a
-// fabricated visual. `workFeatures` in src/data/site.ts is the single edit
-// point.
-import { Image } from "astro:assets";
+// feature links to its real /work/ case study, and its mockup recreates
+// that project's own real page header rather than a static cropped image:
+// a scaled-down copy of the "stat ring" hero (Gentem/Taiwan NSC, which have
+// no UI screenshot) or the same DeviceFrame browser-chrome used on the
+// hero of the two projects that do (landing-page-design, product-systems-
+// design). `workFeatures` in src/data/site.ts is the single edit point.
 import Section from "../layout/Section.astro";
 import Container from "../layout/Container.astro";
 import Button from "../ui/Button.astro";
+import DeviceFrame from "../showcase/DeviceFrame.astro";
 import { workFeatures } from "../../data/site";
 import landingPageShot from "../../assets/images/lp-showcase-desktop.png";
 import productSystemsShot from "../../assets/images/lp-system-hero-desktop.png";
 
-const mockupImages: Record<string, ImageMetadata> = {
+const frameImages: Record<string, ImageMetadata> = {
   "landing-page-design": landingPageShot,
   "product-systems-design": productSystemsShot,
 };
@@ -94,22 +95,29 @@ const slugify = (value: string) =>
                     </Button>
 
                     {/* Mobile-only: mockup rendered below each open dropdown. */}
-                    <div class="feature-mock feature-mock-mobile" data-accent={feature.accent} aria-hidden="true">
-                      {feature.mockup.kind === "image" ? (
-                        <Image
-                          src={mockupImages[feature.mockup.project]}
-                          alt=""
-                          widths={[400, 600]}
-                          sizes="(min-width: 1024px) 0px, 90vw"
-                          class="feature-mock-img"
-                        />
-                      ) : (
-                        <div class="feature-mock-stat">
-                          <p class="feature-mock-stat-value tabular-nums">{feature.mockup.value}</p>
-                          <p class="text-caption feature-mock-stat-label">{feature.mockup.label}</p>
+                    {feature.mockup.kind === "ring" ? (
+                      <div class="feature-mock feature-mock-mobile" data-accent={feature.accent} aria-hidden="true">
+                        <div class="feature-ring-wrap">
+                          <span class="feature-ring feature-ring-outer" />
+                          <span class="feature-ring feature-ring-mid" />
+                          <span class="feature-ring feature-ring-dashed" />
+                          <div class="feature-ring-center">
+                            <p class="text-caption feature-ring-eyebrow">{feature.mockup.eyebrow}</p>
+                            <p class="feature-ring-value tabular-nums">{feature.mockup.value}</p>
+                            <p class="text-caption feature-ring-label">{feature.mockup.label}</p>
+                          </div>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div class="feature-frame-wrap feature-frame-wrap-mobile" aria-hidden="true">
+                        <DeviceFrame
+                          type="desktop"
+                          src={frameImages[feature.mockup.project]}
+                          alt=""
+                          class="feature-frame"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </li>
@@ -121,30 +129,42 @@ const slugify = (value: string) =>
       {/* Desktop-only: single stage, crossfades to the open item's mockup. */}
       <div class="feature-stage" aria-hidden="true">
         {
-          workFeatures.map((feature, index) => (
-            <div
-              class="feature-mock feature-mock-desktop"
-              data-stage-mock
-              data-index={index}
-              data-accent={feature.accent}
-              data-active={index === 0 ? "true" : "false"}
-            >
-              {feature.mockup.kind === "image" ? (
-                <Image
-                  src={mockupImages[feature.mockup.project]}
-                  alt=""
-                  widths={[600, 900, 1200]}
-                  sizes="40vw"
-                  class="feature-mock-img"
-                />
-              ) : (
-                <div class="feature-mock-stat">
-                  <p class="feature-mock-stat-value tabular-nums">{feature.mockup.value}</p>
-                  <p class="text-caption feature-mock-stat-label">{feature.mockup.label}</p>
+          workFeatures.map((feature, index) =>
+            feature.mockup.kind === "ring" ? (
+              <div
+                class="feature-mock feature-mock-desktop"
+                data-stage-mock
+                data-index={index}
+                data-accent={feature.accent}
+                data-active={index === 0 ? "true" : "false"}
+              >
+                <div class="feature-ring-wrap">
+                  <span class="feature-ring feature-ring-outer" />
+                  <span class="feature-ring feature-ring-mid" />
+                  <span class="feature-ring feature-ring-dashed" />
+                  <div class="feature-ring-center">
+                    <p class="text-caption feature-ring-eyebrow">{feature.mockup.eyebrow}</p>
+                    <p class="feature-ring-value tabular-nums">{feature.mockup.value}</p>
+                    <p class="text-caption feature-ring-label">{feature.mockup.label}</p>
+                  </div>
                 </div>
-              )}
-            </div>
-          ))
+              </div>
+            ) : (
+              <div
+                class="feature-frame-wrap feature-mock-desktop"
+                data-stage-mock
+                data-index={index}
+                data-active={index === 0 ? "true" : "false"}
+              >
+                <DeviceFrame
+                  type="desktop"
+                  src={frameImages[feature.mockup.project]}
+                  alt=""
+                  class="feature-frame"
+                />
+              </div>
+            )
+          )
         }
       </div>
     </div>
@@ -274,8 +294,10 @@ const slugify = (value: string) =>
     margin-bottom: var(--space-6);
   }
 
-  /* Mockup: a real screenshot (image kind) or the project's own real
-     headline figure (stat kind), tinted per accent for the stat kind. */
+  /* Mockup: a scaled-down copy of that project's own real hero "stat ring"
+     (ring kind — Gentem/Taiwan NSC, which have no UI screenshot), tinted
+     per accent, or the same DeviceFrame chrome used on its real hero
+     holding its real screenshot (frame kind). */
 
   .feature-mock {
     --mock-fg: var(--color-ink);
@@ -283,6 +305,8 @@ const slugify = (value: string) =>
     border-radius: var(--radius-lg);
     overflow: hidden;
     background: var(--color-paper-2);
+    display: grid;
+    place-items: center;
   }
 
   .feature-mock[data-accent="ink"] {
@@ -300,39 +324,87 @@ const slugify = (value: string) =>
     --mock-fg: var(--color-ink);
   }
 
-  .feature-mock-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top;
+  /* Ring mockup — scaled-down copy of .cs-hero-figure/.cs-hero-ring from
+     the case-study pages (src/pages/work/gentem-digital-growth-strategy.astro,
+     taiwan-nsc-organic-growth-strategy.astro), recolored via --mock-fg so
+     it reads on any of the three accent backgrounds above. */
+  .feature-ring-wrap {
+    position: relative;
+    width: min(220px, 60%);
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
   }
 
-  .feature-mock-stat {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: var(--space-3);
-    padding: var(--space-6);
+  .feature-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-pill);
+    border: 1px solid color-mix(in srgb, var(--mock-fg) 30%, transparent);
   }
 
-  .feature-mock-stat-value {
-    font-size: var(--text-metric);
+  .feature-ring-mid {
+    inset: 10%;
+    border-color: color-mix(in srgb, var(--mock-fg) 45%, transparent);
+  }
+
+  .feature-ring-dashed {
+    inset: -8%;
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--mock-fg) 30%, transparent);
+    animation: feature-ring-spin 70s linear infinite;
+  }
+
+  @keyframes feature-ring-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .feature-ring-center {
+    text-align: center;
+    padding-inline: var(--space-3);
+  }
+
+  .feature-ring-eyebrow {
+    color: color-mix(in srgb, var(--mock-fg) 70%, transparent);
+  }
+
+  .feature-ring-value {
+    margin-top: var(--space-2);
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
     font-weight: 300;
     line-height: 1;
     letter-spacing: -0.03em;
     color: var(--mock-fg);
   }
 
-  .feature-mock-stat-label {
+  .feature-ring-label {
+    margin-top: var(--space-2);
     color: color-mix(in srgb, var(--mock-fg) 70%, transparent);
-    max-width: 22ch;
+    max-width: 20ch;
+    margin-inline: auto;
+  }
+
+  /* Frame mockup — the project's own real DeviceFrame hero, not re-tinted
+     (the chrome and screenshot carry their own colors already). DeviceFrame
+     is a child component, so its root element needs :global() to be
+     reachable from this component's scoped styles. */
+  .feature-frame-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .feature-frame-wrap :global(.feature-frame) {
+    width: 100%;
   }
 
   /* Mobile mockup: inline below each open item's CTA, hidden on desktop. */
-  .feature-mock-mobile {
+  .feature-mock-mobile,
+  .feature-frame-wrap-mobile {
     margin-top: var(--space-2);
   }
 
@@ -383,6 +455,10 @@ const slugify = (value: string) =>
     .feature-chevron,
     .feature-mock-desktop {
       transition: none;
+    }
+
+    .feature-ring-dashed {
+      animation: none;
     }
   }
 </style>

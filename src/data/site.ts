@@ -50,10 +50,15 @@ export const highlights = [
 ] as const;
 
 // Work features — accordion/dropdown section. Each item links to its real
-// case study page. `mockup` is either a real screenshot of that project
-// (`kind: "image"`, resolved to an asset in WorkFeatures.astro by `project`
-// slug) or, for the two case studies with no UI screenshots, that project's
-// own real headline figure (`kind: "stat"`) — never a fabricated visual.
+// case study page. `mockup` recreates that project's own real page header,
+// never a fabricated visual:
+// - `kind: "ring"` — a scaled-down copy of that case study's hero "stat
+//   ring" centerpiece (Gentem / Taiwan NSC have no UI screenshot; their
+//   real hero IS this ring, so the mockup reuses its exact CSS, not a new
+//   generic skeleton), value/label pulled straight from that page's data.
+// - `kind: "frame"` — the same `DeviceFrame` chrome (browser-bar hairline)
+//   used on that project's own hero, holding its real screenshot, resolved
+//   in WorkFeatures.astro by `project` slug.
 export const workFeatures = [
   {
     title: "Performance Marketing & Growth",
@@ -61,7 +66,12 @@ export const workFeatures = [
       "Acquisition strategy, funnel optimization, and measurable business outcomes.",
     cta: { label: "View project", href: "/work/gentem-digital-growth-strategy" },
     accent: "ink",
-    mockup: { kind: "stat", value: "112%", label: "January contract target achieved" },
+    mockup: {
+      kind: "ring",
+      eyebrow: "January / performance",
+      value: "112%",
+      label: "Total Contract target achieved",
+    },
   },
   {
     title: "Organic Growth Strategy",
@@ -69,7 +79,12 @@ export const workFeatures = [
       "Audience insights, content strategy, and organic channel development.",
     cta: { label: "View project", href: "/work/taiwan-nsc-organic-growth-strategy" },
     accent: "olive",
-    mockup: { kind: "stat", value: "+11.8%", label: "Organic growth, quarter over quarter" },
+    mockup: {
+      kind: "ring",
+      eyebrow: "Audience / growth",
+      value: "+11.8%",
+      label: "Follower growth, net",
+    },
   },
   {
     title: "Conversion Experience",
@@ -77,7 +92,7 @@ export const workFeatures = [
       "Landing page design, messaging hierarchy, and user journey planning.",
     cta: { label: "View project", href: "/work/landing-page-design" },
     accent: "bone",
-    mockup: { kind: "image", project: "landing-page-design" },
+    mockup: { kind: "frame", project: "landing-page-design" },
   },
   {
     title: "Product & Systems Development",
@@ -85,7 +100,7 @@ export const workFeatures = [
       "Business process improvement, CRM architecture, and workflow automation.",
     cta: { label: "View project", href: "/work/product-systems-design" },
     accent: "ink",
-    mockup: { kind: "image", project: "product-systems-design" },
+    mockup: { kind: "frame", project: "product-systems-design" },
   },
 ] as const;
 
