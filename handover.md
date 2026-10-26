@@ -1,6 +1,14 @@
 # Handover — Kemal Portfolio Website
 
-**Last updated:** 2026-10-26 — Selected work mockups rebuilt to recreate each project's real hero design instead of a static image crop, commit `a6fa38f`, pushed.
+**Last updated:** 2026-10-26 — Selected work mockups now recreate the FULL real hero banner (kicker+title+intro+figure), not just the visual centerpiece, commit `31e54f3`, pushed.
+
+**State (2026-10-26, sixteenth pass) — mockups now the full hero, not just the figure:**
+- Kemal clarified the "use the header design" ask from the prior pass: he wanted the **whole** hero banner recreated (kicker, title, intro text, same as the real page), not just the ring/DeviceFrame in isolation with no copy around it.
+- New `src/components/sections/FeatureHeroMock.astro` — a scaled hero-banner card (kicker + title + line-clamped intro + a figure slot) in two layouts: `variant="stack"` (mobile — text above figure, matches the real case-study hero's own mobile stacking) and `variant="split"` (desktop stage — text beside figure, matches the real hero's `1.3fr 0.8fr` two-column grid).
+- `workFeatures[].mockup` in `src/data/site.ts` now carries **real kicker/title/intro copied verbatim** from each project's own hero source (`gentem-growth-strategy.ts`, `taiwan-nsc-organic-growth.ts`, `landing-page-design.astro`, `product-systems-design.astro`), with a nested `figure` (same `ring`/`frame` two kinds from the prior pass).
+- Since the card now sits on the same `paper` background the real case-study heroes use (not an ink/olive/bone tinted box), **dropped the accent-tint system entirely** — ring colors are now the exact tokens the real `.cs-hero-ring` uses (`--color-line`/`--color-bone` borders, `--color-ink`/`--color-ink-soft`/`--color-olive` text), not a `--mock-fg` recolor. The `accent` field on `workFeatures` became fully unused as a result and was removed from the data (nothing else ever read it).
+- Verified: `npx astro check` → 0 errors. `npm run build` succeeds. 0px overflow at 1440/390px. All 4 mockups individually screenshot-confirmed via scripted accordion clicks — each now reads as a legible mini replica of that project's actual hero (title + intro + visual together), both the desktop split layout and the mobile stacked card.
+- Committed and pushed, `31e54f3`.
 
 **State (2026-10-26, fifteenth pass) — Selected work mockups: static crop → real-hero recreation:**
 - Kemal asked whether the Selected work mockups could reuse each project's own real header/hero design instead of a static image. They could — rebuilt all 4:
