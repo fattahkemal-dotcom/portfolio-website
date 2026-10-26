@@ -1,0 +1,55 @@
+---
+// Approach — home `#approach`. New section, translated from the client's
+// reference `portfolio_homepage_premium.html` ("How I think") onto the
+// existing PillarExplorer component (already built for the Taiwan NSC case
+// study: tab list + a swapping typographic module, no fabricated UI).
+import Section from "../layout/Section.astro";
+import Container from "../layout/Container.astro";
+import PillarExplorer from "../case-study/PillarExplorer.astro";
+import { approachSteps } from "../../data/site";
+---
+
+<Section id="approach" background="paper">
+  <Container>
+    <div class="approach-header">
+      <h2 class="text-h2">Start with the problem, not the platform.</h2>
+      <p class="text-small approach-note">
+        Tools change. Channels evolve. The ability to diagnose what matters,
+        connect the customer journey, and make practical decisions is what
+        creates lasting value.
+      </p>
+    </div>
+    <div class="approach-header-rule hairline-bottom" aria-hidden="true"></div>
+
+    <PillarExplorer
+      pillars={[...approachSteps]}
+      stageLabel="Decision framework"
+      stageRightLabel="How I think"
+      stageFootnote="Observe → question → prioritize"
+    />
+  </Container>
+</Section>
+
+<style>
+  .approach-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+  }
+
+  .approach-header h2 {
+    max-width: 20ch;
+  }
+
+  .approach-note {
+    max-width: 360px;
+    color: var(--color-olive);
+  }
+
+  .approach-header-rule {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-8);
+  }
+</style>

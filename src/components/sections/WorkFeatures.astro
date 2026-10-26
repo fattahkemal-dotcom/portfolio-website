@@ -1,12 +1,23 @@
 ---
 // Selected work — accordion/dropdown feature list with a synced mockup
-// preview, per client reference (Awesomic-style "How it works"). Dummy copy
-// + CSS-built placeholder mockups for now; `workFeatures` in src/data/site.ts
-// is the single edit point once real projects/screenshots exist.
+// preview, per client reference (Awesomic-style "How it works"). Each
+// feature links to its real /work/ case study; its mockup is either a real
+// screenshot of that project (two have one) or that project's own real
+// headline figure (the other two have no UI screenshot) — never a
+// fabricated visual. `workFeatures` in src/data/site.ts is the single edit
+// point.
+import { Image } from "astro:assets";
 import Section from "../layout/Section.astro";
 import Container from "../layout/Container.astro";
 import Button from "../ui/Button.astro";
 import { workFeatures } from "../../data/site";
+import landingPageShot from "../../assets/images/lp-showcase-desktop.png";
+import productSystemsShot from "../../assets/images/lp-system-hero-desktop.png";
+
+const mockupImages: Record<string, ImageMetadata> = {
+  "landing-page-design": landingPageShot,
+  "product-systems-design": productSystemsShot,
+};
 
 const slugify = (value: string) =>
   value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -15,9 +26,10 @@ const slugify = (value: string) =>
 <Section id="work" background="paper">
   <Container>
     <div class="work-header">
-      <h2 class="text-h2">Selected work</h2>
+      <h2 class="text-h2">Turning Business Challenges Into Growth Opportunities</h2>
       <p class="text-small work-note">
-        A closer look at how the systems above come together, end to end.
+        A selection of projects across performance marketing, growth
+        strategy, conversion experience, and product development.
       </p>
     </div>
     <div class="work-header-rule hairline-bottom" aria-hidden="true"></div>
@@ -77,27 +89,26 @@ const slugify = (value: string) =>
                 >
                   <div class="feature-panel-inner">
                     <p class="text-small feature-description">{feature.description}</p>
-                    <Button href={feature.cta.href} variant="text" class="feature-cta">
+                    <Button href={feature.cta.href} variant="primary" class="feature-cta">
                       {feature.cta.label}
                     </Button>
 
                     {/* Mobile-only: mockup rendered below each open dropdown. */}
-                    <div class="feature-mock feature-mock-mobile" data-accent={feature.accent}>
-                      <div class="feature-mock-bar" aria-hidden="true">
-                        <span />
-                        <span />
-                        <span />
-                      </div>
-                      <div class="feature-mock-body" aria-hidden="true">
-                        <div class="feature-mock-row feature-mock-row-wide" />
-                        <div class="feature-mock-row" />
-                        <div class="feature-mock-grid">
-                          <div />
-                          <div />
-                          <div />
+                    <div class="feature-mock feature-mock-mobile" data-accent={feature.accent} aria-hidden="true">
+                      {feature.mockup.kind === "image" ? (
+                        <Image
+                          src={mockupImages[feature.mockup.project]}
+                          alt=""
+                          widths={[400, 600]}
+                          sizes="(min-width: 1024px) 0px, 90vw"
+                          class="feature-mock-img"
+                        />
+                      ) : (
+                        <div class="feature-mock-stat">
+                          <p class="feature-mock-stat-value tabular-nums">{feature.mockup.value}</p>
+                          <p class="text-caption feature-mock-stat-label">{feature.mockup.label}</p>
                         </div>
-                        <div class="feature-mock-row feature-mock-row-short" />
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -118,21 +129,20 @@ const slugify = (value: string) =>
               data-accent={feature.accent}
               data-active={index === 0 ? "true" : "false"}
             >
-              <div class="feature-mock-bar">
-                <span />
-                <span />
-                <span />
-              </div>
-              <div class="feature-mock-body">
-                <div class="feature-mock-row feature-mock-row-wide" />
-                <div class="feature-mock-row" />
-                <div class="feature-mock-grid">
-                  <div />
-                  <div />
-                  <div />
+              {feature.mockup.kind === "image" ? (
+                <Image
+                  src={mockupImages[feature.mockup.project]}
+                  alt=""
+                  widths={[600, 900, 1200]}
+                  sizes="40vw"
+                  class="feature-mock-img"
+                />
+              ) : (
+                <div class="feature-mock-stat">
+                  <p class="feature-mock-stat-value tabular-nums">{feature.mockup.value}</p>
+                  <p class="text-caption feature-mock-stat-label">{feature.mockup.label}</p>
                 </div>
-                <div class="feature-mock-row feature-mock-row-short" />
-              </div>
+              )}
             </div>
           ))
         }
@@ -264,16 +274,14 @@ const slugify = (value: string) =>
     margin-bottom: var(--space-6);
   }
 
-  /* Mockup (shared skeleton, tinted per accent) */
+  /* Mockup: a real screenshot (image kind) or the project's own real
+     headline figure (stat kind), tinted per accent for the stat kind. */
 
   .feature-mock {
     --mock-fg: var(--color-ink);
     aspect-ratio: 4 / 3;
     border-radius: var(--radius-lg);
-    padding: var(--space-5);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
+    overflow: hidden;
     background: var(--color-paper-2);
   }
 
@@ -292,51 +300,35 @@ const slugify = (value: string) =>
     --mock-fg: var(--color-ink);
   }
 
-  .feature-mock-bar {
-    display: flex;
-    gap: var(--space-2);
+  .feature-mock-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
   }
 
-  .feature-mock-bar span {
-    width: 8px;
-    height: 8px;
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--mock-fg) 30%, transparent);
-  }
-
-  .feature-mock-body {
-    flex: 1 1 auto;
+  .feature-mock-stat {
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
     gap: var(--space-3);
+    padding: var(--space-6);
   }
 
-  .feature-mock-row {
-    height: 14px;
-    border-radius: var(--radius-sm);
-    background: color-mix(in srgb, var(--mock-fg) 14%, transparent);
-    width: 60%;
+  .feature-mock-stat-value {
+    font-size: var(--text-metric);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--mock-fg);
   }
 
-  .feature-mock-row-wide {
-    width: 85%;
-    height: 20px;
-  }
-
-  .feature-mock-row-short {
-    width: 40%;
-  }
-
-  .feature-mock-grid {
-    flex: 1 1 auto;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-3);
-  }
-
-  .feature-mock-grid div {
-    border-radius: var(--radius-sm);
-    background: color-mix(in srgb, var(--mock-fg) 10%, transparent);
+  .feature-mock-stat-label {
+    color: color-mix(in srgb, var(--mock-fg) 70%, transparent);
+    max-width: 22ch;
   }
 
   /* Mobile mockup: inline below each open item's CTA, hidden on desktop. */

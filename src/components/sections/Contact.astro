@@ -1,0 +1,133 @@
+---
+// Contact / closing CTA — home `#contact`. New section, translated from the
+// client's reference `portfolio_homepage_premium.html` ("What's next")
+// closing band. Per client instruction, contact details are shown directly
+// on the page (no modal dialog) with the real WhatsApp/email/LinkedIn
+// values visible, not just link labels.
+import Section from "../layout/Section.astro";
+import Container from "../layout/Container.astro";
+import Button from "../ui/Button.astro";
+import { contact } from "../../data/site";
+---
+
+<Section id="contact" background="ink">
+  <Container>
+    <div class="contact-top">
+      <h2 class="text-display contact-heading">Let's work on what matters.</h2>
+      <p class="text-small contact-note">
+        I'm interested in opportunities where growth strategy, performance
+        marketing, and product thinking come together to solve meaningful
+        business problems.
+      </p>
+    </div>
+
+    <ul class="contact-rows">
+      <li class="contact-row">
+        <a class="contact-row-link" href={contact.whatsappUrl} target="_blank" rel="noopener">
+          <span class="contact-row-text">
+            <strong>WhatsApp</strong>
+            <span class="text-small">{contact.whatsappDisplay}</span>
+          </span>
+          <span class="contact-row-arrow" aria-hidden="true">↗</span>
+        </a>
+      </li>
+      <li class="contact-row">
+        <a class="contact-row-link" href={`mailto:${contact.email}`}>
+          <span class="contact-row-text">
+            <strong>Email</strong>
+            <span class="text-small">{contact.email}</span>
+          </span>
+          <span class="contact-row-arrow" aria-hidden="true">↗</span>
+        </a>
+      </li>
+      <li class="contact-row">
+        <a class="contact-row-link" href={contact.linkedinUrl} target="_blank" rel="noopener">
+          <span class="contact-row-text">
+            <strong>LinkedIn</strong>
+            <span class="text-small">{contact.linkedinDisplay}</span>
+          </span>
+          <span class="contact-row-arrow" aria-hidden="true">↗</span>
+        </a>
+      </li>
+    </ul>
+
+    <Button href={contact.whatsappUrl} variant="primary-ink" external class="contact-cta">
+      Book a call
+    </Button>
+  </Container>
+</Section>
+
+<style>
+  .contact-top {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    max-width: 640px;
+  }
+
+  .contact-heading {
+    color: var(--color-paper);
+  }
+
+  .contact-note {
+    color: var(--color-ink-soft);
+  }
+
+  .contact-rows {
+    list-style: none;
+    margin-top: var(--space-8);
+  }
+
+  .contact-row {
+    border-top: 1px solid var(--color-line-dark);
+  }
+
+  .contact-row:last-child {
+    border-bottom: 1px solid var(--color-line-dark);
+  }
+
+  .contact-row-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+    padding-block: var(--space-5);
+    color: var(--color-paper);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .contact-row-link:hover {
+    color: var(--color-bone);
+  }
+
+  .contact-row-text {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+
+  .contact-row-text strong {
+    font-size: var(--text-h3);
+    font-weight: 450;
+  }
+
+  .contact-row-text .text-small {
+    color: var(--color-ink-soft);
+  }
+
+  .contact-row-arrow {
+    font-size: 1.25rem;
+    color: var(--color-ink-soft);
+    transition: transform var(--dur-base) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+
+  .contact-row-link:hover .contact-row-arrow {
+    transform: rotate(45deg);
+    color: var(--color-paper);
+  }
+
+  .contact-cta {
+    margin-top: var(--space-8);
+  }
+</style>

@@ -14,9 +14,18 @@ interface Pillar {
 interface Props {
   pillars: Pillar[];
   defaultIndex?: number;
+  stageLabel?: string;
+  stageRightLabel?: string;
+  stageFootnote?: string;
 }
 
-const { pillars, defaultIndex = 0 } = Astro.props;
+const {
+  pillars,
+  defaultIndex = 0,
+  stageLabel = "Content system / module",
+  stageRightLabel = "Creative study",
+  stageFootnote = "Relevance → clarity → consistency",
+} = Astro.props;
 ---
 
 <div class="pe" data-pe>
@@ -42,8 +51,8 @@ const { pillars, defaultIndex = 0 } = Astro.props;
 
   <div class="pe-stage">
     <div class="pe-stage-top">
-      <span class="text-caption">Content system / module <span data-pe-count tabular-nums>{pillars[defaultIndex]?.step}</span></span>
-      <span class="text-caption">Creative study</span>
+      <span class="text-caption">{stageLabel} <span data-pe-count tabular-nums>{pillars[defaultIndex]?.step}</span></span>
+      <span class="text-caption">{stageRightLabel}</span>
     </div>
     <div class="pe-stage-center">
       <p class="pe-stage-index tabular-nums" data-pe-index>{pillars[defaultIndex]?.step}</p>
@@ -51,7 +60,7 @@ const { pillars, defaultIndex = 0 } = Astro.props;
       <p class="text-small pe-stage-note" data-pe-note>{pillars[defaultIndex]?.note}</p>
     </div>
     <div class="pe-stage-bottom text-caption">
-      <span>Relevance → clarity → consistency</span>
+      <span>{stageFootnote}</span>
       <span data-pe-name>{pillars[defaultIndex]?.title}</span>
     </div>
   </div>
