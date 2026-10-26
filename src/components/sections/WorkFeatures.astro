@@ -1,16 +1,19 @@
 ---
 // Selected work — accordion/dropdown feature list with a synced mockup
 // preview, per client reference (Awesomic-style "How it works"). Each
-// feature links to its real /work/ case study, and its mockup recreates
-// that project's own real page header rather than a static cropped image:
-// a scaled-down copy of the "stat ring" hero (Gentem/Taiwan NSC, which have
-// no UI screenshot) or the same DeviceFrame browser-chrome used on the
-// hero of the two projects that do (landing-page-design, product-systems-
-// design). `workFeatures` in src/data/site.ts is the single edit point.
+// feature links to its real /work/ case study, and its mockup is a scaled
+// recreation of that project's own real hero banner (FeatureHeroMock:
+// kicker + title + intro, copied verbatim from that page's hero) plus the
+// same visual centerpiece it uses there — a scaled-down "stat ring" for
+// Gentem/Taiwan NSC (no UI screenshot; their real hero IS this ring), or
+// the same DeviceFrame browser-chrome holding the real screenshot for
+// landing-page-design/product-systems-design. `workFeatures` in
+// src/data/site.ts is the single edit point.
 import Section from "../layout/Section.astro";
 import Container from "../layout/Container.astro";
 import Button from "../ui/Button.astro";
 import DeviceFrame from "../showcase/DeviceFrame.astro";
+import FeatureHeroMock from "./FeatureHeroMock.astro";
 import { workFeatures } from "../../data/site";
 import landingPageShot from "../../assets/images/lp-showcase-desktop.png";
 import productSystemsShot from "../../assets/images/lp-system-hero-desktop.png";
@@ -94,30 +97,36 @@ const slugify = (value: string) =>
                       {feature.cta.label}
                     </Button>
 
-                    {/* Mobile-only: mockup rendered below each open dropdown. */}
-                    {feature.mockup.kind === "ring" ? (
-                      <div class="feature-mock feature-mock-mobile" data-accent={feature.accent} aria-hidden="true">
-                        <div class="feature-ring-wrap">
-                          <span class="feature-ring feature-ring-outer" />
-                          <span class="feature-ring feature-ring-mid" />
-                          <span class="feature-ring feature-ring-dashed" />
-                          <div class="feature-ring-center">
-                            <p class="text-caption feature-ring-eyebrow">{feature.mockup.eyebrow}</p>
-                            <p class="feature-ring-value tabular-nums">{feature.mockup.value}</p>
-                            <p class="text-caption feature-ring-label">{feature.mockup.label}</p>
+                    {/* Mobile-only: mockup rendered below each open dropdown —
+                        a scaled recreation of this project's real hero banner. */}
+                    <div class="feature-mock-mobile" aria-hidden="true">
+                      <FeatureHeroMock
+                        variant="stack"
+                        kicker={feature.mockup.kicker}
+                        title={feature.mockup.title}
+                        intro={feature.mockup.intro}
+                      >
+                        {feature.mockup.figure.kind === "ring" ? (
+                          <div class="feature-ring-wrap">
+                            <span class="feature-ring feature-ring-outer" />
+                            <span class="feature-ring feature-ring-mid" />
+                            <span class="feature-ring feature-ring-dashed" />
+                            <div class="feature-ring-center">
+                              <p class="text-caption feature-ring-eyebrow">{feature.mockup.figure.eyebrow}</p>
+                              <p class="feature-ring-value tabular-nums">{feature.mockup.figure.value}</p>
+                              <p class="text-caption feature-ring-label">{feature.mockup.figure.label}</p>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div class="feature-frame-wrap feature-frame-wrap-mobile" aria-hidden="true">
-                        <DeviceFrame
-                          type="desktop"
-                          src={frameImages[feature.mockup.project]}
-                          alt=""
-                          class="feature-frame"
-                        />
-                      </div>
-                    )}
+                        ) : (
+                          <DeviceFrame
+                            type="desktop"
+                            src={frameImages[feature.mockup.figure.project]}
+                            alt=""
+                            class="feature-frame"
+                          />
+                        )}
+                      </FeatureHeroMock>
+                    </div>
                   </div>
                 </div>
               </li>
@@ -126,45 +135,45 @@ const slugify = (value: string) =>
         }
       </ul>
 
-      {/* Desktop-only: single stage, crossfades to the open item's mockup. */}
+      {/* Desktop-only: single stage, crossfades to the open item's mockup —
+          each a scaled recreation of that project's real hero banner. */}
       <div class="feature-stage" aria-hidden="true">
         {
-          workFeatures.map((feature, index) =>
-            feature.mockup.kind === "ring" ? (
-              <div
-                class="feature-mock feature-mock-desktop"
-                data-stage-mock
-                data-index={index}
-                data-accent={feature.accent}
-                data-active={index === 0 ? "true" : "false"}
+          workFeatures.map((feature, index) => (
+            <div
+              class="feature-mock-desktop"
+              data-stage-mock
+              data-index={index}
+              data-active={index === 0 ? "true" : "false"}
+            >
+              <FeatureHeroMock
+                variant="split"
+                kicker={feature.mockup.kicker}
+                title={feature.mockup.title}
+                intro={feature.mockup.intro}
               >
-                <div class="feature-ring-wrap">
-                  <span class="feature-ring feature-ring-outer" />
-                  <span class="feature-ring feature-ring-mid" />
-                  <span class="feature-ring feature-ring-dashed" />
-                  <div class="feature-ring-center">
-                    <p class="text-caption feature-ring-eyebrow">{feature.mockup.eyebrow}</p>
-                    <p class="feature-ring-value tabular-nums">{feature.mockup.value}</p>
-                    <p class="text-caption feature-ring-label">{feature.mockup.label}</p>
+                {feature.mockup.figure.kind === "ring" ? (
+                  <div class="feature-ring-wrap">
+                    <span class="feature-ring feature-ring-outer" />
+                    <span class="feature-ring feature-ring-mid" />
+                    <span class="feature-ring feature-ring-dashed" />
+                    <div class="feature-ring-center">
+                      <p class="text-caption feature-ring-eyebrow">{feature.mockup.figure.eyebrow}</p>
+                      <p class="feature-ring-value tabular-nums">{feature.mockup.figure.value}</p>
+                      <p class="text-caption feature-ring-label">{feature.mockup.figure.label}</p>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ) : (
-              <div
-                class="feature-frame-wrap feature-mock-desktop"
-                data-stage-mock
-                data-index={index}
-                data-active={index === 0 ? "true" : "false"}
-              >
-                <DeviceFrame
-                  type="desktop"
-                  src={frameImages[feature.mockup.project]}
-                  alt=""
-                  class="feature-frame"
-                />
-              </div>
-            )
-          )
+                ) : (
+                  <DeviceFrame
+                    type="desktop"
+                    src={frameImages[feature.mockup.figure.project]}
+                    alt=""
+                    class="feature-frame"
+                  />
+                )}
+              </FeatureHeroMock>
+            </div>
+          ))
         }
       </div>
     </div>
@@ -294,43 +303,17 @@ const slugify = (value: string) =>
     margin-bottom: var(--space-6);
   }
 
-  /* Mockup: a scaled-down copy of that project's own real hero "stat ring"
-     (ring kind — Gentem/Taiwan NSC, which have no UI screenshot), tinted
-     per accent, or the same DeviceFrame chrome used on its real hero
-     holding its real screenshot (frame kind). */
+  /* Mockup: FeatureHeroMock.astro recreates that project's real hero
+     banner card; these rules style the figure slotted into it — a
+     scaled-down copy of .cs-hero-figure/.cs-hero-ring from the case-study
+     pages (Gentem/Taiwan NSC, which have no UI screenshot), in the exact
+     colors those pages use (ink/ink-soft/olive, line/bone borders — no
+     accent tinting, since the card now sits on the same paper background
+     the real hero does), or the project's own DeviceFrame (frame kind). */
 
-  .feature-mock {
-    --mock-fg: var(--color-ink);
-    aspect-ratio: 4 / 3;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: var(--color-paper-2);
-    display: grid;
-    place-items: center;
-  }
-
-  .feature-mock[data-accent="ink"] {
-    background: var(--color-ink);
-    --mock-fg: var(--color-paper);
-  }
-
-  .feature-mock[data-accent="olive"] {
-    background: var(--color-olive);
-    --mock-fg: var(--color-paper);
-  }
-
-  .feature-mock[data-accent="bone"] {
-    background: var(--color-bone);
-    --mock-fg: var(--color-ink);
-  }
-
-  /* Ring mockup — scaled-down copy of .cs-hero-figure/.cs-hero-ring from
-     the case-study pages (src/pages/work/gentem-digital-growth-strategy.astro,
-     taiwan-nsc-organic-growth-strategy.astro), recolored via --mock-fg so
-     it reads on any of the three accent backgrounds above. */
   .feature-ring-wrap {
     position: relative;
-    width: min(220px, 60%);
+    width: min(180px, 60%);
     aspect-ratio: 1;
     display: grid;
     place-items: center;
@@ -340,18 +323,18 @@ const slugify = (value: string) =>
     position: absolute;
     inset: 0;
     border-radius: var(--radius-pill);
-    border: 1px solid color-mix(in srgb, var(--mock-fg) 30%, transparent);
+    border: 1px solid var(--color-line);
   }
 
   .feature-ring-mid {
     inset: 10%;
-    border-color: color-mix(in srgb, var(--mock-fg) 45%, transparent);
+    border-color: var(--color-bone);
   }
 
   .feature-ring-dashed {
     inset: -8%;
     border-style: dashed;
-    border-color: color-mix(in srgb, var(--mock-fg) 30%, transparent);
+    border-color: var(--color-line);
     animation: feature-ring-spin 70s linear infinite;
   }
 
@@ -367,44 +350,38 @@ const slugify = (value: string) =>
   }
 
   .feature-ring-eyebrow {
-    color: color-mix(in srgb, var(--mock-fg) 70%, transparent);
+    color: var(--color-ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
 
   .feature-ring-value {
     margin-top: var(--space-2);
-    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-size: clamp(1.25rem, 4vw, 1.875rem);
     font-weight: 300;
     line-height: 1;
     letter-spacing: -0.03em;
-    color: var(--mock-fg);
+    color: var(--color-ink);
   }
 
   .feature-ring-label {
     margin-top: var(--space-2);
-    color: color-mix(in srgb, var(--mock-fg) 70%, transparent);
-    max-width: 20ch;
+    color: var(--color-olive);
+    max-width: 18ch;
     margin-inline: auto;
   }
 
   /* Frame mockup — the project's own real DeviceFrame hero, not re-tinted
      (the chrome and screenshot carry their own colors already). DeviceFrame
      is a child component, so its root element needs :global() to be
-     reachable from this component's scoped styles. */
-  .feature-frame-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-  }
-
-  .feature-frame-wrap :global(.feature-frame) {
+     reachable from this component's scoped styles, even slotted through
+     FeatureHeroMock. */
+  :global(.feature-frame) {
     width: 100%;
   }
 
   /* Mobile mockup: inline below each open item's CTA, hidden on desktop. */
-  .feature-mock-mobile,
-  .feature-frame-wrap-mobile {
+  .feature-mock-mobile {
     margin-top: var(--space-2);
   }
 
@@ -436,7 +413,6 @@ const slugify = (value: string) =>
     }
 
     .feature-mock-desktop {
-      aspect-ratio: auto;
       position: absolute;
       inset: 0;
       opacity: 0;

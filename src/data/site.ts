@@ -50,27 +50,33 @@ export const highlights = [
 ] as const;
 
 // Work features — accordion/dropdown section. Each item links to its real
-// case study page. `mockup` recreates that project's own real page header,
-// never a fabricated visual:
-// - `kind: "ring"` — a scaled-down copy of that case study's hero "stat
-//   ring" centerpiece (Gentem / Taiwan NSC have no UI screenshot; their
-//   real hero IS this ring, so the mockup reuses its exact CSS, not a new
-//   generic skeleton), value/label pulled straight from that page's data.
-// - `kind: "frame"` — the same `DeviceFrame` chrome (browser-bar hairline)
-//   used on that project's own hero, holding its real screenshot, resolved
-//   in WorkFeatures.astro by `project` slug.
+// case study page, and `mockup` recreates that project's own real hero
+// banner — kicker/title/intro copied verbatim from that page's own hero,
+// plus the same visual centerpiece it uses there. Never a fabricated
+// visual or invented copy:
+// - `figure.kind: "ring"` — a scaled-down copy of that case study's hero
+//   "stat ring" (Gentem / Taiwan NSC have no UI screenshot; their real
+//   hero IS this ring), value/label pulled straight from that page's data.
+// - `figure.kind: "frame"` — the same `DeviceFrame` chrome used on that
+//   project's own hero, holding its real screenshot, resolved in
+//   WorkFeatures.astro by `project` slug.
 export const workFeatures = [
   {
     title: "Performance Marketing & Growth",
     description:
       "Acquisition strategy, funnel optimization, and measurable business outcomes.",
     cta: { label: "View project", href: "/work/gentem-digital-growth-strategy" },
-    accent: "ink",
     mockup: {
-      kind: "ring",
-      eyebrow: "January / performance",
-      value: "112%",
-      label: "Total Contract target achieved",
+      kicker: "Project 01 / Growth Strategy",
+      title: "Turning Funnel Data into Acquisition Growth",
+      intro:
+        "I managed full-funnel acquisition performance across Google Ads and Meta Ads, focusing on conversion bottlenecks, Total Contract targets, and customer acquisition cost.",
+      figure: {
+        kind: "ring",
+        eyebrow: "January / performance",
+        value: "112%",
+        label: "Total Contract target achieved",
+      },
     },
   },
   {
@@ -78,12 +84,17 @@ export const workFeatures = [
     description:
       "Audience insights, content strategy, and organic channel development.",
     cta: { label: "View project", href: "/work/taiwan-nsc-organic-growth-strategy" },
-    accent: "olive",
     mockup: {
-      kind: "ring",
-      eyebrow: "Audience / growth",
-      value: "+11.8%",
-      label: "Follower growth, net",
+      kicker: "Project 02 / Organic Growth",
+      title: "Organic Growth Strategy",
+      intro:
+        "Built an educational content strategy to help prospective students access clear, reliable information about studying in Taiwan, while strengthening brand visibility and audience engagement.",
+      figure: {
+        kind: "ring",
+        eyebrow: "Audience / growth",
+        value: "+11.8%",
+        label: "Follower growth, net",
+      },
     },
   },
   {
@@ -91,16 +102,26 @@ export const workFeatures = [
     description:
       "Landing page design, messaging hierarchy, and user journey planning.",
     cta: { label: "View project", href: "/work/landing-page-design" },
-    accent: "bone",
-    mockup: { kind: "frame", project: "landing-page-design" },
+    mockup: {
+      kicker: "Project 03 / Landing page & website design",
+      title: "Landing page design",
+      intro:
+        "I design and build the pages that sit between an ad and a decision: clear enough to explain the offer, structured enough to earn trust, and built so the next step is never in question.",
+      figure: { kind: "frame", project: "landing-page-design" },
+    },
   },
   {
     title: "Product & Systems Development",
     description:
       "Business process improvement, CRM architecture, and workflow automation.",
     cta: { label: "View project", href: "/work/product-systems-design" },
-    accent: "ink",
-    mockup: { kind: "frame", project: "product-systems-design" },
+    mockup: {
+      kicker: "Project 04 / Product & business systems",
+      title: "Make operations work as one.",
+      intro:
+        "From manual operations to a connected product system: turning fragmented booking, membership, payments, and customer management into a single structured operating model.",
+      figure: { kind: "frame", project: "product-systems-design" },
+    },
   },
 ] as const;
 
