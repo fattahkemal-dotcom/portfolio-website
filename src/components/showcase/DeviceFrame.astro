@@ -1,0 +1,142 @@
+---
+// Empty device-mockup frame for the "Landing page & website design" showcase
+// (src/pages/work/landing-page-design.astro). Same precedent as the Stack
+// logo chip (DESIGN-SYSTEM.md §7.8/§12): a 1px hairline frames an empty
+// slot, not a decorated image — no border/shadow/tilt on the eventual
+// screenshot itself (§12), only on this chrome, which is UI, not a photo.
+//
+// Pass `src` + `alt` once a real screenshot exists; until then it renders
+// a labelled placeholder so the frame can be reviewed/approved before any
+// image is in hand.
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+  type: "desktop" | "mobile";
+  src?: ImageMetadata;
+  alt?: string;
+  label?: string;
+  class?: string;
+  /** CSS aspect-ratio override — defaults to a generic 8/5 (desktop) or
+   * 9/19.5 (mobile) frame shape. Pass the real screenshot's own ratio
+   * when one is supplied, so `object-fit: cover` doesn't crop content
+   * that was never meant to be cropped. */
+  aspect?: string;
+}
+
+const {
+  type,
+  src,
+  alt = "",
+  label = type === "desktop" ? "Desktop screenshot" : "Mobile screenshot",
+  class: className = "",
+  aspect,
+} = Astro.props;
+---
+
+<div class:list={["frame", `frame-${type}`, className]} style={aspect ? `aspect-ratio:${aspect}` : undefined}>
+  <div class:list={["frame-chrome", `frame-chrome-${type}`]} aria-hidden="true">
+    {
+      type === "desktop" ? (
+        <>
+          <span class="frame-dot"></span>
+          <span class="frame-dot"></span>
+          <span class="frame-dot"></span>
+        </>
+      ) : (
+        <span class="frame-notch"></span>
+      )
+    }
+  </div>
+  <div class="frame-screen">
+    {
+      src ? (
+        <Image class="frame-img" src={src} alt={alt} />
+      ) : (
+        <div class="frame-placeholder" aria-hidden="true">
+          <span class="text-caption frame-placeholder-label">{label}</span>
+        </div>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  .frame {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-line);
+    background: var(--color-paper);
+    overflow: hidden;
+  }
+
+  .frame-desktop {
+    border-radius: var(--radius-sm);
+    aspect-ratio: 8 / 5;
+  }
+
+  .frame-mobile {
+    border-radius: var(--radius-lg);
+    aspect-ratio: 9 / 19.5;
+  }
+
+  .frame-chrome {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .frame-chrome-desktop {
+    height: 28px;
+    padding-inline: var(--space-3);
+  }
+
+  .frame-chrome-mobile {
+    height: 20px;
+    justify-content: center;
+  }
+
+  .frame-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-ink-soft);
+  }
+
+  .frame-notch {
+    width: 36px;
+    height: 5px;
+    border-radius: var(--radius-pill);
+    background: var(--color-line);
+  }
+
+  .frame-screen {
+    position: relative;
+    flex: 1;
+  }
+
+  .frame-placeholder {
+    position: absolute;
+    inset: var(--space-3);
+    border: 1px dashed var(--color-line);
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: var(--space-3);
+  }
+
+  .frame-placeholder-label {
+    color: var(--color-ink-soft);
+  }
+
+  .frame-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+</style>

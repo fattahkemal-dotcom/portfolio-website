@@ -1,0 +1,236 @@
+---
+// About & Capabilities — home `#about`. New section, translated from the
+// client's reference `portfolio_homepage_premium.html` ("What I bring to
+// the table") into this site's existing accordion pattern (same
+// one-open-at-a-time interaction as WorkFeatures.astro) and token set —
+// no new colors, no serif/mono fonts, no eyebrow-above-heading.
+import Section from "../layout/Section.astro";
+import Container from "../layout/Container.astro";
+import Tag from "../ui/Tag.astro";
+import { capabilities } from "../../data/site";
+---
+
+<Section id="about" background="paper-2">
+  <Container>
+    <div class="cap-header">
+      <h2 class="text-h2">What I bring to the table</h2>
+      <p class="text-small cap-note">
+        Not a longer list of tools, but three connected ways of creating
+        value: from customer acquisition to digital experiences and the
+        systems behind them.
+      </p>
+    </div>
+    <div class="cap-header-rule hairline-bottom" aria-hidden="true"></div>
+
+    <ul class="cap-list">
+      {
+        capabilities.map((pillar, index) => {
+          const isOpen = index === 0;
+          const panelId = `cap-panel-${pillar.step}`;
+          const triggerId = `cap-trigger-${pillar.step}`;
+          return (
+            <li class="cap-item" data-cap-item data-open={isOpen ? "true" : "false"}>
+              <h3 class="cap-heading">
+                <button
+                  type="button"
+                  id={triggerId}
+                  class="cap-trigger"
+                  aria-expanded={isOpen ? "true" : "false"}
+                  aria-controls={panelId}
+                  data-cap-trigger
+                >
+                  <span class="text-caption cap-index tabular-nums">{pillar.step}</span>
+                  <span class="text-h3 cap-title">{pillar.title}</span>
+                  <span class="cap-sign" aria-hidden="true">+</span>
+                </button>
+              </h3>
+
+              <div id={panelId} class="cap-panel" role="region" aria-labelledby={triggerId}>
+                <div class="cap-panel-inner">
+                  <p class="text-small cap-description">{pillar.description}</p>
+
+                  {pillar.stats.length > 0 && (
+                    <div class="cap-stats">
+                      {pillar.stats.map((stat) => (
+                        <div class="cap-stat">
+                          <p class="cap-stat-value tabular-nums">{stat.value}</p>
+                          <p class="text-caption cap-stat-label">{stat.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div class="cap-tags">
+                    {pillar.tags.map((tag) => (
+                      <Tag>{tag}</Tag>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </Container>
+</Section>
+
+<style>
+  .cap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+  }
+
+  .cap-note {
+    max-width: 360px;
+    color: var(--color-olive);
+  }
+
+  .cap-header-rule {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-8);
+  }
+
+  .cap-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cap-item {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .cap-item:last-child {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .cap-heading {
+    font: inherit;
+  }
+
+  .cap-trigger {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 40px 1fr 24px;
+    align-items: center;
+    gap: var(--space-4);
+    padding-block: var(--space-5);
+    text-align: left;
+    color: var(--color-ink);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .cap-trigger:hover {
+    color: var(--color-olive);
+  }
+
+  .cap-index {
+    color: var(--color-ink-soft);
+  }
+
+  .cap-item[data-open="true"] .cap-index {
+    color: var(--color-ink);
+  }
+
+  .cap-title {
+    font-weight: 450;
+  }
+
+  .cap-sign {
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--color-ink-soft);
+    transition: transform var(--dur-base) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+
+  .cap-item[data-open="true"] .cap-sign {
+    color: var(--color-ink);
+    transform: rotate(45deg);
+  }
+
+  .cap-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-base) var(--ease-out);
+  }
+
+  .cap-item[data-open="true"] .cap-panel {
+    grid-template-rows: 1fr;
+  }
+
+  .cap-panel-inner {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .cap-description {
+    max-width: 62ch;
+    color: var(--color-olive);
+    padding-bottom: var(--space-5);
+  }
+
+  .cap-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-7);
+    padding-bottom: var(--space-5);
+  }
+
+  .cap-stat-value {
+    font-size: var(--text-metric);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-ink);
+  }
+
+  .cap-stat-label {
+    margin-top: var(--space-2);
+    color: var(--color-ink-soft);
+    max-width: 22ch;
+  }
+
+  .cap-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding-bottom: var(--space-6);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cap-panel,
+    .cap-sign {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  // Accordion: exactly one item open at a time (default: the first) — same
+  // interaction as WorkFeatures.astro's "Selected work" list.
+  document.querySelectorAll<HTMLElement>(".cap-list").forEach((list) => {
+    const items = Array.from(list.querySelectorAll<HTMLElement>("[data-cap-item]"));
+
+    list.addEventListener("click", (event) => {
+      const trigger = (event.target as HTMLElement).closest<HTMLButtonElement>(
+        "[data-cap-trigger]"
+      );
+      if (!trigger) return;
+
+      const item = trigger.closest<HTMLElement>("[data-cap-item]");
+      if (!item || item.dataset.open === "true") return;
+
+      items.forEach((candidate) => {
+        const open = candidate === item;
+        candidate.dataset.open = open ? "true" : "false";
+        candidate
+          .querySelector("[data-cap-trigger]")
+          ?.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    });
+  });
+</script>

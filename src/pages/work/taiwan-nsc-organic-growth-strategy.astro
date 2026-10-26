@@ -1,0 +1,859 @@
+---
+// Case study page — "From Information Gaps to Organic Growth" (Taiwan New
+// South Center Indonesia). Same approach as the Gentem case study: a
+// standalone .astro page built from the client's brief rather than the
+// (not-yet-built) MDX content-collection pipeline in PRD.md §6.
+//
+// 2026-10-25 revision: visual upgrade translating a second client-supplied
+// editorial reference (same family as the Gentem one — bold display type,
+// a hero "signal" ring, tabbed interactive data explorers, a tinted proof
+// band) into this site's strict token set. Two new reusable components:
+// OrganicSignalExplorer (tab-switches between heterogeneous chart types —
+// two line series with a disclosed-data gap, one bar series — pre-rendered
+// server-side per view rather than redrawn in JS, so it degrades cleanly
+// with no JS) and PillarExplorer (tab list + a swapping typographic
+// "module" panel for the three content pillars).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Section from "../../components/layout/Section.astro";
+import Container from "../../components/layout/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import OrganicSignalExplorer from "../../components/case-study/OrganicSignalExplorer.astro";
+import PillarExplorer from "../../components/case-study/PillarExplorer.astro";
+import { caseStudy } from "../../data/case-studies/taiwan-nsc-organic-growth";
+
+const { header, problem, strategy, results, impact, dataNote } = caseStudy;
+
+const reachFull = (v: number) => v.toLocaleString("en-US");
+const pctFormat = (v: number) => `${v.toFixed(2)}%`;
+const followersFormat = (v: number) => `+${v}`;
+
+const signalSeries = [
+  {
+    id: "reach",
+    kind: "line" as const,
+    label: "Reach",
+    title: "Reach, July–September.",
+    months: [...results.months],
+    values: [...results.reach.values],
+    yMin: Math.min(...results.reach.yTicks),
+    yMax: results.reach.yMax,
+    yTicks: [...results.reach.yTicks],
+    format: reachFull,
+    readoutLabel: "September reach",
+    readoutValue: reachFull(results.reach.values[2] as number),
+    readoutNote: results.reach.caption,
+  },
+  {
+    id: "engagement",
+    kind: "line" as const,
+    label: "Engagement",
+    title: "Engagement rate, July–September.",
+    months: [...results.months],
+    values: [...results.engagement.values],
+    yMin: Math.min(...results.engagement.yTicks),
+    yMax: results.engagement.yMax,
+    yTicks: [...results.engagement.yTicks],
+    format: pctFormat,
+    readoutLabel: "September engagement rate",
+    readoutValue: pctFormat(results.engagement.values[2] as number),
+    readoutNote: results.engagement.caption,
+  },
+  {
+    id: "new-followers",
+    kind: "bar" as const,
+    label: "New followers",
+    title: "New followers gained, by month.",
+    months: [...results.months],
+    values: [...results.newFollowers.values],
+    format: followersFormat,
+    readoutLabel: "Gross followers gained, 3 months",
+    readoutValue: header.stats[3].value,
+    readoutNote: results.newFollowers.caption,
+  },
+];
+---
+
+<BaseLayout title={caseStudy.meta.title} description={caseStudy.meta.description}>
+  <Section id="case-study-header" background="paper" class="cs-header">
+    <Container>
+      <div class="cs-hero-grid">
+        <div class="cs-hero-copy">
+          <p class="text-caption cs-kicker">{header.kicker}</p>
+          <h1 class="text-display cs-title">{header.title}</h1>
+          <p class="text-lead cs-meta-line">
+            {header.client} · {header.role} · {header.duration}
+          </p>
+          <p class="text-body cs-intro">{header.intro}</p>
+        </div>
+
+        <div class="cs-hero-figure" aria-hidden="true">
+          <span class="cs-hero-ring cs-hero-ring-outer"></span>
+          <span class="cs-hero-ring cs-hero-ring-mid"></span>
+          <span class="cs-hero-ring cs-hero-ring-dashed"></span>
+          <div class="cs-hero-figure-center">
+            <p class="text-caption cs-hero-figure-label">Audience / growth</p>
+            <p class="text-display-xl cs-hero-figure-value tabular-nums reveal" data-count={header.stats[0].value}>
+              {header.stats[0].value}
+            </p>
+            <p class="text-caption cs-hero-figure-sub">{header.stats[0].label}</p>
+          </div>
+        </div>
+      </div>
+    </Container>
+  </Section>
+
+  <Section id="proof" background="bone" class="cs-proof">
+    <Container>
+      <div class="cs-proof-header">
+        <p class="text-caption">The signals / at a glance</p>
+        <p class="text-caption">From content output to audience response</p>
+      </div>
+      <div class="cs-proof-grid">
+        {
+          header.stats.map((stat) => (
+            <div class="cs-proof-item">
+              <p class="text-metric cs-proof-figure tabular-nums" data-count={stat.value}>
+                {stat.value}
+              </p>
+              <p class="text-caption cs-proof-label">{stat.label}</p>
+            </div>
+          ))
+        }
+      </div>
+    </Container>
+  </Section>
+
+  <Section id="problem" background="paper">
+    <Container>
+      <div class="cs-section-head hairline-top reveal">
+        <h2 class="text-display cs-brief-display">The gap wasn't<br />just visibility.</h2>
+        <p class="text-caption cs-section-tag">01 / The brief</p>
+      </div>
+
+      <div class="cs-gap-grid reveal">
+        <article class="cs-gap-panel cs-gap-panel-light">
+          <div class="cs-gap-panel-top text-caption">
+            <span>01 / Audience gap</span>
+            <span>Information access</span>
+          </div>
+          <h3 class="text-h2 cs-gap-panel-title">{problem.audienceGap.title}</h3>
+          <p class="text-small cs-gap-panel-intro">{problem.audienceGap.intro}</p>
+          <ul class="cs-gap-list">
+            {problem.audienceGap.items.map((item) => <li>{item}</li>)}
+          </ul>
+        </article>
+
+        <article class="cs-gap-panel cs-gap-panel-dark">
+          <div class="cs-gap-panel-top text-caption">
+            <span>02 / Brand gap</span>
+            <span>Organic foundation</span>
+          </div>
+          <h3 class="text-h2 cs-gap-panel-title">{problem.companyGap.title}</h3>
+          <p class="text-small cs-gap-panel-intro">{problem.companyGap.intro}</p>
+          <ul class="cs-gap-list">
+            {problem.companyGap.items.map((item) => <li>{item}</li>)}
+          </ul>
+        </article>
+      </div>
+
+      <div class="cs-opportunity reveal">
+        <p class="text-caption cs-opportunity-label">{problem.opportunity.label}</p>
+        <p class="text-lead cs-opportunity-text">{problem.opportunity.text}</p>
+      </div>
+    </Container>
+  </Section>
+
+  <Section id="strategy" background="paper-2">
+    <Container>
+      <div class="cs-section-head hairline-top reveal">
+        <h2 class="text-display">{strategy.heading}</h2>
+        <p class="text-caption cs-section-tag">02 / The approach</p>
+      </div>
+      <p class="text-body cs-intro reveal">{strategy.intro}</p>
+
+      <div class="cs-pillar-wrap reveal">
+        <PillarExplorer pillars={[...strategy.steps]} />
+      </div>
+
+      <p class="text-lead cs-principle reveal">{strategy.principle}</p>
+    </Container>
+  </Section>
+
+  <Section id="results" background="paper">
+    <Container>
+      <div class="cs-section-head hairline-top reveal">
+        <h2 class="text-display">{results.heading}</h2>
+        <p class="text-caption cs-section-tag">03 / The evidence</p>
+      </div>
+      <p class="text-small cs-section-note reveal">{results.subheading}</p>
+
+      <div class="cs-explorer-wrap reveal">
+        <OrganicSignalExplorer series={signalSeries} defaultSeriesId="reach" />
+      </div>
+
+      <div class="cs-results-proof reveal">
+        {
+          results.callouts.map((c) => (
+            <div class="cs-results-proof-item">
+              <p class="text-metric cs-results-proof-figure tabular-nums" data-count={c.value}>
+                {c.value}
+              </p>
+              <p class="text-caption cs-results-proof-label">{c.label}</p>
+              <p class="text-small cs-results-proof-note">{c.note}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <p class="text-small cs-takeaway reveal">
+        <strong>Key takeaway.</strong> {results.takeaway}
+      </p>
+      <p class="text-caption cs-data-note reveal">{dataNote}</p>
+    </Container>
+  </Section>
+
+  <Section id="impact" background="paper-2">
+    <Container>
+      <div class="cs-section-head hairline-top reveal">
+        <h2 class="text-display">{impact.heading}</h2>
+        <p class="text-caption cs-section-tag">04 / What changed</p>
+      </div>
+
+      <div class="cs-impact-rows reveal">
+        {
+          impact.items.map((item, i) => (
+            <div class="cs-impact-row">
+              <span class="text-caption cs-impact-ordinal tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+              <div>
+                <h3 class="text-h3 cs-impact-title">{item.title}</h3>
+                <p class="text-small cs-impact-note">{item.note}</p>
+                {"caveat" in item && item.caveat && <p class="text-caption cs-impact-caveat">{item.caveat}</p>}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="cs-highlight reveal">
+        <div class="cs-highlight-art" aria-hidden="true">
+          <span class="cs-highlight-ring cs-highlight-ring-outer"></span>
+          <span class="cs-highlight-ring cs-highlight-ring-dashed"></span>
+          <p class="cs-highlight-value tabular-nums" data-count="724">724</p>
+          <p class="text-caption cs-highlight-sub">Net followers added</p>
+        </div>
+        <div class="cs-highlight-copy">
+          <p class="text-caption cs-highlight-kicker">The larger idea / what scales</p>
+          <p class="text-h2 cs-highlight-headline">From another brand in the feed to an information source worth following.</p>
+          <p class="text-small cs-highlight-text">
+            The observed growth is consistent with positive organic momentum, but without a comparison or attribution
+            study it cannot prove the content strategy alone caused every change in reach, trust, engagement, or
+            inquiries.
+          </p>
+        </div>
+      </div>
+    </Container>
+  </Section>
+
+  <Section id="closing" background="ink">
+    <Container>
+      <div class="cs-section-head reveal">
+        <h2 class="text-display cs-closing-heading">What the signals tell us</h2>
+        <p class="text-caption cs-section-tag cs-on-ink-soft">05 / Closing</p>
+      </div>
+      <p class="text-lead cs-closing-lead reveal">
+        Paid acquisition or organic discovery, the principle stays the same: understand the audience, make
+        intentional decisions, and look closely at the evidence.
+      </p>
+
+      <div class="cs-closing-cta reveal">
+        <Button href="/#contact" variant="primary-ink">Book a call</Button>
+        <Button href="/#work" variant="text-ink">Back to selected work</Button>
+      </div>
+    </Container>
+  </Section>
+
+  <noscript>
+    <style>
+      .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    </style>
+  </noscript>
+</BaseLayout>
+
+<style>
+  .cs-kicker {
+    color: var(--color-ink-soft);
+    margin-bottom: var(--space-4);
+  }
+
+  .cs-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+    align-items: center;
+    overflow: clip;
+  }
+
+  .cs-hero-copy {
+    min-width: 0;
+  }
+
+  .cs-title {
+    max-width: 16ch;
+  }
+
+  .cs-meta-line {
+    margin-top: var(--space-4);
+    color: var(--color-olive);
+  }
+
+  .cs-intro {
+    margin-top: var(--space-5);
+    max-width: 62ch;
+    color: var(--color-olive);
+  }
+
+  /* Hero centerpiece — same monochrome ring pattern as the Gentem page. */
+  .cs-hero-figure {
+    position: relative;
+    width: min(320px, 72vw);
+    aspect-ratio: 1;
+    margin-inline: auto;
+    display: grid;
+    place-items: center;
+  }
+
+  .cs-hero-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-line);
+  }
+
+  .cs-hero-ring-mid {
+    inset: 10%;
+    border-color: var(--color-bone);
+  }
+
+  .cs-hero-ring-dashed {
+    inset: -8%;
+    border-style: dashed;
+    border-color: var(--color-line);
+    animation: cs-spin 70s linear infinite;
+  }
+
+  @keyframes cs-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .cs-hero-figure-center {
+    text-align: center;
+    padding: var(--space-4);
+  }
+
+  .cs-hero-figure-label {
+    color: var(--color-ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .cs-hero-figure-value {
+    margin-top: var(--space-2);
+    font-size: clamp(2.75rem, 6vw + 1rem, 5.5rem);
+    color: var(--color-ink);
+  }
+
+  .cs-hero-figure-sub {
+    margin-top: var(--space-2);
+    color: var(--color-olive);
+    max-width: 18ch;
+    margin-inline: auto;
+  }
+
+  /* Proof band */
+  .cs-proof-header {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    color: var(--color-olive);
+    padding-bottom: var(--space-5);
+  }
+
+  .cs-proof-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cs-proof-item {
+    border-left: 1px solid var(--color-ink-soft);
+    padding: var(--space-4) var(--space-5) 0;
+  }
+
+  .cs-proof-item:first-child {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  @media (max-width: 767px) {
+    .cs-proof-item:nth-child(odd) {
+      border-left: 0;
+      padding-left: 0;
+    }
+  }
+
+  .cs-proof-figure {
+    font-size: clamp(1.75rem, 3.5vw + 0.5rem, 3rem);
+    white-space: nowrap;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .cs-proof-item:hover .cs-proof-figure {
+    color: var(--color-olive);
+  }
+
+  .cs-proof-label {
+    margin-top: var(--space-3);
+    color: var(--color-olive);
+    max-width: 24ch;
+  }
+
+  /* Shared section-head: heading + side note to the right. */
+  .cs-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    padding-top: var(--space-5);
+    margin-bottom: var(--space-7);
+  }
+
+  .cs-section-tag {
+    color: var(--color-ink-soft);
+    white-space: nowrap;
+  }
+
+  .cs-on-ink-soft {
+    color: var(--color-ink-soft) !important;
+  }
+
+  .cs-brief-display {
+    max-width: 14ch;
+  }
+
+  /* Problem — gap panels */
+  .cs-gap-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+    background: var(--color-line);
+  }
+
+  .cs-gap-panel {
+    padding: clamp(var(--space-6), 4vw, var(--space-8));
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-6);
+  }
+
+  .cs-gap-panel-light {
+    background: var(--color-paper-2);
+    color: var(--color-ink);
+  }
+
+  .cs-gap-panel-dark {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .cs-gap-panel-top {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    color: var(--color-ink-soft);
+  }
+
+  .cs-gap-panel-dark .cs-gap-panel-top {
+    color: var(--color-ink-soft);
+  }
+
+  .cs-gap-panel-title {
+    max-width: 14ch;
+  }
+
+  .cs-gap-panel-dark .cs-gap-panel-title {
+    color: var(--color-paper);
+  }
+
+  .cs-gap-panel-intro {
+    color: var(--color-olive);
+  }
+
+  .cs-gap-panel-dark .cs-gap-panel-intro {
+    color: var(--color-ink-soft);
+  }
+
+  .cs-gap-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-line);
+    font-size: var(--text-small);
+  }
+
+  .cs-gap-panel-dark .cs-gap-list {
+    border-top-color: var(--color-line-dark);
+    color: var(--color-bone);
+  }
+
+  .cs-gap-list li::before {
+    content: "↗ ";
+    color: var(--color-olive);
+  }
+
+  .cs-gap-panel-dark .cs-gap-list li::before {
+    color: var(--color-bone);
+  }
+
+  .cs-opportunity {
+    margin-top: var(--space-6);
+    border: 1px solid var(--color-line);
+    padding: clamp(var(--space-6), 4vw, var(--space-7));
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    align-items: center;
+  }
+
+  .cs-opportunity-label {
+    color: var(--color-ink-soft);
+  }
+
+  .cs-opportunity-text {
+    max-width: 68ch;
+    color: var(--color-ink);
+  }
+
+  .cs-section-note {
+    color: var(--color-olive);
+    max-width: 320px;
+    margin-top: calc(var(--space-7) * -1 + var(--space-3));
+    margin-bottom: var(--space-6);
+  }
+
+  .cs-pillar-wrap {
+    margin-top: var(--space-8);
+  }
+
+  .cs-principle {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-line);
+    max-width: 56ch;
+    color: var(--color-ink);
+  }
+
+  .cs-explorer-wrap {
+    margin-top: var(--space-7);
+  }
+
+  .cs-results-proof {
+    margin-top: var(--space-9);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-line);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .cs-results-proof-item {
+    border-left: 1px solid var(--color-line);
+    padding-left: var(--space-5);
+  }
+
+  .cs-results-proof-item:first-child {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .cs-results-proof-figure {
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .cs-results-proof-item:hover .cs-results-proof-figure {
+    color: var(--color-olive);
+  }
+
+  .cs-results-proof-label {
+    margin-top: var(--space-3);
+    color: var(--color-ink-soft);
+  }
+
+  .cs-results-proof-note {
+    margin-top: var(--space-2);
+    color: var(--color-olive);
+    max-width: 30ch;
+  }
+
+  .cs-takeaway {
+    margin-top: var(--space-8);
+    color: var(--color-ink);
+    max-width: 68ch;
+  }
+
+  .cs-data-note {
+    margin-top: var(--space-5);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-line);
+    color: var(--color-ink-soft);
+    max-width: 68ch;
+  }
+
+  /* Impact */
+  .cs-impact-rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cs-impact-row {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: var(--space-4);
+    padding: var(--space-6) 0;
+    border-top: 1px solid var(--color-line);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .cs-impact-row:hover {
+    transform: translateX(var(--space-2));
+  }
+
+  .cs-impact-row:last-child {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .cs-impact-ordinal {
+    color: var(--color-ink-soft);
+  }
+
+  .cs-impact-note {
+    margin-top: var(--space-2);
+    color: var(--color-olive);
+    max-width: 56ch;
+  }
+
+  .cs-impact-caveat {
+    margin-top: var(--space-3);
+    color: var(--color-ink-soft);
+    max-width: 56ch;
+  }
+
+  .cs-highlight {
+    margin-top: clamp(var(--space-9), 8vw, 140px);
+    background: var(--color-paper);
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .cs-highlight-art {
+    position: relative;
+    background: var(--color-ink);
+    min-height: 320px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: var(--space-7);
+    overflow: clip;
+  }
+
+  .cs-highlight-ring {
+    position: absolute;
+    border: 1px solid var(--color-line-dark);
+    border-radius: var(--radius-pill);
+    width: 70%;
+    aspect-ratio: 1;
+  }
+
+  .cs-highlight-ring-dashed {
+    width: 94%;
+    border-style: dashed;
+    animation: cs-spin 55s linear infinite;
+  }
+
+  .cs-highlight-value {
+    /* Was --color-olive — low contrast against the ink background
+       (reported as hard to read). --color-paper matches how other large
+       numbers read on ink elsewhere on this page (e.g. AcquisitionFunnel's
+       dark-surface fix on the Gentem page uses the same pairing). */
+    position: relative;
+    font-size: clamp(5rem, 14vw, 9rem);
+    font-weight: 300;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: var(--color-paper);
+  }
+
+  .cs-highlight-sub {
+    position: relative;
+    margin-top: var(--space-4);
+    color: var(--color-ink-soft);
+  }
+
+  .cs-highlight-copy {
+    padding: clamp(var(--space-7), 5vw, var(--space-9));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-5);
+  }
+
+  .cs-highlight-kicker {
+    color: var(--color-olive);
+  }
+
+  .cs-highlight-headline {
+    max-width: 24ch;
+  }
+
+  .cs-highlight-text {
+    color: var(--color-ink-soft);
+    max-width: 52ch;
+  }
+
+  .cs-closing-heading {
+    color: var(--color-paper);
+    max-width: 20ch;
+  }
+
+  .cs-closing-lead {
+    margin-top: var(--space-6);
+    color: var(--color-ink-soft);
+    max-width: 56ch;
+  }
+
+  .cs-closing-cta {
+    margin-top: var(--space-9);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+    }
+
+    .cs-hero-ring-dashed,
+    .cs-highlight-ring-dashed {
+      animation: none;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .cs-proof-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .cs-results-proof {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .cs-hero-grid {
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.8fr);
+      gap: var(--space-9);
+    }
+
+    .cs-gap-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cs-opportunity {
+      grid-template-columns: 0.3fr 1fr;
+    }
+
+    .cs-highlight {
+      grid-template-columns: 0.75fr 1.15fr;
+    }
+  }
+</style>
+
+<script>
+  // Progressive-enhancement scroll reveal + count-up, same pattern as the
+  // Gentem page. Kept duplicated per-page (not extracted to a shared
+  // script/component yet) — see handover.md for the note on consolidating
+  // once a third case study needs it.
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const targets = document.querySelectorAll<HTMLElement>(".reveal");
+
+  if (reduced || !("IntersectionObserver" in window)) {
+    targets.forEach((el) => el.classList.add("is-visible"));
+  } else {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+    targets.forEach((el) => observer.observe(el));
+  }
+
+  function animateCount(el: Element) {
+    const raw = el.getAttribute("data-count") ?? el.textContent ?? "";
+    const match = raw.match(/[-−]?\d[\d,]*\.?\d*/);
+    if (!match) return;
+    const numStr = match[0];
+    const target = parseFloat(numStr.replace("−", "-").replace(/,/g, ""));
+    if (Number.isNaN(target)) return;
+    const decimals = (numStr.split(".")[1] || "").length;
+    const prefix = raw.slice(0, match.index);
+    const suffix = raw.slice((match.index ?? 0) + numStr.length);
+    const duration = 900;
+
+    const start = performance.now();
+    function frame(now: number) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const current = target * eased;
+      el.textContent = `${prefix}${current.toLocaleString("en-US", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      })}${suffix}`;
+      if (t < 1) requestAnimationFrame(frame);
+      else el.textContent = raw;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const countTargets = document.querySelectorAll<HTMLElement>("[data-count]");
+  if (!reduced && "IntersectionObserver" in window) {
+    const countObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateCount(entry.target);
+            countObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    countTargets.forEach((el) => countObserver.observe(el));
+  }
+</script>

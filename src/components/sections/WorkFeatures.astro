@@ -1,0 +1,475 @@
+---
+// Selected work — accordion/dropdown feature list with a synced mockup
+// preview, per client reference (Awesomic-style "How it works"). Each
+// feature links to its real /work/ case study, and its mockup is a scaled
+// recreation of that project's own real hero banner (FeatureHeroMock:
+// kicker + title + intro, copied verbatim from that page's hero) plus the
+// same visual centerpiece it uses there — a scaled-down "stat ring" for
+// Gentem/Taiwan NSC (no UI screenshot; their real hero IS this ring), or
+// the same DeviceFrame browser-chrome holding the real screenshot for
+// landing-page-design/product-systems-design. `workFeatures` in
+// src/data/site.ts is the single edit point.
+import Section from "../layout/Section.astro";
+import Container from "../layout/Container.astro";
+import Button from "../ui/Button.astro";
+import DeviceFrame from "../showcase/DeviceFrame.astro";
+import FeatureHeroMock from "./FeatureHeroMock.astro";
+import { workFeatures } from "../../data/site";
+import landingPageShot from "../../assets/images/lp-showcase-desktop.png";
+import productSystemsShot from "../../assets/images/lp-system-hero-desktop.png";
+
+const frameImages: Record<string, ImageMetadata> = {
+  "landing-page-design": landingPageShot,
+  "product-systems-design": productSystemsShot,
+};
+
+const slugify = (value: string) =>
+  value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+---
+
+<Section id="work" background="paper">
+  <Container>
+    <div class="work-header">
+      <h2 class="text-h2">Turning Business Challenges Into Growth Opportunities</h2>
+      <p class="text-small work-note">
+        A selection of projects across performance marketing, growth
+        strategy, conversion experience, and product development.
+      </p>
+    </div>
+    <div class="work-header-rule hairline-bottom" aria-hidden="true"></div>
+
+    <div class="work-features">
+      <ul class="feature-list">
+        {
+          workFeatures.map((feature, index) => {
+            const slug = slugify(feature.title);
+            const triggerId = `feature-trigger-${slug}`;
+            const panelId = `feature-panel-${slug}`;
+            const isOpen = index === 0;
+            return (
+              <li
+                class="feature-item"
+                data-feature-item
+                data-index={index}
+                data-open={isOpen ? "true" : "false"}
+              >
+                <h3 class="feature-heading">
+                  <button
+                    type="button"
+                    id={triggerId}
+                    class="feature-trigger"
+                    aria-expanded={isOpen ? "true" : "false"}
+                    aria-controls={panelId}
+                    data-feature-trigger
+                  >
+                    <span class="feature-index tabular-nums" aria-hidden="true">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span class="feature-title">{feature.title}</span>
+                    <svg
+                      class="feature-chevron"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M4 6l4 4 4-4"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </h3>
+
+                <div
+                  id={panelId}
+                  class="feature-panel"
+                  role="region"
+                  aria-labelledby={triggerId}
+                >
+                  <div class="feature-panel-inner">
+                    <p class="text-small feature-description">{feature.description}</p>
+                    <Button href={feature.cta.href} variant="primary" class="feature-cta">
+                      {feature.cta.label}
+                    </Button>
+
+                    {/* Mobile-only: mockup rendered below each open dropdown —
+                        a scaled recreation of this project's real hero banner. */}
+                    <div class="feature-mock-mobile" aria-hidden="true">
+                      <FeatureHeroMock
+                        variant="stack"
+                        kicker={feature.mockup.kicker}
+                        title={feature.mockup.title}
+                        intro={feature.mockup.intro}
+                      >
+                        {feature.mockup.figure.kind === "ring" ? (
+                          <div class="feature-ring-wrap">
+                            <span class="feature-ring feature-ring-outer" />
+                            <span class="feature-ring feature-ring-mid" />
+                            <span class="feature-ring feature-ring-dashed" />
+                            <div class="feature-ring-center">
+                              <p class="text-caption feature-ring-eyebrow">{feature.mockup.figure.eyebrow}</p>
+                              <p class="feature-ring-value tabular-nums">{feature.mockup.figure.value}</p>
+                              <p class="text-caption feature-ring-label">{feature.mockup.figure.label}</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <DeviceFrame
+                            type="desktop"
+                            src={frameImages[feature.mockup.figure.project]}
+                            alt=""
+                            class="feature-frame"
+                          />
+                        )}
+                      </FeatureHeroMock>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            );
+          })
+        }
+      </ul>
+
+      {/* Desktop-only: single stage, crossfades to the open item's mockup —
+          each a scaled recreation of that project's real hero banner. */}
+      <div class="feature-stage" aria-hidden="true">
+        {
+          workFeatures.map((feature, index) => (
+            <div
+              class="feature-mock-desktop"
+              data-stage-mock
+              data-index={index}
+              data-active={index === 0 ? "true" : "false"}
+            >
+              <FeatureHeroMock
+                variant="split"
+                kicker={feature.mockup.kicker}
+                title={feature.mockup.title}
+                intro={feature.mockup.intro}
+              >
+                {feature.mockup.figure.kind === "ring" ? (
+                  <div class="feature-ring-wrap">
+                    <span class="feature-ring feature-ring-outer" />
+                    <span class="feature-ring feature-ring-mid" />
+                    <span class="feature-ring feature-ring-dashed" />
+                    <div class="feature-ring-center">
+                      <p class="text-caption feature-ring-eyebrow">{feature.mockup.figure.eyebrow}</p>
+                      <p class="feature-ring-value tabular-nums">{feature.mockup.figure.value}</p>
+                      <p class="text-caption feature-ring-label">{feature.mockup.figure.label}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <DeviceFrame
+                    type="desktop"
+                    src={frameImages[feature.mockup.figure.project]}
+                    alt=""
+                    class="feature-frame"
+                  />
+                )}
+              </FeatureHeroMock>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </Container>
+</Section>
+
+<style>
+  .work-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+  }
+
+  .work-note {
+    max-width: 320px;
+    color: var(--color-olive);
+  }
+
+  .work-header-rule {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-8);
+  }
+
+  .work-features {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  /* Accordion list */
+
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .feature-item {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .feature-item:last-child {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .feature-heading {
+    font: inherit;
+  }
+
+  .feature-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding-block: var(--space-5);
+    text-align: left;
+    color: var(--color-ink);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .feature-trigger:hover {
+    color: var(--color-olive);
+  }
+
+  .feature-index {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-line);
+    font-size: var(--text-caption);
+    color: var(--color-ink-soft);
+    transition: border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+
+  .feature-item[data-open="true"] .feature-index {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .feature-title {
+    flex: 1 1 auto;
+    font-size: var(--text-h3);
+    font-weight: 450;
+  }
+
+  .feature-chevron {
+    flex: 0 0 auto;
+    color: var(--color-ink-soft);
+    transition: transform var(--dur-base) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+
+  .feature-item[data-open="true"] .feature-chevron {
+    color: var(--color-ink);
+    transform: rotate(180deg);
+  }
+
+  .feature-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-base) var(--ease-out);
+  }
+
+  .feature-item[data-open="true"] .feature-panel {
+    grid-template-rows: 1fr;
+  }
+
+  .feature-panel-inner {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .feature-description {
+    max-width: 52ch;
+    color: var(--color-olive);
+    padding-bottom: var(--space-4);
+  }
+
+  .feature-cta {
+    margin-bottom: var(--space-6);
+  }
+
+  /* Mockup: FeatureHeroMock.astro recreates that project's real hero
+     banner card; these rules style the figure slotted into it — a
+     scaled-down copy of .cs-hero-figure/.cs-hero-ring from the case-study
+     pages (Gentem/Taiwan NSC, which have no UI screenshot), in the exact
+     colors those pages use (ink/ink-soft/olive, line/bone borders — no
+     accent tinting, since the card now sits on the same paper background
+     the real hero does), or the project's own DeviceFrame (frame kind). */
+
+  .feature-ring-wrap {
+    position: relative;
+    width: min(180px, 60%);
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+  }
+
+  .feature-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-line);
+  }
+
+  .feature-ring-mid {
+    inset: 10%;
+    border-color: var(--color-bone);
+  }
+
+  .feature-ring-dashed {
+    inset: -8%;
+    border-style: dashed;
+    border-color: var(--color-line);
+    animation: feature-ring-spin 70s linear infinite;
+  }
+
+  @keyframes feature-ring-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .feature-ring-center {
+    text-align: center;
+    padding-inline: var(--space-3);
+  }
+
+  .feature-ring-eyebrow {
+    color: var(--color-ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .feature-ring-value {
+    margin-top: var(--space-2);
+    font-size: clamp(1.25rem, 4vw, 1.875rem);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-ink);
+  }
+
+  .feature-ring-label {
+    margin-top: var(--space-2);
+    color: var(--color-olive);
+    max-width: 18ch;
+    margin-inline: auto;
+  }
+
+  /* Frame mockup — the project's own real DeviceFrame hero, not re-tinted
+     (the chrome and screenshot carry their own colors already). DeviceFrame
+     is a child component, so its root element needs :global() to be
+     reachable from this component's scoped styles, even slotted through
+     FeatureHeroMock. */
+  :global(.feature-frame) {
+    width: 100%;
+  }
+
+  /* Mobile mockup: inline below each open item's CTA, hidden on desktop. */
+  .feature-mock-mobile {
+    margin-top: var(--space-2);
+  }
+
+  /* Desktop stage: hidden on mobile, crossfades between items. */
+  .feature-stage {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .work-features {
+      grid-template-columns: minmax(360px, 420px) 1fr;
+      gap: var(--space-9);
+    }
+
+    .feature-trigger {
+      padding-block: var(--space-6);
+    }
+
+    .feature-mock-mobile {
+      display: none;
+    }
+
+    .feature-stage {
+      display: block;
+      position: sticky;
+      top: calc(var(--nav-h) + var(--space-6));
+      /* fixed stack height so the absolutely-positioned mocks below have a box to fill */
+      height: min(520px, 60svh);
+    }
+
+    .feature-mock-desktop {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--dur-base) var(--ease-out);
+    }
+
+    .feature-mock-desktop[data-active="true"] {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .feature-panel,
+    .feature-chevron,
+    .feature-mock-desktop {
+      transition: none;
+    }
+
+    .feature-ring-dashed {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  // Accordion: exactly one item open at a time (default: the first). The
+  // desktop stage mirrors the open item via data-active so the mockup
+  // crossfades instead of jumping; mobile ignores the stage entirely and
+  // shows each item's own mockup inline (CSS only, no JS needed there).
+  document.querySelectorAll<HTMLElement>(".work-features").forEach((root) => {
+    const items = Array.from(root.querySelectorAll<HTMLElement>("[data-feature-item]"));
+    const stage = root.querySelector<HTMLElement>(".feature-stage");
+
+    root.addEventListener("click", (event) => {
+      const trigger = (event.target as HTMLElement).closest<HTMLButtonElement>(
+        "[data-feature-trigger]"
+      );
+      if (!trigger) return;
+
+      const item = trigger.closest<HTMLElement>("[data-feature-item]");
+      if (!item || item.dataset.open === "true") return;
+
+      items.forEach((candidate) => {
+        const open = candidate === item;
+        candidate.dataset.open = open ? "true" : "false";
+        candidate.querySelector("[data-feature-trigger]")?.setAttribute(
+          "aria-expanded",
+          open ? "true" : "false"
+        );
+      });
+
+      const index = item.dataset.index;
+      stage?.querySelectorAll<HTMLElement>("[data-stage-mock]").forEach((mock) => {
+        mock.dataset.active = mock.dataset.index === index ? "true" : "false";
+      });
+    });
+  });
+</script>

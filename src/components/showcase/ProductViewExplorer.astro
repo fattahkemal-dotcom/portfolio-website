@@ -1,0 +1,175 @@
+---
+// Tab list that swaps which (empty) DeviceFrame is shown, plus a
+// readout heading/copy below — the reference design's "product in
+// action" gallery, minus the illustrated fake-dashboard UI (this
+// project's established stance: an empty, labelled frame instead of a
+// fabricated screenshot — see DeviceFrame.astro and the landing-page-
+// design page). Every view pre-renders server-side; tab clicks just
+// toggle visibility, same approach as OrganicSignalExplorer.
+import DeviceFrame from "./DeviceFrame.astro";
+import type { ImageMetadata } from "astro";
+
+interface View {
+  id: string;
+  tabLabel: string;
+  tabSub: string;
+  frameLabel: string;
+  heading: string;
+  copy: string;
+  /** Real screenshot — renders in place of the empty labelled frame
+   * once one is supplied. Pass `frameAlt` alongside it. */
+  frameSrc?: ImageMetadata;
+  frameAlt?: string;
+}
+
+interface Props {
+  views: View[];
+  defaultId?: string;
+}
+
+const { views, defaultId } = Astro.props;
+const initialId = defaultId ?? views[0]?.id;
+---
+
+<div class="pve" data-pve>
+  <div class="pve-tabs" role="tablist" aria-label="Select a product view">
+    {
+      views.map((v) => (
+        <button
+          type="button"
+          role="tab"
+          class="pve-tab"
+          data-view-id={v.id}
+          aria-selected={v.id === initialId ? "true" : "false"}
+        >
+          <span class="text-caption pve-tab-sub">{v.tabSub}</span>
+          <span class="text-h3 pve-tab-label">{v.tabLabel}</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="pve-frame-wrap">
+    {
+      views.map((v) => (
+        <div class="pve-frame" data-pve-frame={v.id} hidden={v.id !== initialId}>
+          <DeviceFrame type="desktop" label={v.frameLabel} src={v.frameSrc} alt={v.frameAlt ?? ""} />
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="pve-readout">
+    <h3 class="text-h3" data-pve-heading>{views.find((v) => v.id === initialId)?.heading}</h3>
+    <p class="text-small pve-copy" data-pve-copy>{views.find((v) => v.id === initialId)?.copy}</p>
+  </div>
+
+  <script
+    type="application/json"
+    data-pve-data
+    set:html={JSON.stringify(views.map((v) => ({ id: v.id, heading: v.heading, copy: v.copy })))}
+  />
+</div>
+
+<style>
+  .pve-tabs {
+    display: grid;
+    grid-template-columns: 1fr;
+    border-top: 1px solid var(--color-line-dark);
+    border-bottom: 1px solid var(--color-line-dark);
+    margin-bottom: var(--space-7);
+  }
+
+  .pve-tab {
+    padding: var(--space-5) 0;
+    background: none;
+    border: 0;
+    border-top: 1px solid var(--color-line-dark);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    color: var(--color-ink-soft);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .pve-tabs .pve-tab:first-child {
+    border-top: 0;
+  }
+
+  .pve-tab:hover,
+  .pve-tab[aria-selected="true"] {
+    /* paper, not olive: this sets the color of .pve-tab-sub (13px
+       caption text, no large-text exemption) — olive-on-ink here is
+       only ~3.2:1, well under the 4.5:1 small-text minimum. */
+    color: var(--color-paper);
+  }
+
+  .pve-tab-label {
+    color: var(--color-paper);
+  }
+
+  .pve-readout {
+    margin-top: var(--space-7);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-line-dark);
+    max-width: 60ch;
+  }
+
+  .pve-readout h3 {
+    color: var(--color-paper);
+  }
+
+  .pve-copy {
+    margin-top: var(--space-3);
+    color: var(--color-ink-soft);
+  }
+
+  @media (min-width: 768px) {
+    .pve-tabs {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 0;
+      border-bottom: 1px solid var(--color-line-dark);
+    }
+
+    .pve-tab {
+      border-top: 0;
+      border-left: 1px solid var(--color-line-dark);
+      padding-inline: var(--space-5);
+    }
+
+    .pve-tabs .pve-tab:first-child {
+      border-left: 0;
+      padding-left: 0;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-pve]").forEach((root) => {
+    const dataEl = root.querySelector<HTMLScriptElement>("[data-pve-data]");
+    const headingEl = root.querySelector<HTMLElement>("[data-pve-heading]");
+    const copyEl = root.querySelector<HTMLElement>("[data-pve-copy]");
+    if (!dataEl || !headingEl || !copyEl) return;
+
+    const entries = JSON.parse(dataEl.textContent || "[]") as { id: string; heading: string; copy: string }[];
+
+    root.querySelectorAll<HTMLButtonElement>("[data-view-id]").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const id = tab.dataset.viewId;
+        const entry = entries.find((e) => e.id === id);
+        if (!entry) return;
+
+        root.querySelectorAll<HTMLElement>("[data-pve-frame]").forEach((frame) => {
+          frame.hidden = frame.dataset.pveFrame !== id;
+        });
+        root.querySelectorAll<HTMLButtonElement>("[data-view-id]").forEach((b) => {
+          b.setAttribute("aria-selected", String(b === tab));
+        });
+
+        headingEl.textContent = entry.heading;
+        copyEl.textContent = entry.copy;
+      });
+    });
+  });
+</script>

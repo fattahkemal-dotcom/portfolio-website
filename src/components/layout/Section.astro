@@ -4,7 +4,7 @@
 // child components (hairlines, focus rings) can key off [data-surface].
 interface Props {
   id?: string;
-  background?: "paper" | "paper-2" | "ink";
+  background?: "paper" | "paper-2" | "bone" | "ink";
   class?: string;
 }
 
@@ -13,6 +13,7 @@ const { id, background = "paper", class: className = "" } = Astro.props;
 const bgVar = {
   paper: "var(--color-paper)",
   "paper-2": "var(--color-paper-2)",
+  bone: "var(--color-bone)",
   ink: "var(--color-ink)",
 }[background];
 

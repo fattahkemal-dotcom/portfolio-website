@@ -1,0 +1,951 @@
+---
+// "Product & business systems" selected-work page — Project 04 in the
+// same sequence as Gentem (01), Taiwan NSC (02), and landing-page-design
+// (03). Built from a client-supplied reference
+// (Documents\project\Portfolio Kemal\References\portfolio_product_system_premium.html)
+// with an explicit instruction to reuse its structure/layout/content,
+// recolored into this site's tokens only.
+//
+// Two departures from the reference, both consistent with this
+// project's established conventions rather than new judgment calls:
+// 1. The reference illustrates three fake dashboard UIs (booking app,
+//    CRM, system health) as decorative mockups. This project already
+//    settled that question on the landing-page-design page — empty,
+//    labelled DeviceFrame placeholders instead of fabricated screenshots
+//    (DESIGN-SYSTEM.md's anti-slop stance, same precedent as the Stack
+//    logo chip). Reused ProductViewExplorer/DeviceFrame instead of
+//    rebuilding the reference's illustrated app markup.
+// 2. The reference's product-rule numbers (membership levels, booking
+//    windows, cancellation policy) read as real business rules, not
+//    generic template filler — kept as real content per instruction,
+//    but the reference's own verification disclaimers are kept
+//    (translated to this site's voice) rather than dropped, since
+//    nothing here has been independently confirmed this session.
+//
+// 2026-10-26: the 5 placeholder frames are now filled with real
+// screenshots — captured from this exact product's own interactive
+// design prototypes (SEA-Padel-Member.html / SEA-Padel-Admin.html,
+// not fabricated), per the shot list at
+// https://claude.ai/code/artifact/c61ba623-5677-47d9-89d4-ac7785aac258.
+// IMPORTANT, per seapadel-prototype-captures/README.md: production
+// (seapadel-booking.onrender.com) returned HTTP 503 on the capture date,
+// so these are PROTOTYPE captures with seeded/anonymized demo data
+// ("Demo Member 01" etc.), not live production screenshots — hence the
+// disclosure note kept on-page below. Swap for verified production
+// captures once the live site is confirmed stable; see that README for
+// the exact re-capture checklist.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Section from "../../components/layout/Section.astro";
+import Container from "../../components/layout/Container.astro";
+import Tag from "../../components/ui/Tag.astro";
+import Button from "../../components/ui/Button.astro";
+import DeviceFrame from "../../components/showcase/DeviceFrame.astro";
+import RuleExplorer from "../../components/showcase/RuleExplorer.astro";
+import SystemNodeMap from "../../components/showcase/SystemNodeMap.astro";
+import ProductViewExplorer from "../../components/showcase/ProductViewExplorer.astro";
+import heroDesktop from "../../assets/images/lp-system-hero-desktop.png";
+import heroMobile from "../../assets/images/lp-system-hero-mobile.png";
+import bookingView from "../../assets/images/lp-system-view-booking.png";
+import crmView from "../../assets/images/lp-system-view-crm.png";
+import healthView from "../../assets/images/lp-system-view-health.png";
+
+const runningText = [
+  "4 membership levels",
+  "3 plans",
+  "60-minute sessions",
+  "4 players per court",
+  "7-day booking window",
+  "6-hour cutoff",
+  "24-hour free cancellation",
+  "7-day suspension policy",
+];
+
+const rules = [
+  {
+    kicker: "Decision 01 / Structure",
+    metric: "4",
+    unit: "levels",
+    title: "Keep membership lean.",
+    description:
+      "Four levels, three plans, 60-minute sessions, and a maximum of four players per court — rules shaped around actual operating needs, not a generic gym-management template.",
+  },
+  {
+    kicker: "Decision 02 / Booking window",
+    metric: "7",
+    unit: "days",
+    title: "Make access predictable.",
+    description:
+      "Booking opens seven days before a session and closes six hours before it begins — configured policy windows, not a measure of actual utilization.",
+  },
+  {
+    kicker: "Decision 03 / Policy logic",
+    metric: "24",
+    unit: "hours",
+    title: "Enforce policy fairly.",
+    description:
+      "Free cancellation uses a 24-hour threshold; a qualifying incident-based suspension is set to seven days. Exact transition conditions should be confirmed before this is published.",
+  },
+  {
+    kicker: "Decision 04 / Data foundation",
+    metric: "1",
+    unit: "record",
+    title: "Context belongs together.",
+    description:
+      "Member data connects to assessments, bookings, participation, and the deal pipeline, instead of leaving operational knowledge scattered across disconnected tools.",
+  },
+  {
+    kicker: "Decision 05 / Operations",
+    metric: "360°",
+    unit: "view",
+    title: "Make issues legible.",
+    description:
+      "Booking, account, notification, and infrastructure signals are grouped so a non-technical operator can understand what actually needs attention.",
+  },
+];
+
+const systemNodes = [
+  {
+    label: "Booking platform",
+    sublabel: "Member-facing experience",
+    title: "Booking platform — the member entry point.",
+    description: "Turn session availability, booking windows, and member eligibility into a clear self-service journey.",
+  },
+  {
+    label: "Membership logic",
+    sublabel: "Plans / levels / access",
+    title: "Membership logic — the rule engine.",
+    description: "Keep levels, plans, entitlements, and participation constraints consistent across the experience.",
+  },
+  {
+    label: "Payments",
+    sublabel: "Payment status signals",
+    title: "Payments — a business signal.",
+    description: "Design status updates so payment context can inform CRM and operational decisions, not just a transaction log.",
+  },
+  {
+    label: "CRM backbone",
+    sublabel: "Members / deals / activity",
+    title: "CRM backbone — the shared context.",
+    description: "Bring contact history, assessment context, training participation, and pipeline activity together in one place.",
+  },
+  {
+    label: "Automation",
+    sublabel: "Rules / notifications",
+    title: "Automation — fewer manual handoffs.",
+    description: "Translate known policies and business events into consistent updates and notifications.",
+  },
+  {
+    label: "System health",
+    sublabel: "Issues / operator visibility",
+    title: "System health — readable operations.",
+    description: "Organize incidents and technical signals in language an operator can actually understand.",
+  },
+];
+
+const productViews = [
+  {
+    id: "booking",
+    tabLabel: "Booking platform",
+    tabSub: "01 / Member experience",
+    frameLabel: "Booking platform screenshot",
+    frameSrc: bookingView,
+    frameAlt: "SEA Padel member app, booking confirmation — session details, cancellation policy, and a confirm button.",
+    heading: "Good booking experiences make the rules feel effortless.",
+    copy: "A clean member journey should surface available sessions, eligibility, and policy terms without forcing people into back-and-forth messages.",
+  },
+  {
+    id: "crm",
+    tabLabel: "CRM workspace",
+    tabSub: "02 / Business operations",
+    frameLabel: "CRM workspace screenshot",
+    frameSrc: crmView,
+    frameAlt: "SEA Padel admin, Members — a list of academy members with level, plan, and status, demo data anonymized.",
+    heading: "The CRM is the operating context, not just a contact list.",
+    copy: "Member records, assessment context, payment updates, and deal stages form the foundation for more consistent business decisions.",
+  },
+  {
+    id: "health",
+    tabLabel: "System health",
+    tabSub: "03 / Founder visibility",
+    frameLabel: "System health screenshot",
+    frameSrc: healthView,
+    frameAlt: "SEA Padel admin, System health — booking, accounts, notifications, and infrastructure status, with one open notification event.",
+    heading: "Operational confidence needs a readable interface.",
+    copy: "A founder should know what's working, what needs attention, and where to investigate — without reading infrastructure logs.",
+  },
+];
+
+const deliveryCards = [
+  {
+    status: "01 / Reported operational",
+    title: "CRM as an active workflow.",
+    body: "CRM automation, deal tracking, payment updates, and notifications are described as running in the project brief. Uptime, usage volume, and time saved are not yet quantified.",
+    note: "Claim basis: project description — validate with live evidence.",
+  },
+  {
+    status: "02 / Built & tested",
+    title: "Booking as a defined product.",
+    body: "A booking experience with membership and scheduling policies has been built and tested, per the brief. Live usage by members still needs confirmation.",
+    note: "Do not present as verified member adoption.",
+  },
+  {
+    status: "03 / Future vision",
+    title: "An ecosystem that can grow.",
+    body: "Community features, events, and tournaments can extend the product direction over time. These are opportunities, not launched functionality.",
+    note: "Roadmap — not yet deployed.",
+  },
+];
+
+const reflections = [
+  {
+    tag: "01 / Product scope",
+    title: "Lean by design.",
+    body: "Avoid rebuilding an oversized gym-management platform when the business needs a focused booking and membership model.",
+  },
+  {
+    tag: "02 / Execution trade-off",
+    title: "Pragmatic, not precious.",
+    body: "Changing an incompatible initial technical approach is a product decision when it protects the delivery goal and the operating requirements.",
+  },
+  {
+    tag: "03 / Operator experience",
+    title: "Independence matters.",
+    body: "Useful automation and readable health signals should help a non-technical founder manage daily operations without reading source code.",
+  },
+];
+---
+
+<BaseLayout
+  title="Product & business systems design — Kemal"
+  description="Turning fragmented booking, membership, payments, and customer management into a connected product operating model."
+>
+  <Section id="ps-hero" background="paper" class="ps-hero">
+    <Container>
+      <div class="ps-hero-grid">
+        <div class="ps-hero-copy">
+          <p class="text-caption ps-kicker">Project 04 / Product &amp; business systems</p>
+          <h1 class="text-display ps-title">Make operations work as one.</h1>
+          <p class="text-body ps-intro">
+            From manual operations to a connected product system — turning fragmented booking,
+            membership, payments, and customer management into a single structured operating model.
+          </p>
+          <div class="ps-hero-tags">
+            <Tag>Product</Tag>
+            <Tag>Systems</Tag>
+            <Tag>Operations</Tag>
+          </div>
+          <div class="ps-hero-foot hairline-top">
+            <span class="text-small">Scroll to see the work</span>
+          </div>
+        </div>
+
+        <div class="ps-hero-frames">
+          <DeviceFrame
+            type="desktop"
+            label="Booking platform screenshot"
+            src={heroDesktop}
+            alt="SEA Padel member app, Book a session — session cards filtered by level, showing date, time, court, and spots remaining."
+            class="ps-frame-desktop"
+          />
+          <DeviceFrame
+            type="mobile"
+            label="Member app screenshot"
+            src={heroMobile}
+            alt="SEA Padel member app, Home dashboard — today's session, membership level and plan, and upcoming schedule."
+            class="ps-frame-mobile"
+          />
+        </div>
+      </div>
+
+      <div class="ps-hero-bottom hairline-top text-caption">
+        <span>01 Think · 02 Define · 03 Build · 04 Operate</span>
+        <span>Solo product owner + builder</span>
+      </div>
+    </Container>
+  </Section>
+
+  <section class="ps-marquee" data-surface="ink" aria-label="Defined product rules">
+    <div class="ps-marquee-viewport">
+      <div class="ps-marquee-track">
+        <ul class="ps-marquee-list">
+          {runningText.map((line) => <li class="ps-marquee-item">{line}</li>)}
+        </ul>
+        <ul class="ps-marquee-list" aria-hidden="true">
+          {runningText.map((line) => <li class="ps-marquee-item">{line}</li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <Section id="opportunity" background="paper">
+    <Container>
+      <div class="ps-section-head hairline-top reveal">
+        <h2 class="text-display">The problem wasn't the website.</h2>
+        <p class="text-caption ps-section-tag">01 / The opportunity</p>
+      </div>
+      <p class="text-body ps-intro reveal">
+        Booking requests lived in WhatsApp. Payments needed manual checks. Customer information was
+        disconnected. A website setup existed — but the operating model still depended on human
+        handoffs.
+      </p>
+
+      <div class="ps-compare reveal">
+        <div class="ps-compare-panel">
+          <p class="text-caption ps-compare-label">Before / Fragmented operations</p>
+          <h3 class="text-h2 ps-compare-title">Every step, another handoff.</h3>
+          <p class="text-small ps-compare-note">Tools existed. The information and decision rules connecting them did not.</p>
+          <div class="ps-fragments">
+            <div class="ps-fragment">
+              <span class="text-small ps-fragment-title">WhatsApp bookings</span>
+              <span class="text-caption ps-fragment-sub">Requests &amp; coordination</span>
+            </div>
+            <div class="ps-fragment">
+              <span class="text-small ps-fragment-title">Manual payment checks</span>
+              <span class="text-caption ps-fragment-sub">Reconciliation by admin</span>
+            </div>
+            <div class="ps-fragment">
+              <span class="text-small ps-fragment-title">Scattered customer history</span>
+              <span class="text-caption ps-fragment-sub">Limited operational visibility</span>
+            </div>
+          </div>
+          <p class="text-caption ps-compare-foot">Dependent on manual context</p>
+        </div>
+
+        <div class="ps-compare-panel ps-compare-panel-accent">
+          <p class="text-caption ps-compare-label">After / Target operating model</p>
+          <h3 class="text-h2 ps-compare-title">One logic. Connected flows.</h3>
+          <p class="text-small ps-compare-note">Design how the business should work, then make that logic repeatable in software.</p>
+          <div class="ps-flow">
+            <div class="ps-flow-node ps-flow-node-primary">
+              <span>01 Member booking</span>
+              <span class="text-caption">Input</span>
+            </div>
+            <div class="ps-flow-connector"></div>
+            <div class="ps-flow-node">
+              <span>02 Policy &amp; entitlement checks</span>
+              <span class="text-caption">Rules</span>
+            </div>
+            <div class="ps-flow-connector"></div>
+            <div class="ps-flow-node">
+              <span>03 CRM, updates &amp; visibility</span>
+              <span class="text-caption">Output</span>
+            </div>
+          </div>
+          <p class="text-caption ps-compare-foot">Intended system workflow — not impact metrics</p>
+        </div>
+      </div>
+
+      <div class="ps-shift reveal">
+        <p class="text-caption ps-shift-label">The strategic shift</p>
+        <p class="text-lead ps-shift-text">Don't just digitize the tasks. Design the decisions behind them.</p>
+      </div>
+    </Container>
+  </Section>
+
+  <Section id="decisions" background="paper-2">
+    <Container>
+      <div class="ps-section-head hairline-top reveal">
+        <h2 class="text-display">Complexity, made intentional.</h2>
+        <p class="text-caption ps-section-tag">02 / Product decisions</p>
+      </div>
+      <p class="text-body ps-intro reveal">
+        The differentiator wasn't the code. It was translating real operating constraints into
+        simple, consistent product rules that members and admins could understand.
+      </p>
+
+      <div class="ps-explorer-wrap reveal">
+        <RuleExplorer rules={rules} />
+      </div>
+
+      <p class="text-caption ps-disclaimer">
+        Rules shown are product specifications, not member-adoption or commercial-performance results.
+      </p>
+    </Container>
+  </Section>
+
+  <Section id="architecture" background="paper">
+    <Container>
+      <div class="ps-section-head hairline-top reveal">
+        <h2 class="text-display">One business. One system.</h2>
+        <p class="text-caption ps-section-tag">03 / System thinking</p>
+      </div>
+      <p class="text-body ps-intro reveal">
+        Each interface has a job. The real product thinking is in how member activity, business
+        policies, CRM records, and operational visibility are designed to connect.
+      </p>
+
+      <div class="ps-map-wrap reveal">
+        <SystemNodeMap nodes={systemNodes} />
+      </div>
+
+      <p class="text-caption ps-disclaimer">
+        This is a simplified design map. It shows intended product responsibilities, not a verified
+        end-to-end production integration.
+      </p>
+    </Container>
+  </Section>
+
+  <Section id="product-views" background="ink">
+    <Container>
+      <div class="ps-section-head hairline-top reveal" class:list={["ps-on-ink"]}>
+        <h2 class="text-display ps-on-ink">Built to work. Made to use.</h2>
+        <p class="text-caption ps-section-tag ps-on-ink-soft">04 / The product in action</p>
+      </div>
+      <p class="text-body ps-intro reveal ps-on-ink-soft">
+        Show the product from both sides of the business: the member booking experience, the
+        team-facing CRM, and the founder's operational-health view.
+      </p>
+
+      <div class="ps-explorer-wrap reveal">
+        <ProductViewExplorer views={productViews} />
+      </div>
+
+      <p class="text-caption ps-disclaimer ps-on-ink-soft">
+        Screenshot notice — captured from this product's own interactive design prototypes, not
+        fabricated. Production was unreachable on the capture date, so these carry seeded demo data
+        with member names anonymized; swap for verified production captures once the live site is
+        confirmed stable.
+      </p>
+    </Container>
+  </Section>
+
+  <Section id="delivery" background="paper-2">
+    <Container>
+      <div class="ps-section-head hairline-top reveal">
+        <h2 class="text-display">Proof over promises.</h2>
+        <p class="text-caption ps-section-tag">05 / What was delivered</p>
+      </div>
+      <p class="text-body ps-intro reveal">
+        A meaningful product case study distinguishes what is operational, what is built and
+        tested, and what is still part of the roadmap. A product-rule count doesn't equal adoption.
+      </p>
+
+      <div class="ps-delivery-grid reveal">
+        {
+          deliveryCards.map((card) => (
+            <div class="ps-delivery-card">
+              <p class="text-caption ps-delivery-status">{card.status}</p>
+              <h3 class="text-h2 ps-delivery-title">{card.title}</h3>
+              <p class="text-small ps-delivery-body">{card.body}</p>
+              <p class="text-caption ps-delivery-note">{card.note}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <p class="text-caption ps-disclaimer">
+        Requires final verification — confirm whether real members use the booking platform, how
+        assessment levels relate to cohort activation, and which CRM integrations are already in
+        production before these status labels are published.
+      </p>
+    </Container>
+  </Section>
+
+  <Section id="reflection" background="bone">
+    <Container>
+      <div class="ps-section-head hairline-top reveal">
+        <h2 class="text-display">Build less. Decide better.</h2>
+        <p class="text-caption ps-section-tag">06 / Product judgment</p>
+      </div>
+      <p class="text-body ps-intro reveal">
+        The strongest product work isn't always more functionality. It's knowing which rules should
+        exist, which technology to trust, and what operators need to see.
+      </p>
+
+      <div class="ps-reflection-grid reveal">
+        {
+          reflections.map((item) => (
+            <div class="ps-reflection-item">
+              <p class="text-caption ps-reflection-tag">{item.tag}</p>
+              <h3 class="text-h3 ps-reflection-title">{item.title}</h3>
+              <p class="text-small ps-reflection-body">{item.body}</p>
+            </div>
+          ))
+        }
+      </div>
+    </Container>
+  </Section>
+
+  <Section id="closing" background="ink">
+    <Container>
+      <div class="ps-section-head reveal">
+        <h2 class="text-display ps-closing-heading">Design the system.</h2>
+        <p class="text-caption ps-section-tag ps-on-ink-soft">07 / Closing</p>
+      </div>
+      <p class="text-lead ps-closing-lead reveal">
+        From operational gaps to business logic, from a set of screens to an operating model —
+        product development starts by understanding what actually needs to work.
+      </p>
+
+      <div class="ps-closing-cta reveal">
+        <Button href="/#contact" variant="primary-ink">Book a call</Button>
+        <Button href="/#work" variant="text-ink">Back to selected work</Button>
+      </div>
+    </Container>
+  </Section>
+
+  <noscript>
+    <style>
+      .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    </style>
+  </noscript>
+</BaseLayout>
+
+<style>
+  /* Scroll reveal — progressive enhancement only; the <noscript> block
+     above forces full visibility with no JS, so content never gets
+     stuck hidden. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .ps-kicker {
+    color: var(--color-ink-soft);
+    margin-bottom: var(--space-4);
+  }
+
+  .ps-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+
+  .ps-hero-copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    min-width: 0;
+  }
+
+  .ps-title {
+    max-width: 16ch;
+  }
+
+  .ps-intro {
+    max-width: 58ch;
+    color: var(--color-olive);
+  }
+
+  .ps-hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .ps-hero-foot {
+    padding-top: var(--space-4);
+    margin-top: var(--space-2);
+    color: var(--color-ink-soft);
+  }
+
+  .ps-hero-frames {
+    position: relative;
+    padding-bottom: var(--space-6);
+  }
+
+  /* :global() required — DeviceFrame renders its own root element, which
+     this page's scoped <style> can't reach otherwise (see handover.md's
+     Astro scoped-CSS cross-component gotcha). */
+  :global(.ps-frame-desktop) {
+    width: 100%;
+  }
+
+  :global(.ps-frame-mobile) {
+    width: 34%;
+    max-width: 180px;
+    position: absolute;
+    right: var(--space-5);
+    bottom: 0;
+  }
+
+  .ps-hero-bottom {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    color: var(--color-ink-soft);
+  }
+
+  /* Running text — DESIGN-SYSTEM.md §10 narrowed override, same
+     mechanism as Highlights.astro / landing-page-design.astro's marquee.
+     This is the third instance; worth extracting to a shared component
+     if a fourth page wants one — see handover.md. */
+  .ps-marquee {
+    background: var(--color-ink);
+    overflow: hidden;
+  }
+
+  .ps-marquee-viewport {
+    position: relative;
+  }
+
+  .ps-marquee-viewport::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: var(--space-9);
+    background: linear-gradient(to right, transparent, var(--color-ink));
+    pointer-events: none;
+  }
+
+  .ps-marquee-track {
+    display: flex;
+    width: max-content;
+    padding-block: var(--space-6);
+    animation: ps-marquee-scroll 36s linear infinite;
+  }
+
+  .ps-marquee-list {
+    display: flex;
+    flex-shrink: 0;
+    list-style: none;
+    gap: var(--space-8);
+    padding-inline-start: var(--space-8);
+    margin: 0;
+  }
+
+  .ps-marquee-item {
+    white-space: nowrap;
+    font-size: var(--text-lead);
+    color: var(--color-paper);
+  }
+
+  @keyframes ps-marquee-scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Shared section-head: heading + side note to the right. */
+  .ps-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    padding-top: var(--space-5);
+    margin-bottom: var(--space-6);
+  }
+
+  .ps-section-tag {
+    color: var(--color-ink-soft);
+    white-space: nowrap;
+  }
+
+  .ps-on-ink {
+    color: var(--color-paper) !important;
+  }
+
+  .ps-on-ink-soft {
+    color: var(--color-ink-soft) !important;
+  }
+
+  .ps-compare {
+    margin-top: var(--space-8);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+    background: var(--color-line);
+  }
+
+  .ps-compare-panel {
+    background: var(--color-paper-2);
+    padding: clamp(var(--space-6), 4vw, var(--space-7));
+    display: flex;
+    flex-direction: column;
+    min-height: 480px;
+  }
+
+  .ps-compare-panel-accent {
+    background: var(--color-bone);
+  }
+
+  .ps-compare-label {
+    color: var(--color-ink-soft);
+  }
+
+  .ps-compare-title {
+    margin-top: var(--space-5);
+    max-width: 16ch;
+  }
+
+  .ps-compare-note {
+    margin-top: var(--space-3);
+    color: var(--color-olive);
+    max-width: 36ch;
+  }
+
+  .ps-fragments {
+    margin-top: var(--space-6);
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .ps-fragment {
+    background: var(--color-paper);
+    border: 1px solid var(--color-line);
+    padding: var(--space-4) var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .ps-fragment-title {
+    color: var(--color-ink);
+    font-weight: 500;
+  }
+
+  .ps-fragment-sub {
+    color: var(--color-ink-soft);
+  }
+
+  .ps-flow {
+    margin-top: var(--space-6);
+    border: 1px solid var(--color-line-dark);
+    background: var(--color-paper);
+    padding: var(--space-5);
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .ps-flow-node {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--color-line);
+    background: var(--color-paper-2);
+    font-weight: 500;
+    font-size: var(--text-small);
+  }
+
+  .ps-flow-node-primary {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    border-color: var(--color-ink);
+  }
+
+  .ps-flow-connector {
+    width: 1px;
+    height: var(--space-4);
+    background: var(--color-line-dark);
+    margin-inline: auto;
+  }
+
+  .ps-compare-foot {
+    margin-top: auto;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-line);
+    color: var(--color-ink-soft);
+  }
+
+  .ps-shift {
+    margin-top: var(--space-7);
+    padding: var(--space-6) 0;
+    border-top: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-5);
+    flex-wrap: wrap;
+  }
+
+  .ps-shift-label {
+    color: var(--color-ink-soft);
+  }
+
+  .ps-shift-text {
+    max-width: 48ch;
+    color: var(--color-ink);
+  }
+
+  .ps-explorer-wrap {
+    margin-top: var(--space-8);
+  }
+
+  .ps-disclaimer {
+    margin-top: var(--space-6);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-line);
+    color: var(--color-ink-soft);
+    max-width: 72ch;
+  }
+
+  :global(#product-views) .ps-disclaimer {
+    border-top-color: var(--color-line-dark);
+  }
+
+  .ps-map-wrap {
+    margin-top: var(--space-8);
+  }
+
+  .ps-delivery-grid {
+    margin-top: var(--space-8);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+    background: var(--color-line);
+  }
+
+  .ps-delivery-card {
+    background: var(--color-paper);
+    padding: clamp(var(--space-6), 4vw, var(--space-7));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    min-height: 320px;
+  }
+
+  .ps-delivery-status {
+    width: max-content;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-line);
+    color: var(--color-olive);
+  }
+
+  .ps-delivery-title {
+    max-width: 18ch;
+  }
+
+  .ps-delivery-body {
+    color: var(--color-ink-soft);
+  }
+
+  .ps-delivery-note {
+    margin-top: auto;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-line);
+    color: var(--color-ink-soft);
+  }
+
+  .ps-reflection-grid {
+    margin-top: var(--space-8);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .ps-reflection-item {
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-ink-soft);
+  }
+
+  .ps-reflection-tag {
+    color: var(--color-olive);
+  }
+
+  .ps-reflection-title {
+    margin-top: var(--space-5);
+  }
+
+  .ps-reflection-body {
+    margin-top: var(--space-3);
+    color: var(--color-ink);
+    opacity: 0.75;
+    max-width: 40ch;
+  }
+
+  .ps-closing-heading {
+    color: var(--color-paper);
+    max-width: 16ch;
+  }
+
+  .ps-closing-lead {
+    margin-top: var(--space-6);
+    color: var(--color-ink-soft);
+    max-width: 56ch;
+  }
+
+  .ps-closing-cta {
+    margin-top: var(--space-9);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+    }
+
+    .ps-marquee-viewport::after {
+      display: none;
+    }
+
+    .ps-marquee-track {
+      animation: none;
+      flex-wrap: wrap;
+      width: auto;
+    }
+
+    .ps-marquee-list[aria-hidden="true"] {
+      display: none;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .ps-delivery-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .ps-reflection-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .ps-hero-grid {
+      grid-template-columns: minmax(0, 0.95fr) minmax(360px, 0.85fr);
+      align-items: center;
+      gap: var(--space-9);
+    }
+
+    .ps-title {
+      max-width: 13ch;
+    }
+
+    .ps-compare {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>
+
+<script>
+  // Progressive-enhancement scroll reveal, same pattern as the Gentem
+  // and Taiwan NSC case-study pages.
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const targets = document.querySelectorAll<HTMLElement>(".reveal");
+
+  if (reduced || !("IntersectionObserver" in window)) {
+    targets.forEach((el) => el.classList.add("is-visible"));
+  } else {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
+    );
+    targets.forEach((el) => observer.observe(el));
+  }
+</script>

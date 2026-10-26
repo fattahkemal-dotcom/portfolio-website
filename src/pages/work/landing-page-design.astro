@@ -1,0 +1,273 @@
+---
+// "Landing page & website design" selected-work page. Scope of this pass
+// (2026-10-25, per Kemal's request): hero banner + running-text band only —
+// no project showcase grid yet. Device mockups are empty hairline frames
+// (DeviceFrame.astro) so Kemal can review the composition before supplying
+// real screenshots; pass `src`/`alt` to DeviceFrame once an image exists.
+//
+// Kicker follows the same "Project NN / <name>" sequence already used on
+// the Gentem (01) and Taiwan NSC (02) case-study pages (DESIGN-SYSTEM.md
+// §12 allows numbering only on a real sequence) — this is project 03 in
+// that same selected-work list.
+//
+// Running text: DESIGN-SYSTEM.md §10 bans marquee/auto-scroll everywhere
+// except an explicit, written, narrowed override (the home Highlights
+// band, 2026-10-19). This page's marquee is the same kind of override,
+// requested directly by Kemal today (2026-10-25) — narrowed to this one
+// band, same mechanism as Highlights.astro (duplicated track,
+// translateX(-50%), prefers-reduced-motion collapses it to a static
+// wrapped row). Record this in DESIGN-SYSTEM.md §10 before the next
+// session treats it as precedent for a third page.
+import { Image } from "astro:assets";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Section from "../../components/layout/Section.astro";
+import Container from "../../components/layout/Container.astro";
+import Tag from "../../components/ui/Tag.astro";
+import DeviceFrame from "../../components/showcase/DeviceFrame.astro";
+import heroDesktop from "../../assets/images/lp-showcase-desktop.png";
+import heroMobile from "../../assets/images/lp-showcase-mobile.png";
+import showcaseWall from "../../assets/images/lp-showcase-wall.png";
+
+const runningText = [
+  "Built to explain the offer clearly",
+  "Structured for real visitors, not design reviews",
+  "Every section earns its place on the page",
+  "Designed to make the next step obvious",
+];
+---
+
+<BaseLayout
+  title="Landing page & website design — Kemal"
+  description="Selected landing page and website design work: designed to explain the offer clearly and make the next step obvious."
+>
+  <Section id="lp-hero" background="paper" class="lp-hero">
+    <Container>
+      <div class="lp-hero-grid">
+        <div class="lp-hero-copy">
+          <p class="text-caption lp-kicker">Project 03 / Landing page &amp; website design</p>
+          <h1 class="text-display lp-title">Landing page design</h1>
+          <p class="text-body lp-intro">
+            I design and build the pages that sit between an ad and a decision — clear enough to
+            explain the offer, structured enough to earn trust, and built so the next step is
+            never in question. [Placeholder — project names and results go here.]
+          </p>
+          <div class="lp-hero-tags">
+            <Tag>Design</Tag>
+            <Tag>Build</Tag>
+            <Tag>Conversion</Tag>
+          </div>
+          <div class="lp-hero-foot hairline-top">
+            <span class="text-small">Scroll to see the work</span>
+          </div>
+        </div>
+
+        <div class="lp-hero-frames">
+          <DeviceFrame
+            type="desktop"
+            src={heroDesktop}
+            alt="Taiwan New South Center Indonesia — Taiwan visa landing page, desktop view"
+            aspect="1920 / 1080"
+            class="lp-frame-desktop"
+          />
+          <DeviceFrame
+            type="mobile"
+            src={heroMobile}
+            alt="Wall Street English — #NaikLevel campaign landing page, mobile view"
+            aspect="750 / 1836"
+            class="lp-frame-mobile"
+          />
+        </div>
+      </div>
+    </Container>
+  </Section>
+
+  <section class="lp-wall" aria-label="Selected interfaces">
+    <Image
+      class="lp-wall-img"
+      src={showcaseWall}
+      alt="A wall of selected landing page and website designs across desktop and mobile — Wall Street English, Taiwan New South Center Indonesia, and other recent projects"
+      widths={[768, 1200, 1920, 2560]}
+      sizes="100vw"
+    />
+    <Container>
+      <p class="text-caption lp-wall-caption">Selected interfaces — desktop and mobile, 2025–2026</p>
+    </Container>
+  </section>
+
+  <section class="lp-marquee" data-surface="ink" aria-label="What this work is built on">
+    <div class="lp-marquee-viewport">
+      <div class="lp-marquee-track">
+        <ul class="lp-marquee-list">
+          {runningText.map((line) => <li class="lp-marquee-item">{line}</li>)}
+        </ul>
+        <ul class="lp-marquee-list" aria-hidden="true">
+          {runningText.map((line) => <li class="lp-marquee-item">{line}</li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .lp-hero {
+    padding-bottom: var(--space-8);
+  }
+
+  .lp-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+
+  .lp-hero-copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  .lp-kicker {
+    color: var(--color-olive);
+  }
+
+  .lp-title {
+    max-width: 18ch;
+  }
+
+  .lp-intro {
+    max-width: 48ch;
+    color: var(--color-olive);
+  }
+
+  .lp-hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .lp-hero-foot {
+    padding-top: var(--space-4);
+    margin-top: var(--space-2);
+    color: var(--color-ink-soft);
+  }
+
+  .lp-hero-frames {
+    position: relative;
+    padding-bottom: var(--space-6);
+  }
+
+  /* :global() required — these classes land on DeviceFrame's own root
+     element, which this page's scoped <style> can't otherwise reach
+     (Astro scoped CSS only touches elements a component renders itself;
+     see handover.md's "Astro scoped-CSS cross-component gotcha"). */
+  :global(.lp-frame-desktop) {
+    width: 100%;
+  }
+
+  :global(.lp-frame-mobile) {
+    width: 34%;
+    max-width: 180px;
+    position: absolute;
+    right: var(--space-5);
+    bottom: 0;
+  }
+
+  /* Full-bleed showcase wall, directly below the hero. Deliberately
+     outside Container — full viewport width at every breakpoint, not
+     capped at --container-max, per Kemal's "full screen" request. The
+     image itself is responsive (Image widths/sizes above), so this is
+     still a normal <img> that scales down on small viewports rather
+     than a fixed-size background crop. */
+  .lp-wall {
+    background: var(--color-paper-2);
+    padding-block: var(--space-7) var(--space-6);
+  }
+
+  .lp-wall-img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .lp-wall-caption {
+    margin-top: var(--space-4);
+    color: var(--color-ink-soft);
+  }
+
+  /* Running text — DESIGN-SYSTEM.md §10 narrowed override, see page-top
+     comment. Same mechanism as Highlights.astro: duplicate the list,
+     scroll exactly one copy's width, collapse under reduced motion. */
+  .lp-marquee {
+    background: var(--color-ink);
+    overflow: hidden;
+  }
+
+  .lp-marquee-viewport {
+    position: relative;
+  }
+
+  .lp-marquee-viewport::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: var(--space-9);
+    background: linear-gradient(to right, transparent, var(--color-ink));
+    pointer-events: none;
+  }
+
+  .lp-marquee-track {
+    display: flex;
+    width: max-content;
+    padding-block: var(--space-6);
+    animation: lp-marquee-scroll 32s linear infinite;
+  }
+
+  .lp-marquee-list {
+    display: flex;
+    flex-shrink: 0;
+    list-style: none;
+    gap: var(--space-8);
+    padding-inline-start: var(--space-8);
+    margin: 0;
+  }
+
+  .lp-marquee-item {
+    white-space: nowrap;
+    font-size: var(--text-lead);
+    color: var(--color-paper);
+  }
+
+  @keyframes lp-marquee-scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lp-marquee-viewport::after {
+      display: none;
+    }
+
+    .lp-marquee-track {
+      animation: none;
+      flex-wrap: wrap;
+      width: auto;
+    }
+
+    .lp-marquee-list[aria-hidden="true"] {
+      display: none;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .lp-hero-grid {
+      grid-template-columns: minmax(0, 0.95fr) minmax(360px, 0.85fr);
+      align-items: center;
+      gap: var(--space-9);
+    }
+
+    .lp-title {
+      max-width: 14ch;
+    }
+  }
+</style>

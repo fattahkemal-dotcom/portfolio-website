@@ -1,0 +1,211 @@
+---
+// Tab-driven "select a content pillar" explorer — the reference design's
+// strategy-engine pattern (tab list + a visual module that swaps). The
+// reference's module is a literal poster-mockup swap; this uses bold
+// typography instead (a big index number + the pillar's own title/note)
+// so nothing here reads as a fabricated screenshot or stock asset — pure
+// type, on-brand, same interactivity.
+interface Pillar {
+  step: string;
+  title: string;
+  note: string;
+}
+
+interface Props {
+  pillars: Pillar[];
+  defaultIndex?: number;
+  stageLabel?: string;
+  stageRightLabel?: string;
+  stageFootnote?: string;
+}
+
+const {
+  pillars,
+  defaultIndex = 0,
+  stageLabel = "Content system / module",
+  stageRightLabel = "Creative study",
+  stageFootnote = "Relevance → clarity → consistency",
+} = Astro.props;
+---
+
+<div class="pe" data-pe>
+  <div class="pe-nav">
+    {
+      pillars.map((p, i) => (
+        <button
+          type="button"
+          class="pe-tab"
+          data-index={i}
+          aria-selected={i === defaultIndex ? "true" : "false"}
+        >
+          <span class="text-caption pe-tab-index tabular-nums">{p.step}</span>
+          <span class="pe-tab-copy">
+            <span class="text-h3 pe-tab-title">{p.title}</span>
+            <span class="text-small pe-tab-note">{p.note}</span>
+          </span>
+          <span class="pe-tab-arrow" aria-hidden="true">↗</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="pe-stage">
+    <div class="pe-stage-top">
+      <span class="text-caption">{stageLabel} <span data-pe-count tabular-nums>{pillars[defaultIndex]?.step}</span></span>
+      <span class="text-caption">{stageRightLabel}</span>
+    </div>
+    <div class="pe-stage-center">
+      <p class="pe-stage-index tabular-nums" data-pe-index>{pillars[defaultIndex]?.step}</p>
+      <p class="text-display pe-stage-title" data-pe-title>{pillars[defaultIndex]?.title}</p>
+      <p class="text-small pe-stage-note" data-pe-note>{pillars[defaultIndex]?.note}</p>
+    </div>
+    <div class="pe-stage-bottom text-caption">
+      <span>{stageFootnote}</span>
+      <span data-pe-name>{pillars[defaultIndex]?.title}</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .pe {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-7);
+    align-items: stretch;
+  }
+
+  .pe-nav {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pe-tab {
+    display: grid;
+    grid-template-columns: 48px 1fr 28px;
+    gap: var(--space-4);
+    align-items: start;
+    text-align: left;
+    width: 100%;
+    padding: var(--space-5) 0;
+    background: none;
+    border: 0;
+    border-top: 1px solid var(--color-line);
+    color: var(--color-ink);
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .pe-nav .pe-tab:last-child {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .pe-tab:hover {
+    opacity: 0.7;
+  }
+
+  .pe-tab-index {
+    color: var(--color-ink-soft);
+  }
+
+  .pe-tab[aria-selected="true"] .pe-tab-index {
+    color: var(--color-ink);
+  }
+
+  .pe-tab-copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .pe-tab-note {
+    color: var(--color-ink-soft);
+    max-width: 42ch;
+  }
+
+  .pe-tab-arrow {
+    font-size: 1.25rem;
+    color: var(--color-olive);
+    transition: transform var(--dur-base) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+
+  .pe-tab[aria-selected="true"] .pe-tab-arrow {
+    transform: rotate(45deg);
+    color: var(--color-ink);
+  }
+
+  .pe-stage {
+    position: relative;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    min-height: 420px;
+    padding: clamp(var(--space-5), 4vw, var(--space-8));
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-6);
+  }
+
+  .pe-stage-top,
+  .pe-stage-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    color: var(--color-ink-soft);
+  }
+
+  .pe-stage-center {
+    text-align: center;
+  }
+
+  .pe-stage-index {
+    font-size: clamp(4rem, 10vw, 7rem);
+    font-weight: 300;
+    line-height: 1;
+    color: var(--color-olive);
+    letter-spacing: -0.03em;
+  }
+
+  .pe-stage-title {
+    margin-top: var(--space-4);
+    color: var(--color-paper);
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .pe-stage-note {
+    margin-top: var(--space-5);
+    color: var(--color-ink-soft);
+    max-width: 48ch;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 1024px) {
+    .pe {
+      grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.15fr);
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-pe]").forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>("[data-index]")];
+    const countEl = root.querySelector<HTMLElement>("[data-pe-count]");
+    const indexEl = root.querySelector<HTMLElement>("[data-pe-index]");
+    const titleEl = root.querySelector<HTMLElement>("[data-pe-title]");
+    const noteEl = root.querySelector<HTMLElement>("[data-pe-note]");
+    const nameEl = root.querySelector<HTMLElement>("[data-pe-name]");
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const title = tab.querySelector(".pe-tab-title")?.textContent ?? "";
+        const note = tab.querySelector(".pe-tab-note")?.textContent ?? "";
+        const step = tab.querySelector(".pe-tab-index")?.textContent ?? "";
+
+        tabs.forEach((t) => t.setAttribute("aria-selected", String(t === tab)));
+        if (countEl) countEl.textContent = step;
+        if (indexEl) indexEl.textContent = step;
+        if (titleEl) titleEl.textContent = title;
+        if (noteEl) noteEl.textContent = note;
+        if (nameEl) nameEl.textContent = title;
+      });
+    });
+  });
+</script>

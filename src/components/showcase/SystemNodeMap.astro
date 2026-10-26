@@ -1,0 +1,251 @@
+---
+// Clickable node grid — the reference design's "conceptual system map"
+// (select a component, read what it does below). Revised to actually
+// read as ONE connected system rather than a flat button grid: a status
+// bar, a center cross connecting every node to the whole, and a small
+// "port" marker per node that lights up when selected. Still no
+// illustrated per-node wiring (would read as a fabricated architecture
+// diagram beyond what the footnote's own "simplified design map"
+// disclaimer supports) — the connection is implied, not traced.
+interface Node {
+  label: string;
+  sublabel: string;
+  title: string;
+  description: string;
+}
+
+interface Props {
+  nodes: Node[];
+  defaultIndex?: number;
+}
+
+const { nodes, defaultIndex = 0 } = Astro.props;
+const initial = nodes[defaultIndex];
+---
+
+<div class="snm" data-snm>
+  <div class="snm-top text-caption">
+    <span class="snm-top-left"><span class="snm-pulse" aria-hidden="true"></span> Connected business system</span>
+    <span class="snm-top-right">Select a component to explore</span>
+  </div>
+
+  <div class="snm-grid">
+    {
+      nodes.map((n, i) => (
+        <button
+          type="button"
+          class="snm-node"
+          data-index={i}
+          aria-pressed={i === defaultIndex ? "true" : "false"}
+        >
+          <span class="snm-node-port" aria-hidden="true"></span>
+          <span class="text-small snm-node-label">{n.label}</span>
+          <span class="text-caption snm-node-sub">{n.sublabel}</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="snm-feed" aria-hidden="true">
+    <span class="snm-feed-line"></span>
+    <span class="snm-feed-dot"></span>
+  </div>
+
+  <div class="snm-footnote">
+    <h3 class="text-h3 snm-title" data-snm-title>{initial.title}</h3>
+    <p class="text-small snm-description" data-snm-description>{initial.description}</p>
+  </div>
+
+  <script type="application/json" data-snm-data set:html={JSON.stringify(nodes)} />
+</div>
+
+<style>
+  .snm {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: clamp(var(--space-6), 4vw, var(--space-8));
+  }
+
+  .snm-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-6);
+    color: var(--color-ink-soft);
+  }
+
+  .snm-top-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--color-paper);
+  }
+
+  .snm-pulse {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: var(--radius-pill);
+    background: var(--color-olive);
+    animation: snm-pulse 2.6s ease-in-out infinite;
+  }
+
+  @keyframes snm-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.4;
+      transform: scale(0.75);
+    }
+  }
+
+  .snm-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .snm-node {
+    background: var(--color-ink);
+    border: 1px solid var(--color-line-dark);
+    padding: var(--space-6);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 120px;
+    position: relative;
+    transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+
+  .snm-node-port {
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 7px;
+    height: 7px;
+    background: var(--color-line-dark);
+    border-radius: 0 0 var(--radius-sm) 0;
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .snm-node:hover,
+  .snm-node[aria-pressed="true"] {
+    background: var(--color-ink-soft);
+    border-color: var(--color-olive);
+    transform: translateY(-3px);
+  }
+
+  .snm-node[aria-pressed="true"] .snm-node-port {
+    background: var(--color-olive);
+  }
+
+  .snm-node-label {
+    color: var(--color-paper);
+    font-weight: 500;
+  }
+
+  .snm-node-sub {
+    color: var(--color-ink-soft);
+  }
+
+  .snm-node[aria-pressed="true"] .snm-node-sub {
+    color: var(--color-bone);
+  }
+
+  /* The one connecting line — deliberately not a literal node-to-node
+     wiring diagram (would overclaim a verified architecture), but a
+     real functional relationship: whichever node is selected feeds the
+     shared readout below. Always centered regardless of column count,
+     unlike a grid-spanning cross, which only aligns cleanly at specific
+     breakpoints. */
+  .snm-feed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    height: var(--space-7);
+  }
+
+  .snm-feed-line {
+    width: 1px;
+    flex: 1;
+    background: var(--color-line-dark);
+  }
+
+  .snm-feed-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background: var(--color-olive);
+    flex: none;
+    margin-top: -1px;
+  }
+
+  .snm-footnote {
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-line-dark);
+  }
+
+  .snm-title {
+    /* paper, not olive: text-h3 (24px, weight 450) sits right at the
+       large-text contrast threshold with olive-on-ink and no real
+       margin — same lesson as the Taiwan NSC "724" figure and
+       RuleExplorer's metric number. */
+    color: var(--color-paper);
+  }
+
+  .snm-description {
+    margin-top: var(--space-3);
+    color: var(--color-ink-soft);
+    max-width: 60ch;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .snm-pulse {
+      animation: none;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .snm-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .snm-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-snm]").forEach((root) => {
+    const dataEl = root.querySelector<HTMLScriptElement>("[data-snm-data]");
+    const titleEl = root.querySelector<HTMLElement>("[data-snm-title]");
+    const descEl = root.querySelector<HTMLElement>("[data-snm-description]");
+    if (!dataEl || !titleEl || !descEl) return;
+
+    const nodes = JSON.parse(dataEl.textContent || "[]") as { title: string; description: string }[];
+
+    root.querySelectorAll<HTMLButtonElement>("[data-index]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.dataset.index);
+        const node = nodes[idx];
+        if (!node) return;
+        root.querySelectorAll<HTMLButtonElement>("[data-index]").forEach((b) => {
+          b.setAttribute("aria-pressed", String(b === btn));
+        });
+        titleEl.textContent = node.title;
+        descEl.textContent = node.description;
+      });
+    });
+  });
+</script>
