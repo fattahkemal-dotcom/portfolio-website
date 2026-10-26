@@ -7,6 +7,7 @@
 // design page). Every view pre-renders server-side; tab clicks just
 // toggle visibility, same approach as OrganicSignalExplorer.
 import DeviceFrame from "./DeviceFrame.astro";
+import type { ImageMetadata } from "astro";
 
 interface View {
   id: string;
@@ -15,6 +16,10 @@ interface View {
   frameLabel: string;
   heading: string;
   copy: string;
+  /** Real screenshot — renders in place of the empty labelled frame
+   * once one is supplied. Pass `frameAlt` alongside it. */
+  frameSrc?: ImageMetadata;
+  frameAlt?: string;
 }
 
 interface Props {
@@ -48,7 +53,7 @@ const initialId = defaultId ?? views[0]?.id;
     {
       views.map((v) => (
         <div class="pve-frame" data-pve-frame={v.id} hidden={v.id !== initialId}>
-          <DeviceFrame type="desktop" label={v.frameLabel} />
+          <DeviceFrame type="desktop" label={v.frameLabel} src={v.frameSrc} alt={v.frameAlt ?? ""} />
         </div>
       ))
     }

@@ -21,6 +21,19 @@
 //    but the reference's own verification disclaimers are kept
 //    (translated to this site's voice) rather than dropped, since
 //    nothing here has been independently confirmed this session.
+//
+// 2026-10-26: the 5 placeholder frames are now filled with real
+// screenshots — captured from this exact product's own interactive
+// design prototypes (SEA-Padel-Member.html / SEA-Padel-Admin.html,
+// not fabricated), per the shot list at
+// https://claude.ai/code/artifact/c61ba623-5677-47d9-89d4-ac7785aac258.
+// IMPORTANT, per seapadel-prototype-captures/README.md: production
+// (seapadel-booking.onrender.com) returned HTTP 503 on the capture date,
+// so these are PROTOTYPE captures with seeded/anonymized demo data
+// ("Demo Member 01" etc.), not live production screenshots — hence the
+// disclosure note kept on-page below. Swap for verified production
+// captures once the live site is confirmed stable; see that README for
+// the exact re-capture checklist.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Section from "../../components/layout/Section.astro";
 import Container from "../../components/layout/Container.astro";
@@ -30,6 +43,11 @@ import DeviceFrame from "../../components/showcase/DeviceFrame.astro";
 import RuleExplorer from "../../components/showcase/RuleExplorer.astro";
 import SystemNodeMap from "../../components/showcase/SystemNodeMap.astro";
 import ProductViewExplorer from "../../components/showcase/ProductViewExplorer.astro";
+import heroDesktop from "../../assets/images/lp-system-hero-desktop.png";
+import heroMobile from "../../assets/images/lp-system-hero-mobile.png";
+import bookingView from "../../assets/images/lp-system-view-booking.png";
+import crmView from "../../assets/images/lp-system-view-crm.png";
+import healthView from "../../assets/images/lp-system-view-health.png";
 
 const runningText = [
   "4 membership levels",
@@ -130,6 +148,8 @@ const productViews = [
     tabLabel: "Booking platform",
     tabSub: "01 / Member experience",
     frameLabel: "Booking platform screenshot",
+    frameSrc: bookingView,
+    frameAlt: "SEA Padel member app, booking confirmation — session details, cancellation policy, and a confirm button.",
     heading: "Good booking experiences make the rules feel effortless.",
     copy: "A clean member journey should surface available sessions, eligibility, and policy terms without forcing people into back-and-forth messages.",
   },
@@ -138,6 +158,8 @@ const productViews = [
     tabLabel: "CRM workspace",
     tabSub: "02 / Business operations",
     frameLabel: "CRM workspace screenshot",
+    frameSrc: crmView,
+    frameAlt: "SEA Padel admin, Members — a list of academy members with level, plan, and status, demo data anonymized.",
     heading: "The CRM is the operating context, not just a contact list.",
     copy: "Member records, assessment context, payment updates, and deal stages form the foundation for more consistent business decisions.",
   },
@@ -146,6 +168,8 @@ const productViews = [
     tabLabel: "System health",
     tabSub: "03 / Founder visibility",
     frameLabel: "System health screenshot",
+    frameSrc: healthView,
+    frameAlt: "SEA Padel admin, System health — booking, accounts, notifications, and infrastructure status, with one open notification event.",
     heading: "Operational confidence needs a readable interface.",
     copy: "A founder should know what's working, what needs attention, and where to investigate — without reading infrastructure logs.",
   },
@@ -216,8 +240,20 @@ const reflections = [
         </div>
 
         <div class="ps-hero-frames">
-          <DeviceFrame type="desktop" label="Booking platform screenshot" class="ps-frame-desktop" />
-          <DeviceFrame type="mobile" label="Member app screenshot" class="ps-frame-mobile" />
+          <DeviceFrame
+            type="desktop"
+            label="Booking platform screenshot"
+            src={heroDesktop}
+            alt="SEA Padel member app, Book a session — session cards filtered by level, showing date, time, court, and spots remaining."
+            class="ps-frame-desktop"
+          />
+          <DeviceFrame
+            type="mobile"
+            label="Member app screenshot"
+            src={heroMobile}
+            alt="SEA Padel member app, Home dashboard — today's session, membership level and plan, and upcoming schedule."
+            class="ps-frame-mobile"
+          />
         </div>
       </div>
 
@@ -365,8 +401,10 @@ const reflections = [
       </div>
 
       <p class="text-caption ps-disclaimer ps-on-ink-soft">
-        Mockup notice — these are original, illustrative interface placeholders for portfolio
-        presentation. Real product screenshots should replace them before this page is published.
+        Screenshot notice — captured from this product's own interactive design prototypes, not
+        fabricated. Production was unreachable on the capture date, so these carry seeded demo data
+        with member names anonymized; swap for verified production captures once the live site is
+        confirmed stable.
       </p>
     </Container>
   </Section>
