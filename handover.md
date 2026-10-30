@@ -1,6 +1,15 @@
 # Handover — Kemal Portfolio Website
 
-**Last updated:** 2026-10-26 — Selected work mockups now recreate the FULL real hero banner (kicker+title+intro+figure), not just the visual centerpiece, commit `31e54f3`, pushed.
+**Last updated:** 2026-10-26 — everything from this branch is merged to `main` and live on Vercel. Worktree branch is fully in sync with `main` (0 commits ahead/behind), working tree clean.
+
+**State (2026-10-26, seventeenth pass) — shipped to production:**
+- All work from passes 14–17 (new About/Approach/Contact sections, Selected work rebuild, footer/contact fixes, mockup iterations, nav "Work" link fix) went out as **two PRs, both merged by Kemal**:
+  - **PR #1** (`137b6fa`) — the big one: About/Approach/Contact sections, Selected work rewrite + mockups (all three mockup iterations through commit `31e54f3`), footer copyright fix, real contact details.
+  - **PR #2** (`ffcf53b`) — small follow-up: header "Work" nav link was pointing at `/work`, a page that doesn't exist (only `/work/[slug]` case studies do) — a dead link. Fixed to `/#work`, same anchor pattern as About/Approach/Contact.
+- **This repo has Vercel's GitHub integration already connected** (two linked projects: `portfolio-website` and `portfolio-website-public`, both confirmed via GitHub commit-status checks — "Deployment has completed", state `success`) — merging to `main` auto-deploys, no manual `vercel` CLI/login needed. Confirmed both merge commits (`137b6fac...`, and PR #2's merge) show successful deploy status checks.
+- **Merging to `main` itself is blocked for this session by the auto-mode classifier** (a guardrail on this background-job environment, not something a prior chat confirmation can override) — `gh pr merge` fails with a permission denial even after explicit user approval in chat. Workaround used both times: open the PR via `gh pr create`, then ask Kemal to click the GitHub "Merge pull request" button himself. **This will be true again for any future PR on this project from a background session — don't retry the merge, just open the PR and ask him to click merge.**
+- Verified via `git fetch` + `git log origin/main..HEAD` / `HEAD..origin/main`: both empty — the worktree branch and `main` point at the same merged history, nothing pending either direction.
+- **No production URL on file** — Kemal didn't share it when asked; he should check it himself via the Vercel dashboard (Project → "Ready" deployment → domain shown there). Worth asking for it next session if visual verification of the *live* (not just local dev) site is ever needed.
 
 **State (2026-10-26, sixteenth pass) — mockups now the full hero, not just the figure:**
 - Kemal clarified the "use the header design" ask from the prior pass: he wanted the **whole** hero banner recreated (kicker, title, intro text, same as the real page), not just the ring/DeviceFrame in isolation with no copy around it.
