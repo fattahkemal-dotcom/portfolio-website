@@ -15,6 +15,11 @@
 // supplied figures, so it is left `null` rather than guessed (see
 // `costPerFpdp.months`/`actual`); TrendChart renders that gap as a
 // lighter "interpolated" segment, not a plotted data point.
+//
+// International-market variant: all currency figures below are converted
+// from the original IDR amounts at an approximate rate of IDR 15,800 = $1
+// (the figures were reported in IDR; USD values here are a converted
+// estimate, not a separately disclosed figure).
 
 export const caseStudy = {
   slug: "gentem-digital-growth-strategy",
@@ -34,11 +39,11 @@ export const caseStudy = {
     stats: [
       { value: "112%", label: "Total Contract target achieved" },
       { value: "−18.2%", label: "Cost per FPDP, Nov–Jan" },
-      { value: "IDR 397M", label: "Combined media investment*" },
+      { value: "$25.1K", label: "Combined media investment*" },
       { value: "189", label: "Customers acquired across channels*" },
     ],
     statsFootnote:
-      "*Google Ads and Meta Ads results reported separately; combined totals are calculated from those figures.",
+      "*Google Ads and Meta Ads results reported separately; combined totals are calculated from those figures. Figures were reported in IDR and are converted to USD here at an approximate rate of IDR 15,800 = $1.",
   },
   sidebar: {
     client: "Gentem Indonesia",
@@ -82,17 +87,17 @@ export const caseStudy = {
   },
   costPerFpdp: {
     heading: "Cost per FPDP vs. Target",
-    subheading: "Lower is better. Values in IDR millions.",
+    subheading: "Lower is better. Values in USD, converted from IDR.",
     months: ["Nov 2025", "Dec 2025", "Jan 2026"],
-    yMax: 3.2,
-    yTicks: [0, 0.8, 1.6, 2.4, 3.2],
-    actual: [2.88, null, 2.36],
-    referenceValue: 2.72,
+    yMax: 200,
+    yTicks: [0, 50, 100, 150, 200],
+    actual: [182, null, 149],
+    referenceValue: 172,
     referenceNote:
-      "Target cost derived from the two disclosed variance percentages below (not a separately disclosed target figure). December's actual cost was not included in the supplied data.",
+      "Target cost derived from the two disclosed variance percentages below (not a separately disclosed target figure). December's actual cost was not included in the supplied data. Originally reported in IDR; converted here at an approximate rate of IDR 15,800 = $1.",
     callouts: [
-      { month: "November", value: "IDR 2.88M", delta: "5.8% above target cost" },
-      { month: "January", value: "IDR 2.36M", delta: "13.5% below target cost" },
+      { month: "November", value: "$182", delta: "5.8% above target cost" },
+      { month: "January", value: "$149", delta: "13.5% below target cost" },
     ],
     takeaway:
       "Cost per FPDP decreased by approximately 18.2% from November to January. January was the first of these three months to beat the cost target.",
@@ -105,9 +110,9 @@ export const caseStudy = {
       intro:
         "Built a search campaign structure around user intent, from early-stage discovery to high-intent and branded searches.",
       stats: [
-        { value: "IDR 162M", label: "Media investment" },
+        { value: "$10.3K", label: "Media investment" },
         { value: "83", label: "Customers acquired" },
-        { value: "IDR 1.95M", label: "Cost per customer" },
+        { value: "$123", label: "Cost per customer" },
         { value: "3%+", label: "CTR maintained" },
       ],
       architectureHeading: "Search Funnel Architecture",
@@ -154,9 +159,9 @@ export const caseStudy = {
       intro:
         "Designed a multi-stage advertising funnel that aligned audience intent, creative messaging, and conversion objectives.",
       stats: [
-        { value: "IDR 235M", label: "Media investment" },
+        { value: "$14.9K", label: "Media investment" },
         { value: "106", label: "Customers acquired" },
-        { value: "IDR 2.22M", label: "Cost per customer" },
+        { value: "$141", label: "Cost per customer" },
         { value: "395", label: "Opportunities generated" },
       ],
       architectureHeading: "Audience & Creative Strategy",

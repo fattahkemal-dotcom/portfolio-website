@@ -26,7 +26,7 @@ import { caseStudy } from "../../data/case-studies/gentem-growth-strategy";
 const { header, sidebar, glossary, overview, funnel, costPerFpdp, channels, closing } = caseStudy;
 
 const pct = (v: number) => `${v.toFixed(1)}%`;
-const idrM = (v: number) => `IDR ${v.toFixed(2)}M`;
+const usd = (v: number) => `$${v.toFixed(0)}`;
 
 const funnelSeries = funnel.rows.map((r) => ({
   id: r.label.toLowerCase().replace(/\s+/g, "-"),
@@ -37,7 +37,7 @@ const funnelSeries = funnel.rows.map((r) => ({
 const costPoints = costPerFpdp.months
   .map((m, i) => ({ label: m as string, value: costPerFpdp.actual[i] as number | null }))
   .filter((p): p is { label: string; value: number } => p.value !== null)
-  .map((p) => ({ ...p, formatted: idrM(p.value) }));
+  .map((p) => ({ ...p, formatted: usd(p.value) }));
 ---
 
 <BaseLayout title={caseStudy.meta.title} description={caseStudy.meta.description}>
@@ -233,7 +233,7 @@ const costPoints = costPerFpdp.months
           <span class="cs-chart-stage-corner" aria-hidden="true"></span>
           <CostDeltaChart
             points={costPoints}
-            unitLabel="Actual cost per FPDP, IDR millions"
+            unitLabel="Actual cost per FPDP, USD"
             verdict="Less cost. More discipline."
           />
           <p class="text-caption cs-chart-caption">{costPerFpdp.referenceNote}</p>

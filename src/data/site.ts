@@ -34,7 +34,7 @@ export const hero = {
     { value: "12+", label: "Brand Handled" },
   ],
   headline: "Hello",
-  lead: "I'm Kemal a Senior Growth Performance",
+  lead: "I'm Kemal, a Senior Growth Specialist working remotely with teams across markets.",
   year: "2026",
   scrollCue: "Scroll down ↓",
 };
