@@ -1,5 +1,7 @@
 # Handover — Kemal Portfolio Website
 
+**Last updated:** 2026-11-10 — note: a second, long-lived branch `international-market` now exists for an international-job-market standalone deploy (USD figures + remote-first copy). Not merged into `main` and not meant to be — see its own handover entry on that branch for details. Vercel project/domain for it still pending on Kemal's side.
+
 **Last updated:** 2026-10-26 — everything from this branch is merged to `main` and live on Vercel. Worktree branch is fully in sync with `main` (0 commits ahead/behind), working tree clean.
 
 **State (2026-10-26, seventeenth pass) — shipped to production:**
